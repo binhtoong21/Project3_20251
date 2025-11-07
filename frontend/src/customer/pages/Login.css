@@ -1,0 +1,75 @@
+/* File: login.css */
+
+.login-page .container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+.login-form-container {
+  max-width: 450px;
+  width: 100%;
+  padding: 2.5rem;
+  background-color: var(--bg-color-component);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.login-form-container h2 {
+  margin-top: 0;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+}
+
+.login-form .form-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.login-form .form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.login-form .form-group input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box; /* Đảm bảo padding không làm tăng kích thước */
+}
+
+.login-form .form-group input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.login-form .btn {
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1.1rem;
+  margin-top: 1rem;
+}
+
+.signup-link {
+  margin-top: 2rem;
+  color: var(--text-color-muted);
+}
+
+.signup-link a {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.signup-link a:hover {
+  text-decoration: underline;
+}

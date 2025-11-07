@@ -1,0 +1,145 @@
+/* File: header.css */
+.site-header {
+  background-color: var(--bg-color-component);
+  color: var(--text-color);
+  /* THAY ĐỔI: Quay lại dùng padding để kiểm soát chiều cao.
+     Cách này ổn định và dễ điều chỉnh hơn. */
+  padding: 0.75rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.05);
+}
+.site-header .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center; /* Quan trọng nhất: Tự động căn giữa mọi thứ theo chiều dọc */
+  justify-content: space-between;
+  gap: 2rem;
+  /* XÓA: Bỏ height cố định đi, để nội dung và padding quyết định chiều cao */
+}
+
+/* -- Cấu trúc 3 cột -- */
+.header-left,
+.header-right {
+  flex: 1;
+}
+.header-center {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+}
+.header-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.header-right nav a.active {
+  color: #007bff; /* Hoặc một màu nổi bật nào đó */
+  text-decoration: underline;
+}
+
+.site-logo {
+  margin: 0;
+  display: flex; /* Giúp căn chỉnh ảnh bên trong */
+  align-items: center;
+  /* XÓA: Bỏ height: 100% không cần thiết nữa */
+}
+
+/* THAY ĐỔI: Đặt chiều cao CỐ ĐỊNH cho logo.
+   Đây là cách trực tiếp và dễ nhất để kiểm soát kích thước. */
+.site-logo img {
+  height: 80px; /* << BẠN CÓ THỂ TĂNG/GIẢM GIÁ TRỊ NÀY ĐỂ LOGO TO/NHỎ */
+  width: auto;
+  display: block;
+  /* XÓA: Bỏ các thuộc tính phức tạp không cần thiết */
+}
+
+/* -- Thanh tìm kiếm -- */
+.search-form {
+  display: flex;
+  width: 100%;
+  max-width: 500px;
+  border: 1px solid #ccc;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.search-form input[type="search"] {
+  border: none;
+  padding: 0.85rem 1.5rem; /* Điều chỉnh lại một chút cho cân đối */
+  width: 100%;
+  font-size: 1rem;
+  background: transparent;
+}
+.search-form input[type="search"]:focus {
+  outline: none;
+}
+.search-form button {
+  border: none;
+  background: var(--accent-color);
+  color: white;
+  padding: 0 1rem;
+  cursor: pointer;
+  display: none;
+}
+
+/* -- Điều hướng -- */
+.site-header nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.site-header nav a {
+  color: var(--text-color-muted);
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.site-header nav a:hover {
+  background: var(--section-bg-light);
+  color: var(--text-color);
+}
+.site-header .cart-link {
+  font-weight: 700;
+  background: var(--accent-color);
+  color: white;
+}
+.site-header .cart-link:hover {
+  background: #0056b3;
+  color: white;
+}
+.site-header nav a:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* -- Responsive -- */
+@media (max-width: 768px) {
+  .header-center {
+    display: none;
+  }
+  .site-header .container {
+    justify-content: space-between;
+  }
+  .site-logo img {
+    height: 50px; /* Có thể làm logo nhỏ hơn một chút trên mobile */
+  }
+  .header-left,
+  .header-right {
+    flex: initial;
+  }
+}
+
+@media (max-width: 600px) {
+  .site-header nav a:not(.cart-link) {
+    display: none;
+  }
+}
+/* Removed duplicate .site-logo img rule that forced 100px height */
