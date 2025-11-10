@@ -1,6 +1,5 @@
-/* File: index.css */
 
-/* --- THIẾT LẬP FONT VÀ BOX-SIZING TOÀN CỤC --- */
+
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
@@ -10,11 +9,6 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  /*
-    Mặc định, chúng ta sẽ dùng các biến màu từ page.css.
-    File này chỉ thiết lập những gì cơ bản nhất.
-  */
 }
 
 *,
@@ -23,7 +17,6 @@
   box-sizing: border-box;
 }
 
-/* --- RESET CSS CƠ BẢN --- */
 body,
 h1,
 h2,
@@ -34,10 +27,7 @@ p {
 }
 
 body {
-  /*
-    Màu nền và màu chữ sẽ được kế thừa từ các biến trong page.css,
-    đảm bảo sự nhất quán.
-  */
+
 }
 
 img,
@@ -49,11 +39,6 @@ svg {
   max-width: 100%;
 }
 
-/* --- BỐ CỤC CHUNG CHO ỨNG DỤNG --- */
-/*
-  Thay thế cho .app-root từ App.css.
-  Đảm bảo Footer luôn nằm ở cuối trang, ngay cả khi nội dung trang ngắn.
-*/
 #root {
   min-height: 100vh;
   display: flex;
@@ -61,5 +46,5 @@ svg {
 }
 
 main {
-  flex-grow: 1; /* Quan trọng: Đẩy footer xuống dưới */
+  flex-grow: 1;
 }

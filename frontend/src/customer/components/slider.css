@@ -1,12 +1,10 @@
-/* --- HERO SECTION --- */
-/* Section này sẽ nằm trên nền xám nhạt của body, không cần thay đổi */
 .hero-section {
-  line-height: 0; /* Loại bỏ khoảng trống thừa bên dưới ảnh */
+  line-height: 0; 
 }
 
 .hero-banner {
-  width: 100%; /* Đảm bảo ảnh luôn kéo dài hết chiều rộng */
-  height: auto; /* Giữ đúng tỷ lệ của ảnh */
+  width: 100%; 
+  height: auto; 
   display: block;
-  border-radius: 8px; /* Bo góc nhẹ */
+  border-radius: 8px; 
 }

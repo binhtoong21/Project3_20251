@@ -22,9 +22,9 @@ export default function Home() {
     const fetchBooks = async () => {
       try {
         const [featuredRes, newRes, saleRes] = await Promise.all([
-          listBooks({ page: 1, limit: 4, sort: "price", order: "desc" }),
-          listBooks({ page: 1, limit: 4, sort: "createdAt", order: "desc" }),
-          listBooks({ page: 1, limit: 4, sort: "price", order: "asc" }),
+          listBooks({ page: 1, limit: 5, sort: "price", order: "desc" }),
+          listBooks({ page: 1, limit: 5, sort: "createdAt", order: "desc" }),
+          listBooks({ page: 1, limit: 5, sort: "price", order: "asc" }),
         ]);
         if (!mounted) return;
         setFeaturedBooks(featuredRes.items || []);
@@ -55,18 +55,21 @@ export default function Home() {
           <HeroSlider banners={bannerImages} />
         </div>
       </div>
-
-      <BookSection title="Featured Books" books={featuredBooks} link="/books" />
       <BookSection
-        title="New Arrivals"
-        books={newBooks}
-        link="/books?category=new"
-      />
-      <BookSection
-        title="On Sale"
+        title="Sách Thiếu Nhi"
         books={saleBooks}
         link="/books?category=sale"
       />
+      <BookSection title="Sách Văn Học Nước Ngoài" 
+        books={featuredBooks} 
+        link="/books" 
+      />
+      <BookSection
+        title="Sách Văn Học Trong Nước"
+        books={newBooks}
+        link="/books?category=new"
+      />
+
     </div>
   );
 }

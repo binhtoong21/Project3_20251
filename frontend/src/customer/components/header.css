@@ -1,9 +1,6 @@
-/* File: header.css */
 .site-header {
   background-color: var(--bg-color-component);
   color: var(--text-color);
-  /* THAY ĐỔI: Quay lại dùng padding để kiểm soát chiều cao.
-     Cách này ổn định và dễ điều chỉnh hơn. */
   padding: 0.75rem 0;
   position: sticky;
   top: 0;
@@ -16,13 +13,11 @@
   margin: 0 auto;
   padding: 0 1rem;
   display: flex;
-  align-items: center; /* Quan trọng nhất: Tự động căn giữa mọi thứ theo chiều dọc */
+  align-items: center; 
   justify-content: space-between;
   gap: 2rem;
-  /* XÓA: Bỏ height cố định đi, để nội dung và padding quyết định chiều cao */
 }
 
-/* -- Cấu trúc 3 cột -- */
 .header-left,
 .header-right {
   flex: 1;
@@ -38,27 +33,22 @@
 }
 
 .header-right nav a.active {
-  color: #007bff; /* Hoặc một màu nổi bật nào đó */
+  color: #007bff;
   text-decoration: underline;
 }
 
 .site-logo {
   margin: 0;
-  display: flex; /* Giúp căn chỉnh ảnh bên trong */
+  display: flex; 
   align-items: center;
-  /* XÓA: Bỏ height: 100% không cần thiết nữa */
 }
 
-/* THAY ĐỔI: Đặt chiều cao CỐ ĐỊNH cho logo.
-   Đây là cách trực tiếp và dễ nhất để kiểm soát kích thước. */
 .site-logo img {
-  height: 80px; /* << BẠN CÓ THỂ TĂNG/GIẢM GIÁ TRỊ NÀY ĐỂ LOGO TO/NHỎ */
+  height: 80px;
   width: auto;
   display: block;
-  /* XÓA: Bỏ các thuộc tính phức tạp không cần thiết */
 }
 
-/* -- Thanh tìm kiếm -- */
 .search-form {
   display: flex;
   width: 100%;
@@ -70,7 +60,7 @@
 
 .search-form input[type="search"] {
   border: none;
-  padding: 0.85rem 1.5rem; /* Điều chỉnh lại một chút cho cân đối */
+  padding: 0.85rem 1.5rem; 
   width: 100%;
   font-size: 1rem;
   background: transparent;
@@ -87,7 +77,6 @@
   display: none;
 }
 
-/* -- Điều hướng -- */
 .site-header nav {
   display: flex;
   gap: 1rem;
@@ -120,7 +109,6 @@
   outline-offset: 2px;
 }
 
-/* -- Responsive -- */
 @media (max-width: 768px) {
   .header-center {
     display: none;
@@ -129,7 +117,7 @@
     justify-content: space-between;
   }
   .site-logo img {
-    height: 50px; /* Có thể làm logo nhỏ hơn một chút trên mobile */
+    height: 50px; 
   }
   .header-left,
   .header-right {
@@ -142,4 +130,3 @@
     display: none;
   }
 }
-/* Removed duplicate .site-logo img rule that forced 100px height */

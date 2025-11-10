@@ -7,7 +7,7 @@ export const books = [
     author: 'Robert C. Martin',
     description: 'A Handbook of Agile Software Craftsmanship.',
     price: 205000,
-    cover: '/images/books/clean-code.jpg',
+    cover: '/images/books/1.jpg',
     createdAt: new Date('2024-06-01').toISOString()
   },
   {
@@ -16,7 +16,7 @@ export const books = [
     author: 'Andrew Hunt',
     description: 'Your Journey to Mastery, 20th Anniversary Edition.',
     price: 220000,
-    cover: '/images/books/pragmatic-programmer.jpg',
+    cover: '/images/books/2.jpg',
     createdAt: new Date('2024-07-10').toISOString()
   },
   {
@@ -25,7 +25,7 @@ export const books = [
     author: 'Martin Fowler',
     description: 'Improving the Design of Existing Code.',
     price: 250000,
-    cover: '/images/books/refactoring.jpg',
+    cover: '/images/books/3.jpg',
     createdAt: new Date('2024-08-20').toISOString()
   },
   {
@@ -34,7 +34,7 @@ export const books = [
     author: 'F. Scott Fitzgerald',
     description: 'Classic American novel.',
     price: 99000,
-    cover: '/images/books/gatsby.jpg',
+    cover: '/images/books/4.jpg',
     createdAt: new Date('2024-09-01').toISOString()
   },
   {
@@ -43,7 +43,7 @@ export const books = [
     author: 'James Clear',
     description: 'An Easy & Proven Way to Build Good Habits & Break Bad Ones.',
     price: 150000,
-    cover: '/images/books/atomic-habits.jpg',
+    cover: '/images/books/5.jpg',
     createdAt: new Date('2024-10-01').toISOString()
   },
   {
@@ -52,7 +52,7 @@ export const books = [
     author: 'Andy Weir',
     description: 'A lone astronaut must save the earth from disaster.',
     price: 180000,
-    cover: '/images/books/project-hail-mary.jpg',
+    cover: '/images/books/6.jpg',
     createdAt: new Date('2024-10-15').toISOString()
   }
 ];

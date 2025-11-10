@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import BookCard from "./BookCard";
-import PropTypes from "prop-types"; // 1. Import PropTypes
+import PropTypes from "prop-types"; 
+import "./booksection.css";
 
 export default function BookSection({ title, books, link }) {
   return (
@@ -24,7 +25,7 @@ export default function BookSection({ title, books, link }) {
 }
 
 BookSection.propTypes = {
-  title: PropTypes.string.isRequired, // title phải là string và là bắt buộc
-  books: PropTypes.array.isRequired, // books phải là một mảng và là bắt buộc
-  link: PropTypes.string.isRequired, // link phải là string và là bắt buộc
+  title: PropTypes.string.isRequired, 
+  books: PropTypes.array.isRequired, 
+  link: PropTypes.string.isRequired, 
 };

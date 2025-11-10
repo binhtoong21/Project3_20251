@@ -1,4 +1,4 @@
-/* File: login.css */
+
 
 .login-page .container {
   display: flex;
@@ -43,7 +43,7 @@
   border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 1rem;
-  box-sizing: border-box; /* Đảm bảo padding không làm tăng kích thước */
+  box-sizing: border-box;
 }
 
 .login-form .form-group input:focus {

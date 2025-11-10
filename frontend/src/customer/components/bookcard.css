@@ -1,19 +1,14 @@
-/* File: bookcard.css */
 .book-card {
 	display: flex;
 	flex-direction: column;
 	gap: 0.75rem;
-	background: var(--bg-color-component); /* Nền trắng, sẽ nổi bật trên nền xám của body */
-	padding: 1rem;
+	background: var(--bg-color-component); 
 	border-radius: 10px;
-	border: 1px solid var(--border-color);
 	transition: transform 160ms ease, box-shadow 160ms ease;
-  /* Thêm bóng đổ mặc định để thẻ luôn nổi bật */
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 .book-card:hover {
   transform: translateY(-5px);
-  box-shadow: var(--shadow-sm); /* Sử dụng biến bóng đổ mới, rõ hơn */
+  box-shadow: var(--shadow-sm); 
 }
 .book-cover { 
   width: 100%; 
@@ -49,4 +44,24 @@
   color: var(--accent-color);
   text-decoration: none; 
   font-weight: 600 
+}
+.add-cart-btn {
+  display: inline-block;
+  margin-top: 0.75rem;
+  width: 100%;
+}
+
+.book-body .details + .add-cart-btn {
+  margin-top: 0.5rem;
+}
+
+.add-cart-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.cart-feedback {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #28a745;
 }

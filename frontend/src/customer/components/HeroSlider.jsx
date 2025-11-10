@@ -1,6 +1,5 @@
-// src/customer/components/HeroSlider.jsx
 import { useState, useEffect } from 'react';
-import './slider.css'; // Tạo một file CSS riêng cho slider
+import './slider.css'; 
 
 export default function HeroSlider({ banners, autoPlayInterval = 5000 }) {
   const [currentSlide, setCurrentSlide] = useState(0);

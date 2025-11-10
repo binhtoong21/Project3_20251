@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getBook } from "../../shared/utils/booksService";
 import { formatPrice } from "../../shared/utils/formatters"; 
+import { useCartActions } from "../../shared/context/CartContext.jsx";
 import "./page.css";
 
 export default function BookDetail() {
@@ -10,6 +11,9 @@ export default function BookDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1); 
+  const [adding, setAdding] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const cartActions = useCartActions();
 
   useEffect(() => {
     let mounted = true;
@@ -34,11 +38,20 @@ export default function BookDetail() {
     };
   }, [id]);
 
-  const handleAddToCart = () => {
-    if (!book) return;
-    // Logic thêm vào giỏ hàng 
-    console.log(`Added ${quantity} of "${book.title}" to cart.`);
-    // gọi một hàm từ CartContext
+  const handleAddToCart = async () => {
+    if (!book || adding) return;
+    try {
+      setAdding(true);
+      await cartActions.addItem(book.id, quantity);
+      setFeedback("Added to cart");
+      setTimeout(() => setFeedback(""), 2500);
+    } catch (err) {
+      console.error("Failed to add to cart", err);
+      setFeedback("Failed to add to cart");
+      setTimeout(() => setFeedback(""), 2500);
+    } finally {
+      setAdding(false);
+    }
   };
 
   if (loading) {
@@ -90,9 +103,10 @@ export default function BookDetail() {
             <button onClick={() => setQuantity((q) => q + 1)}>+</button>
           </div>
 
-          <button className="btn primary" onClick={handleAddToCart}>
-            Add to cart
+          <button className="btn primary" onClick={handleAddToCart} disabled={adding}>
+            {adding ? "Adding..." : "Add to cart"}
           </button>
+          {feedback && <p className="cart-feedback">{feedback}</p>}
         </div>
       </div>
     </div>

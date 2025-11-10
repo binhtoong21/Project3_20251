@@ -1,0 +1,33 @@
+.books-section {
+  padding: 2rem 0;
+  background-color: white;
+}
+
+.books-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1rem;
+}
+
+.books-section .section-title {
+  margin: 0;
+  font-size: 1.8rem;
+  text-align: left;
+}
+
+.books-section .see-all-link {
+  display: inline-block;
+  color: var(--text-color-muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1.1rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.books-section .see-all-link:hover {
+  background-color: var(--section-bg-light);
+  color: var(--text-color);
+}

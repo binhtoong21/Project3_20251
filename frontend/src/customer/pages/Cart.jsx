@@ -1,12 +1,116 @@
-import './page.css'
+import './cart.css';
+import { useCartActions, useCartState } from '../../shared/context/CartContext';
+import { formatPrice } from '../../shared/utils/formatters';
 
 export default function Cart() {
+  const { items, summary, status, error } = useCartState();
+  const { updateItem, removeItem } = useCartActions();
+
+  const isLoading = status === 'loading' && items.length === 0;
+  const isEmpty = !isLoading && items.length === 0;
+
+  const handleDecrease = (bookId, currentQty) => {
+    const next = currentQty - 1;
+    if (next <= 0) {
+      removeItem(bookId).catch(() => {});
+    } else {
+      updateItem(bookId, next).catch(() => {});
+    }
+  };
+
+  const handleIncrease = (bookId, currentQty) => {
+    updateItem(bookId, currentQty + 1).catch(() => {});
+  };
+
+  const handleManualChange = (bookId, value) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return;
+    if (parsed <= 0) {
+      removeItem(bookId).catch(() => {});
+    } else {
+      updateItem(bookId, Math.floor(parsed)).catch(() => {});
+    }
+  };
+
   return (
     <div className="page cart-page">
       <div className="container">
         <h2>Your Cart</h2>
-        <p>Your cart is empty (this is a static demo).</p>
+
+        {isLoading && <p>Loading cart...</p>}
+
+        {error && <p className="cart-error">{error}</p>}
+
+        {isEmpty && !error && <p>Your cart is empty.</p>}
+
+        {!isLoading && !isEmpty && (
+          <div className="cart-content">
+            <div className="cart-items">
+              {items.map((item) => (
+                <article className="cart-item" key={item.bookId}>
+                  <div className="cart-item-cover">
+                    <img src={item.cover} alt={item.title} onError={(e) => {
+                      e.currentTarget.src = `https://via.placeholder.com/80x110?text=${encodeURIComponent(item.title)}`;
+                    }} />
+                  </div>
+                  <div className="cart-item-info">
+                    <h3>{item.title}</h3>
+                    <p className="cart-item-price">{formatPrice(item.price)}</p>
+                    <div className="cart-quantity-controls">
+                      <button
+                        type="button"
+                        onClick={() => handleDecrease(item.bookId, item.quantity)}
+                        aria-label={`Decrease quantity of ${item.title}`}
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => handleManualChange(item.bookId, e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleIncrease(item.bookId, item.quantity)}
+                        aria-label={`Increase quantity of ${item.title}`}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <div className="cart-item-actions">
+                    <button
+                      type="button"
+                      className="link-button"
+                      onClick={() => removeItem(item.bookId).catch(() => {})}
+                    >
+                      Remove
+                    </button>
+                    <p className="cart-item-total">{formatPrice(item.price * item.quantity)}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <aside className="cart-summary">
+              <h3>Order Summary</h3>
+              <div className="summary-row">
+                <span>Items</span>
+                <span>{summary.totalQuantity}</span>
+              </div>
+              <div className="summary-row">
+                <span>Subtotal</span>
+                <span>{formatPrice(summary.subtotal)}</span>
+              </div>
+              <p className="summary-note">Shipping and taxes calculated at checkout.</p>
+              <button type="button" className="btn primary" disabled>
+                Checkout (Coming soon)
+              </button>
+            </aside>
+          </div>
+        )}
       </div>
     </div>
-  )
-}
+  );
+  }

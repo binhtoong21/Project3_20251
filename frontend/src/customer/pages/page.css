@@ -1,28 +1,21 @@
-/* File: page.css */
 
-/* --- BIẾN MÀU CHO CHỦ ĐỀ SÁNG - TĂNG CƯỜNG TƯƠNG PHẢN --- */
 :root {
-  --bg-color: #f8f9fa;            /* Nền xám rất nhạt cho toàn trang */
-  --bg-color-component: #ffffff;  /* Nền trắng cho các component */
-  --text-color: #212529;          /* Chữ đen đậm hơn một chút */
-  --text-color-muted: #6c757d;    /* Chữ xám cho các chi tiết phụ */
+  --bg-color: #f8f9fa;            
+  --bg-color-component: #ffffff;  
+  --text-color: #212529;          
   --accent-color: #007bff;
-  --border-color: #dee2e6;        /* Viền đậm hơn, rõ ràng hơn */
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.07); /* Bóng đổ rõ hơn */
+  --border-color: #dee2e6;       
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.07); 
 }
 
-/* Áp dụng màu nền chung */
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
 }
 
 .container { max-width: 1200px; margin: 0 auto; padding: 1rem }
-.page { }
 
 
-/* --- FEATURES SECTION --- */
-/* Section này sẽ có nền trắng để nổi bật trên nền xám của body */
 .features-section {
   background-color: var(--bg-color-component);
   padding: 3rem 0;
@@ -30,7 +23,6 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 .features { display: flex; gap: 1.5rem; justify-content: center; }
-/* Các box feature sẽ có nền xám để tương phản với nền trắng của section */
 .feature {
   flex-basis: 250px;
   flex-grow: 0;
@@ -41,7 +33,6 @@ body {
   border: 1px solid var(--border-color);
 }
 
-/* Các class còn lại giữ nguyên */
 .books-page h2 { 
   padding: 2rem 0;  
   text-align: left;
@@ -70,70 +61,30 @@ body {
   padding: 1rem 0;
 }
 
-.section-header {
-  display: flex;
-  justify-content: space-between; /* Đẩy 2 phần tử về 2 phía */
-  align-items: baseline;
-  margin-bottom: 1rem; /* Giữ khoảng cách với lưới sách bên dưới */
-}
-
-/* Điều chỉnh lại style cho tiêu đề */
-.section-title {
-  text-align: left; /* Căn lề trái */
-  margin: 0; /* Xóa margin mặc định để flexbox kiểm soát */
-  font-size: 1.8rem;
-}
-
-/* Style cho link "See all" */
-
-.see-all-link {
-  display: inline-block;
-  color: var(--text-color-muted);   /* Màu chữ xám nhạt giống navbar */
-  text-decoration: none;
-  font-weight: 500;                 /* Độ đậm chữ giống navbar */
-  font-size: 1.3rem;
-  padding: 0.6rem 1rem;             /* Tạo không gian bên trong, biến link thành nút */
-  border-radius: 6px;               /* Bo tròn góc cho mềm mại */
-  transition: background-color 150ms ease, color 150ms ease; /* Hiệu ứng chuyển đổi mượt mà */
-}
-
-.see-all-link:hover {
-  background-color: var(--section-bg-light); /* Nền xám rất nhạt khi di chuột qua */
-  color: var(--text-color);                   /* Chữ đậm hơn khi di chuột qua */
-}
-
-.section-title {
-  text-align: center;
-  font-size: 1.8rem;
-}
-
-/* --- SLIDER STYLES --- */
-
 .slider-container {
-  position: relative; /* Quan trọng: làm gốc cho các phần tử con absolute */
+  position: relative; 
   width: 100%;
   border-radius: 10px;
-  overflow: hidden; /* Ẩn các phần ảnh thừa ra ngoài */
-  line-height: 0; /* Loại bỏ khoảng trắng dưới ảnh */
+  overflow: hidden; 
+  line-height: 0; 
 }
 
 .slide {
   width: 100%;
   height: auto;
   display: block;
-  opacity: 0; /* Mặc định ẩn tất cả các slide */
-  position: absolute; /* Xếp chồng các slide lên nhau */
+  opacity: 0; 
+  position: absolute; 
   top: 0;
   left: 0;
-  transition: opacity 0.7s ease-in-out; /* Hiệu ứng mờ dần */
+  transition: opacity 0.7s ease-in-out; 
 }
 
 .slide.active {
-  opacity: 1; /* Hiển thị slide đang được chọn */
-  position: relative; /* Giúp container nhận đúng chiều cao của ảnh */
+  opacity: 1; 
+  position: relative; 
 }
 
-/* --- SLIDER ARROWS --- */
 .slider-arrow {
   position: absolute;
   top: 50%;
@@ -167,7 +118,6 @@ body {
   right: 1rem;
 }
 
-/* --- SLIDER DOTS --- */
 .slider-dots {
   position: absolute;
   bottom: 1rem;
@@ -195,7 +145,6 @@ body {
   background-color: white;
 }
 
-/* Media queries giữ nguyên */
 @media (min-width: 1200px) {
   .featured-books-section .grid {
     grid-template-columns: repeat(4, 1fr);

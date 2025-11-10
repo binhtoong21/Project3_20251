@@ -1,13 +1,12 @@
-/* File: footer.css */
 .site-footer { 
-  padding: 1.5rem 0; /* Tăng padding */
+  padding: 1.5rem 0; 
   color: var(--text-color-muted);
-  background: var(--section-bg-light); /* Nền màu xám nhẹ */
-  border-top: 1px solid var(--border-color); /* Viền nhạt */
-  margin-top: 3rem; /* Thêm khoảng cách với nội dung bên trên */
+  background: var(--section-bg-light); 
+  border-top: 1px solid var(--border-color); 
+  margin-top: 3rem; 
 }
 .site-footer .container { 
-  display: flex;
+  display: flex;  
   justify-content: space-between;
   align-items: flex-start;
   gap: 2rem;
@@ -15,7 +14,7 @@
 }
 
 .footer-col {
-  flex: 1 1 280px; /* Allow columns to grow/shrink, min width ~280px */
+  flex: 1 1 280px;  
 }
 
 .footer-col h3 {
@@ -49,7 +48,7 @@
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
-/* Responsive: stack columns on small screens */
+
 @media (max-width: 640px) {
   .site-footer .container {
     flex-direction: column;
