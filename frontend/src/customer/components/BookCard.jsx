@@ -42,7 +42,6 @@ export default function BookCard({ book }) {
       <div className="book-body">
         <div>
           <h3>{book.title}</h3>
-          <p className="author">{book.author}</p>
         </div>
         <div>
           <p className="price">{formatPrice(book.price)}</p>

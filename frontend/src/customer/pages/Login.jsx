@@ -5,7 +5,7 @@ import './login.css';
 export default function Login() {
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Logic xử lý đăng nhập 
+    
     alert('Login functionality is not implemented in this demo.');
   };
 
@@ -26,7 +26,7 @@ export default function Login() {
             <button type="submit" className="btn">Login</button>
           </form>
           <p className="signup-link">
-            Don't have an account? <Link to="/signup">Sign Up</Link>
+            Don't have an account? <Link to="/register">Register</Link>
           </p>
         </div>
       </div>

@@ -1,4 +1,3 @@
-// Mock data (in-memory)
 
 export const books = [
   {
@@ -8,6 +7,7 @@ export const books = [
     description: 'A Handbook of Agile Software Craftsmanship.',
     price: 205000,
     cover: '/images/books/1.jpg',
+    publisher: 'Nhà xuất bản Kim Đồng',
     createdAt: new Date('2024-06-01').toISOString()
   },
   {

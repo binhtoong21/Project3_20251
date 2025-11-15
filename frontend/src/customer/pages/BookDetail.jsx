@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getBook } from "../../shared/utils/booksService";
-import { formatPrice } from "../../shared/utils/formatters"; 
+import { formatPrice } from "../../shared/utils/formatters";
 import { useCartActions } from "../../shared/context/CartContext.jsx";
 import "./page.css";
 
@@ -10,7 +10,7 @@ export default function BookDetail() {
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [quantity, setQuantity] = useState(1); 
+  const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
   const [feedback, setFeedback] = useState("");
   const cartActions = useCartActions();
@@ -24,8 +24,8 @@ export default function BookDetail() {
         if (!mounted) return;
         setBook(data);
       } catch (err) {
-        console.error('Failed to load book:', err);
-        if (mounted) setError('Book not found');
+        console.error("Failed to load book:", err);
+        if (mounted) setError("Book not found");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -65,7 +65,7 @@ export default function BookDetail() {
   if (error || !book) {
     return (
       <div className="page">
-        <div className="container">{error || 'Book not found'}</div>
+        <div className="container">{error || "Book not found"}</div>
       </div>
     );
   }
@@ -88,6 +88,7 @@ export default function BookDetail() {
         <div className="detail-body">
           <h2>{book.title}</h2>
           <p className="author">by {book.author}</p>
+          <p className="publisher">NXB: {book.publisher}</p>
 
           {book.description && (
             <p className="description">{book.description}</p>
@@ -103,7 +104,11 @@ export default function BookDetail() {
             <button onClick={() => setQuantity((q) => q + 1)}>+</button>
           </div>
 
-          <button className="btn primary" onClick={handleAddToCart} disabled={adding}>
+          <button
+            className="btn primary"
+            onClick={handleAddToCart}
+            disabled={adding}
+          >
             {adding ? "Adding..." : "Add to cart"}
           </button>
           {feedback && <p className="cart-feedback">{feedback}</p>}

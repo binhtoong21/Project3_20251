@@ -1,9 +1,11 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { FaShoppingCart, FaUser, FaSearch } from "react-icons/fa";
 import "./header.css";
 
 export default function Header() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [isAccountDropdownVisible, setAccountDropdownVisible] = useState(false);
   const navigate = useNavigate();
 
   const handleSearch = (event) => {
@@ -35,15 +37,34 @@ export default function Header() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button type="submit">Search</button>
+            <button type="submit" aria-label="Search">
+              <FaSearch />
+            </button>
           </form>
         </div>
 
         <div className="header-right">
           <nav>
-            <NavLink to="/books">Books</NavLink>
-            <NavLink to="/cart">Cart</NavLink>
-            <NavLink to="/login">Login</NavLink>
+            <NavLink to="/cart" className="icon-link">
+              <FaShoppingCart />
+              <span>Cart</span>
+            </NavLink>
+            <div
+              className="account-menu"
+              onMouseEnter={() => setAccountDropdownVisible(true)}
+              onMouseLeave={() => setAccountDropdownVisible(false)}
+            >
+              <NavLink to="/account" className="icon-link">
+                <FaUser />
+                <span>Account</span>
+              </NavLink>
+              {isAccountDropdownVisible && (
+                <div className="account-dropdown">
+                  <Link to="/login">Login</Link>
+                  <Link to="/register">Register</Link>
+                </div>
+              )}
+            </div>
           </nav>
         </div>
       </div>

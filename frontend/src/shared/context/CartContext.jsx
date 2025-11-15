@@ -5,6 +5,33 @@ import { apiDelete, apiGet, apiPost, apiPut } from '../utils/apiClient';
 const CartStateContext = createContext(null);
 const CartDispatchContext = createContext(null);
 
+const CART_STORAGE_KEY = 'bookstore_cart';
+
+function saveCartToLocalStorage(cartState) {
+  try {
+    const serializedState = JSON.stringify({
+      items: cartState.items,
+      summary: cartState.summary
+    });
+    localStorage.setItem(CART_STORAGE_KEY, serializedState);
+  } catch (error) {
+    console.error("Failed to save cart to local storage:", error);
+  }
+}
+
+function loadCartFromLocalStorage() {
+  try {
+    const serializedState = localStorage.getItem(CART_STORAGE_KEY);
+    if (serializedState === null) {
+      return undefined; 
+    }
+    return JSON.parse(serializedState);
+  } catch (error) {
+    console.error("Failed to load cart from local storage:", error);
+    return undefined; 
+  }
+}
+
 const initialState = {
   items: [],
   summary: {
@@ -39,11 +66,24 @@ async function fetchCart(dispatch) {
 }
 
 export function CartProvider({ children }) {
-  const [state, dispatch] = useReducer(cartReducer, initialState);
+  
+  const [state, dispatch] = useReducer(cartReducer, initialState, (init) => {
+    const storedCart = loadCartFromLocalStorage();
+    return storedCart ? { ...init, items: storedCart.items, summary: storedCart.summary } : init;
+  });
 
+  
   useEffect(() => {
     fetchCart(dispatch);
   }, []);
+
+  
+  useEffect(() => {
+    if (state.status === 'idle') { 
+      saveCartToLocalStorage(state);
+    }
+  }, [state.items, state.summary, state.status]);
+
 
   const actions = useMemo(() => ({
     async refresh() {

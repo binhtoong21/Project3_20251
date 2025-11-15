@@ -7,7 +7,6 @@ export function list(req, res) {
 
   let result = [...books];
 
-  // Sort
   const sortKey = sort === 'price' || sort === 'createdAt' ? sort : undefined;
   const sortOrder = order === 'asc' ? 'asc' : order === 'desc' ? 'desc' : undefined;
   if (sortKey && sortOrder) {

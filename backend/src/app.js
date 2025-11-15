@@ -15,12 +15,10 @@ app.get('/health', (req, res) => {
 
 app.use('/api', router);
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: 'Not found' });
 });
 
-// Error handler
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(err.status || 500).json({ 
