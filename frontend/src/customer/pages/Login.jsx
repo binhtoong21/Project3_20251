@@ -16,13 +16,12 @@ export default function Login() {
           <h2>Login to Your Account</h2>
           <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
-              <label htmlFor="email">Email Address</label>
-              <input type="email" id="email" name="email" required />
+              <input type="email" id="email" name="email" required placeholder="Email"/>
             </div>
             <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input type="password" id="password" name="password" required />
+              <input type="password" id="password" name="password" required placeholder="Password"/>
             </div>
+            <a href="#" className="forgot-password">Forgot Password?</a>
             <button type="submit" className="btn">Login</button>
           </form>
           <p className="signup-link">

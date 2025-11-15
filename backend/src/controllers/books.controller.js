@@ -1,40 +1,44 @@
-import { books } from '../data/mock.js';
+import mongoose from 'mongoose';
+import Book from '../models/book.model.js';
 
-export function list(req, res) {
-  const { page = '1', limit = '20', sort, order } = req.query || {};
-  const pageNum = Math.max(1, Number(page) || 1);
-  const limitNum = Math.min(100, Math.max(1, Number(limit) || 20));
+export async function list(req, res, next) {
+  try {
+    const { page = '1', limit = '20', sort, order } = req.query || {};
+    const pageNum = Math.max(1, Number(page) || 1);
+    const limitNum = Math.min(100, Math.max(1, Number(limit) || 20));
+    const skip = (pageNum - 1) * limitNum;
 
-  let result = [...books];
+    const sortOptions = {};
+    const sortKey = sort === 'price' || sort === 'createdAt' ? sort : 'createdAt';
+    const sortOrder = order === 'asc' ? 1 : -1;
+    sortOptions[sortKey] = sortOrder;
 
-  const sortKey = sort === 'price' || sort === 'createdAt' ? sort : undefined;
-  const sortOrder = order === 'asc' ? 'asc' : order === 'desc' ? 'desc' : undefined;
-  if (sortKey && sortOrder) {
-    result.sort((a, b) => {
-      const va = a[sortKey];
-      const vb = b[sortKey];
-      let cmp = 0;
-      if (sortKey === 'createdAt') {
-        cmp = new Date(va) - new Date(vb);
-      } else {
-        cmp = (va || 0) - (vb || 0);
-      }
-      return sortOrder === 'desc' ? -cmp : cmp;
-    });
+    const total = await Book.countDocuments();
+    const items = await Book.find()
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
+
+    res.json({ items, page: pageNum, limit: limitNum, total });
+  } catch (err) {
+    next(err);
   }
-
-  const total = result.length;
-  const start = (pageNum - 1) * limitNum;
-  const items = result.slice(start, start + limitNum);
-
-  res.json({ items, page: pageNum, limit: limitNum, total });
 }
 
-export function getById(req, res) {
-  const id = Number(req.params.id);
-  const book = books.find(b => b.id === id);
-  if (!book) {
-    return res.status(404).json({ message: 'Book not found' });
+export async function getById(req, res, next) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid book ID format' });
+    }
+
+    const book = await Book.findById(id).lean();
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found' });
+    }
+    res.json(book);
+  } catch (err) {
+    next(err);
   }
-  res.json(book);
 }
