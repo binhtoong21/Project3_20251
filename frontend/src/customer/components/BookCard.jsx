@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import "./bookcard.css";
 import PropTypes from "prop-types";
-import { formatPrice } from "../../shared/utils/formatters"; 
+import { formatPrice } from "../../shared/utils/formatters";
 import { useCartActions } from "../../shared/context/CartContext.jsx";
 
 export default function BookCard({ book }) {
@@ -19,7 +19,7 @@ export default function BookCard({ book }) {
   const handleAdd = async () => {
     try {
       setAdding(true);
-      await cartActions.addItem(book.id, 1);
+      await cartActions.addItem(book._id, 1);
       setFeedback("Added to cart");
       setTimeout(() => setFeedback(""), 2000);
     } catch (err) {
@@ -33,21 +33,22 @@ export default function BookCard({ book }) {
 
   return (
     <article className="book-card">
-      <img
-        src={book.cover}
-        alt={book.title}
-        className="book-cover"
-        onError={handleError}
-      />
+      <Link to={`/books/${book._id}`}>
+        <img
+          src={book.cover}
+          alt={book.title}
+          className="book-cover"
+          onError={handleError}
+        />
+      </Link>
+
       <div className="book-body">
-        <div>
-          <h3>{book.title}</h3>
-        </div>
+        <Link to={`/books/${book._id}`} className="book-title">
+          {book.title}
+        </Link>
+
         <div>
           <p className="price">{formatPrice(book.price)}</p>
-          <Link to={`/books/${book.id}`} className="details">
-            Details
-          </Link>
           <button
             type="button"
             className="btn add-cart-btn"
@@ -65,7 +66,7 @@ export default function BookCard({ book }) {
 
 BookCard.propTypes = {
   book: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    _id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     cover: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     author: PropTypes.string.isRequired,

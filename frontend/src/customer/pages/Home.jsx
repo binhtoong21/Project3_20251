@@ -1,5 +1,6 @@
+import NewsLetter from "../components/NewsLetter";
 import BookSection from "../components/BookSection";
-import HeroSlider from "../components/HeroSlider"; 
+import HeroSlider from "../components/HeroSlider";
 import "./page.css";
 import { useState, useEffect } from "react";
 import { listBooks } from "../../shared/utils/booksService";
@@ -60,16 +61,17 @@ export default function Home() {
         books={saleBooks}
         link="/books?category=sale"
       />
-      <BookSection title="Sách Văn Học Nước Ngoài" 
-        books={featuredBooks} 
-        link="/books" 
+      <BookSection
+        title="Sách Văn Học Nước Ngoài"
+        books={featuredBooks}
+        link="/books"
       />
       <BookSection
         title="Sách Văn Học Trong Nước"
         books={newBooks}
         link="/books?category=new"
       />
-
+      <NewsLetter />
     </div>
   );
 }

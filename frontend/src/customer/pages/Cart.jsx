@@ -3,33 +3,24 @@ import { useCartActions, useCartState } from '../../shared/context/CartContext';
 import { formatPrice } from '../../shared/utils/formatters';
 
 export default function Cart() {
-  const { items, summary, status, error } = useCartState();
+  const { items, totalQuantity, subtotal, status, error } = useCartState();
   const { updateItem, removeItem } = useCartActions();
 
   const isLoading = status === 'loading' && items.length === 0;
   const isEmpty = !isLoading && items.length === 0;
 
-  const handleDecrease = (bookId, currentQty) => {
-    const next = currentQty - 1;
-    if (next <= 0) {
-      removeItem(bookId).catch(() => {});
-    } else {
-      updateItem(bookId, next).catch(() => {});
-    }
+  const handleDecrease = (itemId, currentQty) => {
+    updateItem(itemId, currentQty - 1).catch(() => {});
   };
 
-  const handleIncrease = (bookId, currentQty) => {
-    updateItem(bookId, currentQty + 1).catch(() => {});
+  const handleIncrease = (itemId, currentQty) => {
+    updateItem(itemId, currentQty + 1).catch(() => {});
   };
 
-  const handleManualChange = (bookId, value) => {
+  const handleManualChange = (itemId, value) => {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return;
-    if (parsed <= 0) {
-      removeItem(bookId).catch(() => {});
-    } else {
-      updateItem(bookId, Math.floor(parsed)).catch(() => {});
-    }
+    updateItem(itemId, Math.floor(parsed)).catch(() => {});
   };
 
   return (
@@ -47,7 +38,7 @@ export default function Cart() {
           <div className="cart-content">
             <div className="cart-items">
               {items.map((item) => (
-                <article className="cart-item" key={item.bookId}>
+                <article className="cart-item" key={item._id}>
                   <div className="cart-item-cover">
                     <img src={item.cover} alt={item.title} onError={(e) => {
                       e.currentTarget.src = `https://via.placeholder.com/80x110?text=${encodeURIComponent(item.title)}`;
@@ -59,20 +50,20 @@ export default function Cart() {
                     <div className="cart-quantity-controls">
                       <button
                         type="button"
-                        onClick={() => handleDecrease(item.bookId, item.quantity)}
+                        onClick={() => handleDecrease(item._id, item.quantity)}
                         aria-label={`Decrease quantity of ${item.title}`}
                       >
                         -
                       </button>
                       <input
                         type="number"
-                        min="1"
+                        min="0"
                         value={item.quantity}
-                        onChange={(e) => handleManualChange(item.bookId, e.target.value)}
+                        onChange={(e) => handleManualChange(item._id, e.target.value)}
                       />
                       <button
                         type="button"
-                        onClick={() => handleIncrease(item.bookId, item.quantity)}
+                        onClick={() => handleIncrease(item._id, item.quantity)}
                         aria-label={`Increase quantity of ${item.title}`}
                       >
                         +
@@ -83,7 +74,7 @@ export default function Cart() {
                     <button
                       type="button"
                       className="link-button"
-                      onClick={() => removeItem(item.bookId).catch(() => {})}
+                      onClick={() => removeItem(item._id).catch(() => {})}
                     >
                       Remove
                     </button>
@@ -97,11 +88,11 @@ export default function Cart() {
               <h3>Order Summary</h3>
               <div className="summary-row">
                 <span>Items</span>
-                <span>{summary.totalQuantity}</span>
+                <span>{totalQuantity}</span>
               </div>
               <div className="summary-row">
                 <span>Subtotal</span>
-                <span>{formatPrice(summary.subtotal)}</span>
+                <span>{formatPrice(subtotal)}</span>
               </div>
               <p className="summary-note">Shipping and taxes calculated at checkout.</p>
               <button type="button" className="btn primary" disabled>
@@ -113,4 +104,5 @@ export default function Cart() {
       </div>
     </div>
   );
-  }
+}
+

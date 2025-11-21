@@ -42,7 +42,7 @@ export default function BookDetail() {
     if (!book || adding) return;
     try {
       setAdding(true);
-      await cartActions.addItem(book.id, quantity);
+      await cartActions.addItem(book._id, quantity);
       setFeedback("Added to cart");
       setTimeout(() => setFeedback(""), 2500);
     } catch (err) {

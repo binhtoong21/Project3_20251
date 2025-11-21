@@ -1,58 +1,60 @@
 .book-card {
-	display: flex;
+  display: flex;
   padding: 1rem;
-	flex-direction: column;
-	gap: 0.75rem;
-	background: var(--bg-color-component); 
-	border-radius: 10px;
-	transition: transform 160ms ease, box-shadow 160ms ease;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--bg-color-component);
+  transition: transform 160ms ease, box-shadow 160ms ease;
 }
+
 .book-card:hover {
   transform: translateY(-5px);
-  box-shadow: var(--shadow-sm); 
+  box-shadow: var(--shadow-sm);
 }
-.book-cover { 
-  width: 100%; 
-  height: 200px; 
-  object-fit: cover; 
-  border-radius: 6px; 
-  flex-shrink: 0 
+
+.book-cover {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  flex-shrink: 0;
 }
-.book-body { 
-  display: flex; 
-  flex-direction: column; 
+
+.book-body {
+  display: flex;
+  flex-direction: column;
   justify-content: space-between;
   flex-grow: 1;
 }
-.book-body h3 { 
-  margin: 0 0 0.25rem; 
+
+.book-body .book-title {
+  margin: 0 0 0.25rem;
   font-size: 1.05rem;
   color: var(--text-color);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 150ms ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.book-body .author { 
-  margin: 0; 
-  color: var(--text-color-muted);
-  font-size: 0.9rem;
+
+.book-body .book-title:hover {
+  color: var(--accent-color);
 }
-.book-body .price { 
-  margin-top: 0.5rem; 
+
+.book-body .price {
+  margin-top: 0.5rem;
   font-weight: 700;
   color: var(--text-color);
 }
-.book-body .details { 
-  display: inline-block; 
-  margin-top: 0.75rem; 
-  color: var(--accent-color);
-  text-decoration: none; 
-  font-weight: 600 
-}
+
 .add-cart-btn {
   display: inline-block;
   margin-top: 0.75rem;
   width: 100%;
 }
 
-.book-body .details + .add-cart-btn {
+.book-body .add-cart-btn {
   margin-top: 0.5rem;
 }
 

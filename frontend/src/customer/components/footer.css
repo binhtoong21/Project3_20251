@@ -1,12 +1,11 @@
-.site-footer { 
-  padding: 1.5rem 0; 
+.site-footer {
+  padding: 1.5rem 0;
   color: var(--text-color-muted);
-  background: var(--section-bg-light); 
-  border-top: 1px solid var(--border-color); 
-  margin-top: 3rem; 
+  background: var(--section-bg-light);
+  border-top: 1px solid var(--border-color);
 }
-.site-footer .container { 
-  display: flex;  
+.site-footer .container {
+  display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 2rem;
@@ -14,7 +13,7 @@
 }
 
 .footer-col {
-  flex: 1 1 280px;  
+  flex: 1 1 280px;
 }
 
 .footer-col h3 {

@@ -10,11 +10,10 @@ const bookSchema = new mongoose.Schema(
     publisher: { type: String, trim: true },
   },
   {
-    timestamps: true, // Tự động thêm trường createdAt và updatedAt
+    timestamps: true, 
   }
 );
 
-// Tạo text index để hỗ trợ tìm kiếm sau này
 bookSchema.index({ title: 'text', author: 'text' });
 
 const Book = mongoose.model('Book', bookSchema);

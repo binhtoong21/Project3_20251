@@ -1,6 +1,6 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { FaShoppingCart, FaUser, FaSearch } from "react-icons/fa";
+import { FaShoppingCart, FaUser, FaSearch, FaBell } from "react-icons/fa";
 import "./header.css";
 
 export default function Header() {
@@ -45,6 +45,10 @@ export default function Header() {
 
         <div className="header-right">
           <nav>
+            <NavLink to="/account" className="icon-link">
+              <FaBell />
+              <span>Notifications</span>
+            </NavLink>
             <NavLink to="/cart" className="icon-link">
               <FaShoppingCart />
               <span>Cart</span>

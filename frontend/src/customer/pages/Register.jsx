@@ -16,6 +16,9 @@ export default function Register() {
           <h2>Register to Your Account</h2>
           <form onSubmit={handleSubmit} className="register-form">
             <div className="form-group">
+              <input type="text" id="Name" name="Name" required placeholder="Your Name"/>
+            </div>
+            <div className="form-group">
               <input type="email" id="email" name="email" required placeholder="Email"/>
             </div>
             <div className="form-group">
