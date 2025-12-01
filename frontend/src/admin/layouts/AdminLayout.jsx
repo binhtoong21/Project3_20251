@@ -1,10 +1,11 @@
 import React from 'react'
+import { Outlet } from 'react-router-dom';
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout() {
   return (
     <div className="admin-layout">
       <main className="admin-main">
-        {children}
+        <Outlet />
       </main>
     </div>
   )

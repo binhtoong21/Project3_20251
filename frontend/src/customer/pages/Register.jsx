@@ -1,12 +1,37 @@
-import { Link } from 'react-router-dom';
-import './page.css';
-import './register.css';
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useAuth } from "../../shared/context/AuthContext";
+import { apiPost } from "../../shared/utils/apiClient";
+import "./page.css";
+import "./register.css";
 
 export default function Register() {
-  const handleSubmit = (event) => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const { handleAuthSuccess } = useAuth();
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    
-    alert('register functionality is not implemented in this demo.');
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    setError("");
+    try {
+      const data = await apiPost("/users/register", {
+        name,
+        email,
+        password,
+      });
+      handleAuthSuccess(data);
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Registration failed. Please try again.");
+    }
   };
 
   return (
@@ -16,22 +41,57 @@ export default function Register() {
           <h2>Register to Your Account</h2>
           <form onSubmit={handleSubmit} className="register-form">
             <div className="form-group">
-              <input type="text" id="Name" name="Name" required placeholder="Your Name"/>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                required
+                placeholder="Your Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </div>
             <div className="form-group">
-              <input type="email" id="email" name="email" required placeholder="Email"/>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <div className="form-group">
-              <input type="password" id="password" name="password" required placeholder="Password"/>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
             <div className="form-group">
-              <input type="password" id="password" name="password" required placeholder="Confirm Password"/>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                required
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
             </div>
+            {error && <p className="error-message">{error}</p>}
             <div className="checkbox">
-              <input type="checkbox" id="terms" name="terms" required/>
+              <input type="checkbox" id="terms" name="terms" required />
               <label htmlFor="terms">I agree to the terms and conditions</label>
             </div>
-            <button type="submit" className="btn">Register</button>
+            <button type="submit" className="btn">
+              Register
+            </button>
           </form>
           <p className="register-link">
             Already have an account? <Link to="/login">Login</Link>
@@ -40,4 +100,4 @@ export default function Register() {
       </div>
     </div>
   );
-} 
+}

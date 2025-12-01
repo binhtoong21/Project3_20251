@@ -7,6 +7,7 @@ import {
 } from "react";
 import PropTypes from "prop-types";
 import { apiDelete, apiGet, apiPost, apiPut } from "../utils/apiClient";
+import { useAuth } from "./AuthContext";
 
 const CartStateContext = createContext(null);
 const CartDispatchContext = createContext(null);
@@ -53,16 +54,18 @@ async function fetchCart(dispatch) {
 
 export function CartProvider({ children }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    fetchCart(dispatch);
-  }, []);
+    if (isAuthenticated) {
+      fetchCart(dispatch);
+    } else {
+      dispatch({ type: "REQUEST_SUCCESS", payload: initialState });
+    }
+  }, [isAuthenticated]);
 
   const actions = useMemo(
     () => ({
-      async refresh() {
-        await fetchCart(dispatch);
-      },
       async addItem(bookId, quantity = 1) {
         dispatch({ type: "REQUEST_START" });
         try {

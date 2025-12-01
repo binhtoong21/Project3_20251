@@ -2,17 +2,23 @@ import mongoose from "mongoose";
 import Cart from "../models/cart.model.js";
 import Book from "../models/book.model.js";
 
-async function getGuestCart() {
-  const cart = await Cart.findOne({ sessionId: "guest" }).populate(
-    "items.book"
+async function getOrCreateUserCart(userId) {
+  const cart = await Cart.findOneAndUpdate(
+    { user: userId },
+    { $setOnInsert: { user: userId, items: [] } },
+    {
+      new: true,
+      upsert: true,
+      setDefaultsOnInsert: true,
+    }
   );
-  if (cart) return cart;
-  return Cart.create({ sessionId: "guest", items: [] });
+  return cart;
 }
 
 export async function list(req, res, next) {
   try {
-    const cart = await getGuestCart();
+    const cart = await getOrCreateUserCart(req.user._id);
+    await cart.populate("items.book");
     res.json(cart);
   } catch (err) {
     next(err);
@@ -35,7 +41,7 @@ export async function add(req, res, next) {
 
     const [book, cart] = await Promise.all([
       Book.findById(bookId).lean(),
-      getGuestCart(),
+      getOrCreateUserCart(req.user._id),
     ]);
 
     if (!book) {
@@ -57,7 +63,7 @@ export async function add(req, res, next) {
     }
 
     await cart.save();
-    const updatedCart = await getGuestCart();
+    const updatedCart = await Cart.findById(cart._id).populate("items.book");
     res.status(200).json(updatedCart);
   } catch (err) {
     next(err);
@@ -65,8 +71,8 @@ export async function add(req, res, next) {
 }
 
 export async function updateQuantity(req, res, next) {
-    try {
-      const { id } = req.params; 
+  try {
+    const { id } = req.params;
     const { quantity } = req.body;
     const qty = Math.floor(Number(quantity));
 
@@ -77,7 +83,7 @@ export async function updateQuantity(req, res, next) {
       return res.status(400).json({ message: "Quantity must be an integer" });
     }
 
-    const cart = await getGuestCart();
+    const cart = await getOrCreateUserCart(req.user._id);
     const item = cart.items.id(id);
 
     if (!item) {
@@ -91,7 +97,7 @@ export async function updateQuantity(req, res, next) {
     }
 
     await cart.save();
-    const updatedCart = await getGuestCart();
+    const updatedCart = await Cart.findById(cart._id).populate("items.book");
     res.status(200).json(updatedCart);
   } catch (err) {
     next(err);
@@ -105,17 +111,18 @@ export async function remove(req, res, next) {
       return res.status(400).json({ message: "Invalid cart item ID format" });
     }
 
-    const cart = await getGuestCart();
+    const cart = await getOrCreateUserCart(req.user._id);
     const item = cart.items.id(id);
 
     if (!item) {
-      return res.status(200).json(cart);
+      const populatedCart = await cart.populate('items.book');
+      return res.status(200).json(populatedCart);
     }
 
     item.deleteOne();
     await cart.save();
 
-    const updatedCart = await getGuestCart();
+    const updatedCart = await Cart.findById(cart._id).populate("items.book");
     res.status(200).json(updatedCart);
   } catch (err) {
     next(err);

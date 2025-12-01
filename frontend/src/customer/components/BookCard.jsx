@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { FaShoppingCart } from "react-icons/fa";
 import "./bookcard.css";
 import PropTypes from "prop-types";
 import { formatPrice } from "../../shared/utils/formatters";
@@ -33,7 +34,7 @@ export default function BookCard({ book }) {
 
   return (
     <article className="book-card">
-      <Link to={`/books/${book._id}`}>
+      <Link to={`/books/${book._id}`} className="book-cover-link">
         <img
           src={book.cover}
           alt={book.title}
@@ -47,18 +48,25 @@ export default function BookCard({ book }) {
           {book.title}
         </Link>
 
-        <div>
+        <div className="book-footer">
           <p className="price">{formatPrice(book.price)}</p>
           <button
             type="button"
-            className="btn add-cart-btn"
+            className="add-cart-icon-btn"
             onClick={handleAdd}
             disabled={adding}
+            aria-label="Add to cart"
+            title="Add to cart"
           >
-            {adding ? "Adding..." : "Add to cart"}
+            <FaShoppingCart />
           </button>
-          {feedback && <p className="cart-feedback">{feedback}</p>}
         </div>
+        
+        {feedback && (
+          <p className={`cart-feedback ${feedback.includes("Failed") ? "error" : "success"}`}>
+            {feedback}
+          </p>
+        )}
       </div>
     </article>
   );

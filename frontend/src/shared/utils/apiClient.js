@@ -10,9 +10,17 @@ function buildQuery(params = {}) {
   return qs ? `?${qs}` : '';
 }
 
+const getAuthHeader = () => {
+  const userInfo = localStorage.getItem('userInfo');
+  if (userInfo) {
+    return { 'Authorization': `Bearer ${JSON.parse(userInfo).token}` };
+  }
+  return {};
+};
+
 export async function apiGet(path, params) {
   const res = await fetch(`${base}${path}${buildQuery(params)}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     credentials: 'include'
   });
   if (!res.ok) throw new Error(`Request failed ${res.status}`);
@@ -22,7 +30,7 @@ export async function apiGet(path, params) {
 export async function apiPost(path, body) {
   const res = await fetch(`${base}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     credentials: 'include',
     body: JSON.stringify(body ?? {})
   });
@@ -33,7 +41,7 @@ export async function apiPost(path, body) {
 export async function apiPut(path, body) {
   const res = await fetch(`${base}${path}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     credentials: 'include',
     body: JSON.stringify(body ?? {})
   });
@@ -44,7 +52,7 @@ export async function apiPut(path, body) {
 export async function apiDelete(path) {
   const res = await fetch(`${base}${path}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     credentials: 'include'
   });
   if (!res.ok && res.status !== 204) throw new Error(`Request failed ${res.status}`);
