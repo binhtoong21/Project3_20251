@@ -41,7 +41,6 @@ Frontend sẽ chạy tại `http://localhost:5173`
 - Responsive design
 
 ## Ghi Chú
-
-- Dữ liệu lưu trong memory (sẽ mất khi restart server)
+- Database: sử dụng mongoDb và Docker
 - Chưa có authentication
-- Chưa có database
+
