@@ -8,7 +8,7 @@
 
 **Frontend:** React 19 + Vite + React Router  
 **Backend:** Node.js + Express  
-**Data:** In-memory storage (demo)
+**Database:** MongoDB
 
 ## Cài Đặt
 
@@ -39,8 +39,7 @@ Frontend sẽ chạy tại `http://localhost:5173`
 - Xem chi tiết sách
 - Pagination và sorting
 - Responsive design
+- Xác thực và phân quyền người dùng (Admin, Customer)
 
-## Ghi Chú
-- Database: sử dụng mongoDb và Docker
-- Chưa có authentication
+
 
