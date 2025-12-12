@@ -15,6 +15,8 @@ import { CartProvider } from "./shared/context/CartContext";
 
 function App() {
   return (
+    <AuthProvider>
+      <CartProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<CustomerLayout />}>
@@ -33,6 +35,8 @@ function App() {
             </Route>
           </Routes>
         </BrowserRouter>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

@@ -1,80 +1,91 @@
-import {
+import React, {
   createContext,
-  useContext,
   useState,
   useEffect,
   useCallback,
+  useContext,
 } from "react";
-import PropTypes from 'prop-types';
-import { apiPost } from "../utils/apiClient";
+import apiClient from "../utils/apiClient";
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [userInfo, setUserInfo] = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const handleAuthSuccess = useCallback((authData) => {
+    localStorage.setItem("userData", JSON.stringify({ token: authData.token }));
+    const userData = {
+      _id: authData.userId || authData._id,
+      name: authData.name,
+      email: authData.email,
+      role: authData.role,
+    };
+    setUser(userData);
+    return userData;
+  }, []);
+
+  const fetchUserProfile = useCallback(async () => {
     try {
-      const storedUserInfo = localStorage.getItem("userInfo");
-      if (storedUserInfo) {
-        setUserInfo(JSON.parse(storedUserInfo));
+      const storedData = JSON.parse(localStorage.getItem("userData"));
+      if (storedData && storedData.token) {
+        // apiClient handles the token automatically, no need for headers
+        const profile = await apiClient.get("/users/profile");
+        setUser(profile);
+      } else {
+        setUser(null);
       }
     } catch (error) {
-      console.error("Failed to parse userInfo from localStorage", error);
-      localStorage.removeItem("userInfo");
+      console.error("Failed to fetch user profile", error);
+      localStorage.removeItem("userData");
+      setUser(null);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const handleAuthSuccess = useCallback((data) => {
-    localStorage.setItem("userInfo", JSON.stringify(data));
-    setUserInfo(data);
-  }, []);
+  useEffect(() => {
+    fetchUserProfile();
+  }, [fetchUserProfile]);
 
-  const login = useCallback(
-    async (email, password) => {
-      try {
-        const data = await apiPost("/users/login", { email, password });
-        handleAuthSuccess(data);
-        return data;
-      } catch (err) {
-        localStorage.removeItem("userInfo");
-        setUserInfo(null);
-        throw err;
-      }
-    },
-    [handleAuthSuccess]
-  );
+  const login = async (email, password) => {
+    try {
+      const data = await apiClient.post("/users/login", { email, password });
+      return handleAuthSuccess(data);
+    } catch (err) {
+      localStorage.removeItem("userData");
+      setUser(null);
+      throw err;
+    }
+  };
 
   const logout = useCallback(() => {
-    localStorage.removeItem("userInfo");
-    setUserInfo(null);
+    localStorage.removeItem("userData");
+    setUser(null);
+    setLoading(false);
   }, []);
 
   const authValue = {
-    userInfo,
+    user,
+    setUser,
     login,
     logout,
-    handleAuthSuccess,
-    isAuthenticated: !!userInfo,
+    handleAuthSuccess, // Expose the new handler
+    isAuthenticated: !!user,
     loading,
   };
 
   return (
-    <AuthContext.Provider value={authValue}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={authValue}>
+      {!loading && children}
+    </AuthContext.Provider>
   );
 }
 
-AuthProvider.propTypes = {
-  children: PropTypes.node,
-};
-
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === null) {
+  if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-}
+};

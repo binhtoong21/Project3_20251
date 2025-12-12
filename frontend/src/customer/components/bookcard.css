@@ -1,6 +1,6 @@
 .book-card {
   display: flex;
-  padding: 1rem;
+  padding: 0.5rem;
   flex-direction: column;
   gap: 0.75rem;
   background: var(--bg-color-component);
@@ -35,7 +35,6 @@
 .book-body {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   flex-grow: 1;
 }
 
@@ -49,8 +48,8 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  line-height: 1.4;
-  min-height: 2.8em; 
+  line-height: 1;
+  min-height: 2.8em;
 }
 
 .book-body .book-title:hover {
@@ -61,8 +60,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: auto;
-  gap: 0.5rem;
 }
 
 .book-body .price {
@@ -146,27 +143,27 @@
   .book-card {
     padding: 0.75rem;
   }
-  
+
   .book-cover {
     height: 200px;
   }
-  
-.book-body .book-title {
-  font-size: 1rem;
-  color: var(--text-color);
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 0.2s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.4;
-}
-  
+
+  .book-body .book-title {
+    font-size: 1rem;
+    color: var(--text-color);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1;
+  }
+
   .book-body .price {
     font-size: 1rem;
   }
-  
+
   .add-cart-icon-btn {
     width: 36px;
     height: 36px;

@@ -1,0 +1,64 @@
+.account-page {
+  display: flex;
+  padding: 2rem;
+  gap: 2rem;
+  min-height: 70vh;
+}
+
+.account-sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  background-color: var(--white); /* Changed to white */
+  padding: 1.5rem;
+  height: fit-content;
+}
+
+.account-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.account-sidebar li {
+  margin-bottom: 0.2rem;
+  padding: 1rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--dark-text); /* Changed to dark text */
+  transition: background-color 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.account-sidebar li:hover,
+.account-sidebar li.active {
+  background-color: var(--primary-color);
+  color: var(--white); /* Changed to white */
+}
+
+.account-sidebar li.logout {
+  margin-top: 1rem;
+  color: var(--danger-color);
+}
+
+.account-sidebar li.logout:hover {
+  background-color: var(--danger-color);
+  color: var(--white);
+}
+
+.account-content {
+  flex-grow: 1;
+  padding: 2rem;
+  background-color: var(--white); /* Ensured white */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.account-content h2 {
+  margin-top: 0;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--primary-blue); /* Changed to primary blue */
+  padding-bottom: 1rem;
+}

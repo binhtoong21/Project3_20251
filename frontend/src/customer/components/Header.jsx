@@ -11,7 +11,7 @@ export default function Header() {
   const [isAccountDropdownVisible, setAccountDropdownVisible] = useState(false);
   const navigate = useNavigate();
 
-  const { userInfo, logout } = useAuth();
+  const { user, logout } = useAuth();
   const { totalQuantity } = useCartState();
 
   const handleSearch = (event) => {
@@ -62,7 +62,7 @@ export default function Header() {
                <span>Tủ sách</span>
             </NavLink>
 
-            {userInfo ? (
+            {user ? (
               <>
                 <NavLink to="/notifications" className="icon-link">
                   <FaBell />
@@ -80,7 +80,7 @@ export default function Header() {
                 >
                   <NavLink to="/account" className="icon-link">
                     <FaUser />
-                    <span>{userInfo.name}</span>
+                    <span>{user.name}</span>
                   </NavLink>
                   {isAccountDropdownVisible && (
                     <div className="account-dropdown">

@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../shared/context/AuthContext";
-import { apiPost } from "../../shared/utils/apiClient";
+import apiClient from "../../shared/utils/apiClient";
 import "./page.css";
 import "./register.css";
 
@@ -12,7 +12,14 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { handleAuthSuccess } = useAuth();
+  const { handleAuthSuccess, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    // If user is already logged in, redirect them.
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -22,11 +29,12 @@ export default function Register() {
     }
     setError("");
     try {
-      const data = await apiPost("/users/register", {
+      const data = await apiClient.post("/users/register", {
         name,
         email,
         password,
       });
+      // Directly handle the successful registration response
       handleAuthSuccess(data);
       navigate("/");
     } catch (err) {

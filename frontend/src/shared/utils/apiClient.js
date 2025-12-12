@@ -1,64 +1,53 @@
-const base = import.meta.env.VITE_API_BASE || '/api';
+const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
-function buildQuery(params = {}) {
-  const usp = new URLSearchParams();
-  Object.entries(params).forEach(([k, v]) => {
-    if (v === undefined || v === null || v === '') return;
-    usp.set(k, String(v));
-  });
-  const qs = usp.toString();
-  return qs ? `?${qs}` : '';
-}
-
-const getAuthHeader = () => {
-  const userInfo = localStorage.getItem('userInfo');
-  if (userInfo) {
-    return { 'Authorization': `Bearer ${JSON.parse(userInfo).token}` };
-  }
-  return {};
+const getAuthToken = () => {
+    const userData = localStorage.getItem("userData");
+    return userData ? JSON.parse(userData).token : null;
 };
 
-export async function apiGet(path, params) {
-  const res = await fetch(`${base}${path}${buildQuery(params)}`, {
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-    credentials: 'include'
-  });
-  if (!res.ok) throw new Error(`Request failed ${res.status}`);
-  return res.json();
-}
+const request = async (method, endpoint, { body, ...customConfig } = {}) => {
+    const token = getAuthToken();
+    const headers = { "Content-Type": "application/json" };
 
-export async function apiPost(path, body) {
-  const res = await fetch(`${base}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-    credentials: 'include',
-    body: JSON.stringify(body ?? {})
-  });
-  if (!res.ok) throw new Error(`Request failed ${res.status}`);
-  return res.json();
-}
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
 
-export async function apiPut(path, body) {
-  const res = await fetch(`${base}${path}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-    credentials: 'include',
-    body: JSON.stringify(body ?? {})
-  });
-  if (!res.ok) throw new Error(`Request failed ${res.status}`);
-  return res.json();
-}
+    const config = {
+        method,
+        ...customConfig,
+        headers: {
+            ...headers,
+            ...customConfig.headers,
+        },
+    };
 
-export async function apiDelete(path) {
-  const res = await fetch(`${base}${path}`, {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-    credentials: 'include'
-  });
-  if (!res.ok && res.status !== 204) throw new Error(`Request failed ${res.status}`);
-  try { return await res.json(); } catch { return null; }
-}
+    if (body) {
+        config.body = JSON.stringify(body);
+    }
 
-export function buildQueryString(params) {
-  return buildQuery(params);
-}
+    try {
+        const response = await fetch(`${BASE_URL}${endpoint}`, config);
+        const data = await response.json();
+
+        if (!response.ok) {
+            const error = new Error(data.message || "Something went wrong");
+            error.status = response.status;
+            throw error;
+        }
+
+        return data;
+    } catch (error) {
+        // console.error(error);
+        throw error;
+    }
+};
+
+const apiClient = {
+    get: (endpoint, config) => request("GET", endpoint, config),
+    post: (endpoint, body, config) => request("POST", endpoint, { ...config, body }),
+    put: (endpoint, body, config) => request("PUT", endpoint, { ...config, body }),
+    delete: (endpoint, config) => request("DELETE", endpoint, config),
+};
+
+export default apiClient;

@@ -6,7 +6,12 @@ const router = Router();
 
 router.post("/register", usersCtrl.register);
 router.post("/login", usersCtrl.login);
-router.get("/profile", protect, usersCtrl.getProfile);
+router
+  .route("/profile")
+  .get(protect, usersCtrl.getProfile)
+  .put(protect, usersCtrl.updateProfile);
+router.put("/profile/address", protect, usersCtrl.updateAddress);
+
 router.get("/", protect, admin, usersCtrl.getUsers);
 
 export default router;

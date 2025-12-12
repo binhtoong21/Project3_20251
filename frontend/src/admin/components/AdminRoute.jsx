@@ -2,13 +2,13 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../../shared/context/AuthContext";
 
 const AdminRoute = () => {
-  const { userInfo, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  return userInfo && userInfo.role === "admin" ? (
+  return user && user.role === "admin" ? (
     <Outlet />
   ) : (
     <Navigate to="/login" replace />

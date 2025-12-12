@@ -253,12 +253,28 @@ const usersData = [
     email: "admin@example.com",
     password: "123456",
     role: "admin",
+    phone: "",
+    address: {
+      street: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: "Việt Nam",
+    },
   },
   {
     name: "John Doe",
     email: "john@example.com",
     password: "123456",
     role: "customer",
+    phone: "0987654321",
+    address: {
+      street: "123 Đường ABC",
+      city: "Thành phố Hồ Chí Minh",
+      state: "Thành phố Hồ Chí Minh",
+      postalCode: "700000",
+      country: "Việt Nam",
+    },
   },
 ];
 

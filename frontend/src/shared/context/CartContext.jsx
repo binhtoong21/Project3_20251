@@ -6,7 +6,7 @@ import {
   useReducer,
 } from "react";
 import PropTypes from "prop-types";
-import { apiDelete, apiGet, apiPost, apiPut } from "../utils/apiClient";
+import apiClient from "../utils/apiClient";
 import { useAuth } from "./AuthContext";
 
 const CartStateContext = createContext(null);
@@ -42,7 +42,7 @@ function cartReducer(state, action) {
 async function fetchCart(dispatch) {
   dispatch({ type: "REQUEST_START" });
   try {
-    const data = await apiGet("/cart");
+    const data = await apiClient.get("/cart");
     dispatch({ type: "REQUEST_SUCCESS", payload: data });
   } catch (err) {
     dispatch({
@@ -69,7 +69,7 @@ export function CartProvider({ children }) {
       async addItem(bookId, quantity = 1) {
         dispatch({ type: "REQUEST_START" });
         try {
-          const data = await apiPost("/cart/add", { bookId, quantity });
+          const data = await apiClient.post("/cart/add", { bookId, quantity });
           dispatch({ type: "REQUEST_SUCCESS", payload: data });
         } catch (err) {
           dispatch({
@@ -82,7 +82,7 @@ export function CartProvider({ children }) {
       async updateItem(itemId, quantity) {
         dispatch({ type: "REQUEST_START" });
         try {
-          const data = await apiPut(`/cart/${itemId}`, { quantity });
+          const data = await apiClient.put(`/cart/${itemId}`, { quantity });
           dispatch({ type: "REQUEST_SUCCESS", payload: data });
         } catch (err) {
           dispatch({
@@ -95,7 +95,7 @@ export function CartProvider({ children }) {
       async removeItem(itemId) {
         dispatch({ type: "REQUEST_START" });
         try {
-          const data = await apiDelete(`/cart/${itemId}`);
+          const data = await apiClient.delete(`/cart/${itemId}`);
           dispatch({ type: "REQUEST_SUCCESS", payload: data });
         } catch (err) {
           dispatch({

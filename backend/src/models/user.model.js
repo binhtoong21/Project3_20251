@@ -21,6 +21,17 @@ const userSchema = new Schema(
       enum: ["customer", "admin"],
       default: "customer",
     },
+    phone: {
+      type: String,
+      default: "",
+    },
+    address: {
+      street: { type: String, default: "" },
+      city: { type: String, default: "" },
+      state: { type: String, default: "" },
+      postalCode: { type: String, default: "" },
+      country: { type: String, default: "Việt Nam" },
+    },
   },
   {
     timestamps: true,

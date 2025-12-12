@@ -9,6 +9,18 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* New Color Palette: Blue, White, Black */
+  --primary-blue: hsl(210, 80%, 40%); /* A strong blue */
+  --accent-blue: hsl(210, 80%, 55%); /* Lighter blue for hover/active */
+  --dark-text: #1a1a1a;
+  --light-background: #f8f8f8;
+  --white: #ffffff;
+  --danger-color: #dc3545; /* Keep danger color consistent */
+
+  /* Map existing primary colors to new blue palette */
+  --primary-color: var(--primary-blue);
+  --primary-color-dark: var(--accent-blue); /* Use accent blue for dark variation */
 }
 
 *,
@@ -27,7 +39,8 @@ p {
 }
 
 body {
-
+  color: var(--dark-text); /* Apply dark text globally */
+  background-color: var(--white); /* Apply white background globally */
 }
 
 img,
