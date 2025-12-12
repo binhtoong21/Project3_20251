@@ -1,9 +1,10 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { FaShoppingCart, FaUser, FaSearch, FaBell } from "react-icons/fa";
+import { FaShoppingCart, FaUser, FaSearch, FaBell, FaBook } from "react-icons/fa"; // Thêm icon FaBook
 import { useAuth } from "../../shared/context/AuthContext";
 import { useCartState } from "../../shared/context/CartContext";
 import "./header.css";
+import Notification from "./Notifications";
 
 export default function Header() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,8 +17,9 @@ export default function Header() {
   const handleSearch = (event) => {
     event.preventDefault();
     if (searchTerm.trim()) {
+      // Điều hướng sang trang Books kèm query params search
       navigate(`/books?search=${encodeURIComponent(searchTerm.trim())}`);
-      setSearchTerm("");
+ 
     }
   };
 
@@ -42,7 +44,7 @@ export default function Header() {
             <input
               type="search"
               name="search"
-              placeholder="Search for books, authors..."
+              placeholder="Tìm sách, tác giả..."
               aria-label="Search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -55,16 +57,21 @@ export default function Header() {
 
         <div className="header-right">
           <nav>
+            <NavLink to="/books" className="icon-link">
+               <FaBook />
+               <span>Tủ sách</span>
+            </NavLink>
+
             {userInfo ? (
               <>
                 <NavLink to="/notifications" className="icon-link">
                   <FaBell />
-                  <span>Notifications</span>
+                  <span>Thông báo</span>
                 </NavLink>
                 <NavLink to="/cart" className="icon-link">
                   <FaShoppingCart />
                   {totalQuantity > 0 && <span className="cart-badge">{totalQuantity}</span>}
-                  <span>Cart</span>
+                  <span>Giỏ hàng</span>
                 </NavLink>
                 <div
                   className="account-menu"
@@ -77,9 +84,9 @@ export default function Header() {
                   </NavLink>
                   {isAccountDropdownVisible && (
                     <div className="account-dropdown">
-                      <Link to="/account">Profile</Link>
+                      <Link to="/account">Hồ sơ</Link>
                       <button onClick={logoutHandler} className="logout-button">
-                        Logout
+                        Đăng xuất
                       </button>
                     </div>
                   )}
@@ -93,12 +100,12 @@ export default function Header() {
               >
                 <NavLink to="/login" className="icon-link">
                   <FaUser />
-                  <span>Account</span>
+                  <span>Tài khoản</span>
                 </NavLink>
                 {isAccountDropdownVisible && (
                   <div className="account-dropdown">
-                    <Link to="/login">Login</Link>
-                    <Link to="/register">Register</Link>
+                    <Link to="/login">Đăng nhập</Link>
+                    <Link to="/register">Đăng ký</Link>
                   </div>
                 )}
               </div>

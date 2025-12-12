@@ -10,22 +10,31 @@ export default function BookCard({ book }) {
   const placeholder = `https://via.placeholder.com/160x240?text=${encodeURIComponent(
     book.title
   )}`;
+
   const handleError = (e) => {
     e.currentTarget.src = placeholder;
   };
+
   const cartActions = useCartActions();
   const [adding, setAdding] = useState(false);
   const [feedback, setFeedback] = useState("");
 
-  const handleAdd = async () => {
+  // Tính toán giảm giá
+  const isSale = book.oldPrice && book.oldPrice > book.price;
+  const discountPercent = isSale
+    ? Math.round(((book.oldPrice - book.price) / book.oldPrice) * 100)
+    : 0;
+
+  const handleAdd = async (e) => {
+    e.preventDefault(); // Ngăn chặn click lan ra Link bao ngoài
     try {
       setAdding(true);
       await cartActions.addItem(book._id, 1);
-      setFeedback("Added to cart");
+      setFeedback("Added!");
       setTimeout(() => setFeedback(""), 2000);
     } catch (err) {
       console.error("Failed to add to cart", err);
-      setFeedback("Failed to add");
+      setFeedback("Failed");
       setTimeout(() => setFeedback(""), 2000);
     } finally {
       setAdding(false);
@@ -33,7 +42,27 @@ export default function BookCard({ book }) {
   };
 
   return (
-    <article className="book-card">
+    <article className="book-card" style={{ position: "relative" }}>
+      {isSale && (
+        <div
+          style={{
+            position: "absolute",
+            top: "10px",
+            right: "10px",
+            backgroundColor: "#ff3b30",
+            color: "white",
+            padding: "4px 8px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontWeight: "bold",
+            zIndex: 10,
+            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+          }}
+        >
+          -{discountPercent}%
+        </div>
+      )}
+
       <Link to={`/books/${book._id}`} className="book-cover-link">
         <img
           src={book.cover}
@@ -49,7 +78,28 @@ export default function BookCard({ book }) {
         </Link>
 
         <div className="book-footer">
-          <p className="price">{formatPrice(book.price)}</p>
+          <div className="price-container">
+            <span
+              className="price"
+              style={{ color: "#d32f2f", fontWeight: "bold" }}
+            >
+              {formatPrice(book.price)}
+            </span>
+            {isSale && (
+              <span
+                className="old-price"
+                style={{
+                  textDecoration: "line-through",
+                  color: "#999",
+                  fontSize: "0.9em",
+                  marginLeft: "8px",
+                }}
+              >
+                {formatPrice(book.oldPrice)}
+              </span>
+            )}
+          </div>
+
           <button
             type="button"
             className="add-cart-icon-btn"
@@ -61,9 +111,13 @@ export default function BookCard({ book }) {
             <FaShoppingCart />
           </button>
         </div>
-        
+
         {feedback && (
-          <p className={`cart-feedback ${feedback.includes("Failed") ? "error" : "success"}`}>
+          <p
+            className={`cart-feedback ${
+              feedback.includes("Failed") ? "error" : "success"
+            }`}
+          >
             {feedback}
           </p>
         )}
@@ -79,5 +133,6 @@ BookCard.propTypes = {
     title: PropTypes.string.isRequired,
     author: PropTypes.string.isRequired,
     price: PropTypes.number.isRequired,
+    oldPrice: PropTypes.number,
   }).isRequired,
 };

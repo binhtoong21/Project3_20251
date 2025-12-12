@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import BookCard from "./BookCard";
-import PropTypes from "prop-types"; 
+import PropTypes from "prop-types";
 import "./booksection.css";
 
 export default function BookSection({ title, books, link }) {
@@ -16,7 +16,7 @@ export default function BookSection({ title, books, link }) {
 
         <div className="grid">
           {books.map((book) => (
-            <BookCard key={book.id} book={book} />
+            <BookCard key={book._id} book={book} />
           ))}
         </div>
       </div>
@@ -25,7 +25,7 @@ export default function BookSection({ title, books, link }) {
 }
 
 BookSection.propTypes = {
-  title: PropTypes.string.isRequired, 
-  books: PropTypes.array.isRequired, 
-  link: PropTypes.string.isRequired, 
+  title: PropTypes.string.isRequired,
+  books: PropTypes.array.isRequired,
+  link: PropTypes.string.isRequired,
 };

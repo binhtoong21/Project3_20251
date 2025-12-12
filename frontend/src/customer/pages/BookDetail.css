@@ -1,0 +1,132 @@
+.book-detail {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 40px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.detail-cover-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.detail-cover {
+  width: 100%;
+  max-width: 350px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.detail-body h2 {
+  font-size: 2.5rem;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.detail-body .author {
+  font-size: 1.2rem;
+  color: #555;
+  margin-top: 0;
+}
+
+.detail-body .price {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin: 20px 0;
+}
+
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.quantity-selector button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.quantity-selector input {
+  width: 60px;
+  height: 40px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-left: none;
+  border-right: none;
+  font-size: 1.2rem;
+}
+
+.cart-feedback {
+  margin-top: 15px;
+  color: green;
+  font-weight: bold;
+}
+
+/* New Styles */
+.book-content-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.book-content-section h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.book-description p {
+  line-height: 1.7;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.detail-info-grid {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 0;
+}
+
+.info-label,
+.info-value {
+  padding: 12px 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-label {
+  font-weight: bold;
+  background-color: #f9f9f9;
+}
+
+/* Alternating row colors */
+.detail-info-grid > .info-label:nth-of-type(4n-3),
+.detail-info-grid > .info-value:nth-of-type(4n-2) {
+  background-color: #ffffff;
+}
+.detail-info-grid > .info-label:nth-of-type(4n-1),
+.detail-info-grid > .info-value:nth-of-type(4n) {
+  background-color: #f9f9f9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .book-detail {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .detail-body h2 {
+    font-size: 2rem;
+  }
+
+  .detail-info-grid {
+    grid-template-columns: 150px 1fr;
+  }
+}

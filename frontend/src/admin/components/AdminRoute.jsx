@@ -5,7 +5,6 @@ const AdminRoute = () => {
   const { userInfo, loading } = useAuth();
 
   if (loading) {
-    // Wait for the auth state to be determined
     return <div>Loading...</div>;
   }
 
