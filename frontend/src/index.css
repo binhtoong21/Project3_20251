@@ -1,8 +1,6 @@
-
-
 :root {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
   line-height: 1.6;
   font-weight: 400;
   font-synthesis: none;
@@ -20,7 +18,9 @@
 
   /* Map existing primary colors to new blue palette */
   --primary-color: var(--primary-blue);
-  --primary-color-dark: var(--accent-blue); /* Use accent blue for dark variation */
+  --primary-color-dark: var(
+    --accent-blue
+  ); /* Use accent blue for dark variation */
 }
 
 *,

@@ -1,12 +1,14 @@
-import './cart.css';
-import { useCartActions, useCartState } from '../../shared/context/CartContext';
-import { formatPrice } from '../../shared/utils/formatters';
+import "./cart.css";
+import { useCartActions, useCartState } from "../../shared/context/CartContext";
+import { useNavigate } from "react-router-dom";
+import { formatPrice } from "../../shared/utils/formatters";
 
 export default function Cart() {
+  const navigate = useNavigate();
   const { items, totalQuantity, subtotal, status, error } = useCartState();
   const { updateItem, removeItem } = useCartActions();
 
-  const isLoading = status === 'loading' && items.length === 0;
+  const isLoading = status === "loading" && items.length === 0;
   const isEmpty = !isLoading && items.length === 0;
 
   const handleDecrease = (itemId, currentQty) => {
@@ -40,9 +42,15 @@ export default function Cart() {
               {items.map((item) => (
                 <article className="cart-item" key={item._id}>
                   <div className="cart-item-cover">
-                    <img src={item.cover} alt={item.title} onError={(e) => {
-                      e.currentTarget.src = `https://via.placeholder.com/80x110?text=${encodeURIComponent(item.title)}`;
-                    }} />
+                    <img
+                      src={item.cover}
+                      alt={item.title}
+                      onError={(e) => {
+                        e.currentTarget.src = `https://via.placeholder.com/80x110?text=${encodeURIComponent(
+                          item.title
+                        )}`;
+                      }}
+                    />
                   </div>
                   <div className="cart-item-info">
                     <h3>{item.title}</h3>
@@ -59,7 +67,9 @@ export default function Cart() {
                         type="number"
                         min="0"
                         value={item.quantity}
-                        onChange={(e) => handleManualChange(item._id, e.target.value)}
+                        onChange={(e) =>
+                          handleManualChange(item._id, e.target.value)
+                        }
                       />
                       <button
                         type="button"
@@ -78,7 +88,9 @@ export default function Cart() {
                     >
                       Remove
                     </button>
-                    <p className="cart-item-total">{formatPrice(item.price * item.quantity)}</p>
+                    <p className="cart-item-total">
+                      {formatPrice(item.price * item.quantity)}
+                    </p>
                   </div>
                 </article>
               ))}
@@ -94,9 +106,16 @@ export default function Cart() {
                 <span>Subtotal</span>
                 <span>{formatPrice(subtotal)}</span>
               </div>
-              <p className="summary-note">Shipping and taxes calculated at checkout.</p>
-              <button type="button" className="btn primary" disabled>
-                Checkout (Coming soon)
+              <p className="summary-note">
+                Shipping and taxes calculated at checkout.
+              </p>
+              <button
+                type="button"
+                className="btn primary"
+                onClick={() => navigate("/checkout")}
+                disabled={isLoading || isEmpty}
+              >
+                Checkout
               </button>
             </aside>
           </div>

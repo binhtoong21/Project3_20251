@@ -115,8 +115,8 @@ export async function remove(req, res, next) {
     const item = cart.items.id(id);
 
     if (!item) {
-      const populatedCart = await cart.populate('items.book');
-      return res.status(200).json(populatedCart);
+      // If item is not found, it's a client error. Return 404.
+      return res.status(404).json({ message: "Cart item not found" });
     }
 
     item.deleteOne();

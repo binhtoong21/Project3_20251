@@ -1,5 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react"; // Bỏ useEffect
 import { useAuth } from "../../shared/context/AuthContext";
 import "./page.css";
 import "./login.css";
@@ -9,24 +9,23 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const location = useLocation();
 
-  useEffect(() => {
-    // If user is already logged in, redirect them.
-    if (isAuthenticated) {
-      navigate("/");
-    }
-  }, [isAuthenticated, navigate]);
+  const { login } = useAuth(); // Không cần lấy isAuthenticated ở đây nữa để tránh re-render logic
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setError(null);
+  // Lấy địa chỉ trang trước đó (do ProtectRoute gửi tới), mặc định là Home
+  const from = location.state?.from?.pathname || "/";
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const data = await login(email, password);
-      if (data.role === "admin") {
-        navigate("/admin/dashboard");
+      const user = await login(email, password);
+
+      // Sau khi login thành công, kiểm tra role và chuyển hướng
+      if (user.role === "admin") {
+        navigate("/admin/dashboard", { replace: true });
       } else {
-        navigate("/");
+        navigate(from, { replace: true });
       }
     } catch (err) {
       console.error("Login failed:", err);

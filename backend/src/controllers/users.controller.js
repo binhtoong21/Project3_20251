@@ -126,7 +126,7 @@ export const updateAddress = async (req, res, next) => {
         token: generateToken(updatedUser._id),
       });
     } else {
-      res.status(440);
+      res.status(404);
       throw new Error("User not found");
     }
   } catch (error) {
