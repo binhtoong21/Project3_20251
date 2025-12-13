@@ -46,3 +46,46 @@ export const addOrderItems = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Get logged in user orders
+// @route   GET /api/orders/myorders
+// @access  Private
+export const getMyOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.find({ user: req.user._id }).sort({
+      createdAt: -1,
+    });
+    res.json(orders);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get order by ID
+// @route   GET /api/orders/:id
+// @access  Private
+export const getOrderById = async (req, res, next) => {
+  try {
+    const order = await Order.findById(req.params.id).populate(
+      "user",
+      "name email"
+    );
+
+    if (order) {
+      // Make sure the user is authorized to see this order
+      if (
+        order.user._id.toString() !== req.user._id.toString() &&
+        !req.user.isAdmin
+      ) {
+        res.status(401);
+        throw new Error("Not authorized to view this order");
+      }
+      res.json(order);
+    } else {
+      res.status(404);
+      throw new Error("Order not found");
+    }
+  } catch (error) {
+    next(error);
+  }
+};

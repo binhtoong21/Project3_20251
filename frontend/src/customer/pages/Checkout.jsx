@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCartState } from "../../shared/context/CartContext";
+import { useCartState, useCartActions } from "../../shared/context/CartContext";
 import { useAuth } from "../../shared/context/AuthContext";
 import apiClient from "../../shared/utils/apiClient";
 import { formatPrice } from "../../shared/utils/formatters";
@@ -8,6 +8,7 @@ import "./Checkout.css";
 
 const Checkout = () => {
   const { items, subtotal } = useCartState();
+  const { refetchCart } = useCartActions();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -51,6 +52,8 @@ const Checkout = () => {
       };
 
       const createdOrder = await apiClient.post("/orders", orderData);
+      
+      await refetchCart();
 
       alert("Order placed successfully!");
       // Assuming you will create an Order Details page

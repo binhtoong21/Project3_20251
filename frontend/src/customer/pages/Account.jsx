@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import "./account.css";
 import { useAuth } from "../../shared/context/AuthContext";
 
@@ -19,9 +19,23 @@ import OrderHistory from "../components/OrderHistory";
 import PaymentMethods from "../components/PaymentMethods";
 
 export default function Account() {
-  const [activeTab, setActiveTab] = useState("profile");
-  const { logout } = useAuth();
+  const { tab } = useParams();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(tab || "profile");
+  const { logout } = useAuth();
+
+  useEffect(() => {
+    // A list of valid tabs
+    const validTabs = ["profile", "address", "orders", "payment"];
+    // If a tab is provided and it's valid, set it as active.
+    // Otherwise, default to "profile".
+    if (tab && validTabs.includes(tab)) {
+      setActiveTab(tab);
+    } else {
+      // Optionally, navigate to the default tab's URL for consistency
+      navigate("/account/profile", { replace: true });
+    }
+  }, [tab, navigate]);
 
   const handleLogout = () => {
     logout();
@@ -58,10 +72,11 @@ export default function Account() {
             <li
               key={item.id}
               className={activeTab === item.id ? "active" : ""}
-              onClick={() => setActiveTab(item.id)}
             >
-              {item.icon}
-              <span>{item.label}</span>
+              <Link to={`/account/${item.id}`}>
+                {item.icon}
+                <span>{item.label}</span>
+              </Link>
             </li>
           ))}
           <li className="logout" onClick={handleLogout}>

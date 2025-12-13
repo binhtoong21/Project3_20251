@@ -105,8 +105,11 @@ export function CartProvider({ children }) {
           throw err;
         }
       },
+       async refetchCart() {
+        await fetchCart(dispatch);
+      },
     }),
-    []
+    [dispatch]
   );
 
   return (

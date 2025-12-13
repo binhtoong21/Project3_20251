@@ -9,6 +9,7 @@ import Checkout from "./customer/pages/Checkout";
 import Login from "./customer/pages/Login";
 import Register from "./customer/pages/Register";
 import Account from "./customer/pages/Account";
+import OrderDetail from "./customer/pages/OrderDetail";
 import Dashboard from "./admin/pages/Dashboard";
 import AdminRoute from "./admin/components/AdminRoute";
 import ProtectedRoute from "./shared/components/ProtectedRoute";
@@ -44,8 +45,16 @@ function App() {
           />
 
           {/* Routes accessible only to logged-in customers */}
+           <Route
+            path="account/orders/:id"
+            element={
+              <ProtectedRoute>
+                <OrderDetail />
+              </ProtectedRoute>
+            }
+          />
           <Route
-            path="account"
+            path="account/:tab?"
             element={
               <ProtectedRoute>
                 <Account />
