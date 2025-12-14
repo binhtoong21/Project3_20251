@@ -9,14 +9,25 @@ import "./Checkout.css";
 const Checkout = () => {
   const { items, subtotal } = useCartState();
   const { refetchCart } = useCartActions();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth(); // Lấy setUser để cập nhật context sau khi lưu địa chỉ
   const navigate = useNavigate();
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
-  const [address, setAddress] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Replicate backend shipping logic
+  // State quản lý form địa chỉ
+  const [addressForm, setAddressForm] = useState({
+    street: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "Việt Nam",
+  });
+
+  // Biến kiểm soát xem địa chỉ đã được lưu/đồng bộ với server chưa
+  const [isAddressSaved, setIsAddressSaved] = useState(false);
+
+  // Tính toán phí ship và tổng tiền
   const shippingPrice = useMemo(
     () => (subtotal > 100000 ? 0 : 30000),
     [subtotal]
@@ -32,42 +43,85 @@ const Checkout = () => {
     } else if (items.length === 0) {
       navigate("/cart");
     } else {
+      // Nếu user đã có địa chỉ trong DB, điền sẵn vào form
       if (user.address && user.address.street) {
-        setAddress(user.address);
-      } else {
-        alert("Please update your shipping address in your profile first.");
-        navigate("/account"); // Navigate to general account page
+        setAddressForm({
+          street: user.address.street || "",
+          city: user.address.city || "",
+          state: user.address.state || "",
+          postalCode: user.address.postalCode || "",
+          country: user.address.country || "Việt Nam",
+        });
+        setIsAddressSaved(true);
       }
     }
   }, [user, items, navigate]);
 
-  const handlePlaceOrder = async () => {
-    if (!address) return;
+  const handleAddressChange = (e) => {
+    setAddressForm({ ...addressForm, [e.target.name]: e.target.value });
+    // Khi người dùng sửa form, đánh dấu là chưa lưu để bắt buộc họ nhấn "Save Address"
+    setIsAddressSaved(false);
+  };
+
+  const handleSaveAddress = async () => {
+    if (!addressForm.street || !addressForm.city) {
+      alert("Vui lòng nhập Địa chỉ và Thành phố");
+      return;
+    }
+
     setLoading(true);
     try {
-      // Simplified payload, backend will calculate prices and get items from cart
-      const orderData = {
-        shippingAddress: address,
-        paymentMethod: paymentMethod,
-      };
+      // Gọi API updateAddress bạn đã có ở backend
+      const updatedUser = await apiClient.put("/users/profile/address", {
+        address: addressForm,
+      });
 
-      const createdOrder = await apiClient.post("/orders", orderData);
-      
-      await refetchCart();
+      // Cập nhật lại Auth Context và LocalStorage
+      setUser(updatedUser);
+      localStorage.setItem(
+        "userData",
+        JSON.stringify({ ...updatedUser, token: updatedUser.token })
+      );
 
-      alert("Order placed successfully!");
-      // Assuming you will create an Order Details page
-      navigate(`/account/orders/${createdOrder._id}`);
+      setIsAddressSaved(true);
+      alert("Đã lưu địa chỉ giao hàng!");
     } catch (error) {
       console.error(error);
-      alert(error.message || "Failed to place order");
+      alert("Lỗi khi lưu địa chỉ: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  if (!user || !address)
-    return <div className="container">Loading checkout info...</div>;
+  const handlePlaceOrder = async () => {
+    // Chặn đặt hàng nếu chưa lưu địa chỉ
+    if (!isAddressSaved) {
+      alert("Vui lòng lưu địa chỉ giao hàng trước khi đặt hàng.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const orderData = {
+        shippingAddress: addressForm,
+        paymentMethod: paymentMethod,
+      };
+
+      const createdOrder = await apiClient.post("/orders", orderData);
+
+      await refetchCart(); // Làm mới giỏ hàng (về 0)
+
+      alert("Đặt hàng thành công!");
+      navigate(`/account/orders/${createdOrder._id}`);
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Đặt hàng thất bại");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!user) return <div className="container">Loading checkout info...</div>;
 
   return (
     <div className="page checkout-page">
@@ -76,30 +130,143 @@ const Checkout = () => {
 
         <div className="checkout-grid">
           <div className="checkout-left">
+            {/* Form nhập địa chỉ */}
             <section className="checkout-section">
               <h3>Shipping Address</h3>
-              <div className="address-card">
-                <p>
-                  <strong>{user.name}</strong>
-                </p>
-                <p>{address.street}</p>
-                <p>
-                  {address.city}, {address.state} {address.postalCode}
-                </p>
-                <p>{address.country}</p>
-                <button
-                  className="link-button"
-                  onClick={() => navigate("/account")}
+              <div
+                className="address-form-container"
+                style={{ display: "grid", gap: "10px" }}
+              >
+                <div className="form-group">
+                  <label>Street Address</label>
+                  <input
+                    type="text"
+                    name="street"
+                    value={addressForm.street}
+                    onChange={handleAddressChange}
+                    placeholder="Số nhà, tên đường..."
+                    className="form-control"
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+
+                <div
+                  className="form-group-row"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "10px",
+                  }}
                 >
-                  Change Address
-                </button>
+                  <div>
+                    <label>City</label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={addressForm.city}
+                      onChange={handleAddressChange}
+                      placeholder="Thành phố"
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label>State / District</label>
+                    <input
+                      type="text"
+                      name="state"
+                      value={addressForm.state}
+                      onChange={handleAddressChange}
+                      placeholder="Quận/Huyện"
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div
+                  className="form-group-row"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "10px",
+                  }}
+                >
+                  <div>
+                    <label>Postal Code</label>
+                    <input
+                      type="text"
+                      name="postalCode"
+                      value={addressForm.postalCode}
+                      onChange={handleAddressChange}
+                      placeholder="700000"
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label>Country</label>
+                    <input
+                      type="text"
+                      name="country"
+                      value={addressForm.country}
+                      onChange={handleAddressChange}
+                      disabled
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        boxSizing: "border-box",
+                        backgroundColor: "#f0f0f0",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Nút lưu địa chỉ: Chỉ hiện khi địa chỉ chưa được lưu/bị sửa đổi */}
+                {!isAddressSaved && (
+                  <button
+                    className="btn secondary"
+                    onClick={handleSaveAddress}
+                    disabled={loading}
+                    style={{ marginTop: "10px" }}
+                  >
+                    {loading ? "Saving..." : "Save Address"}
+                  </button>
+                )}
+
+                {isAddressSaved && (
+                  <div
+                    style={{
+                      color: "green",
+                      marginTop: "10px",
+                      fontSize: "0.9em",
+                    }}
+                  >
+                    ✓ Address saved/verified
+                  </div>
+                )}
               </div>
             </section>
 
             <section className="checkout-section">
               <h3>Payment Method</h3>
               <div className="payment-options">
-                <label>
+                <label
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
                   <input
                     type="radio"
                     value="COD"
@@ -107,16 +274,6 @@ const Checkout = () => {
                     onChange={(e) => setPaymentMethod(e.target.value)}
                   />
                   Cash on Delivery (COD)
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    value="Banking"
-                    checked={paymentMethod === "Banking"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    disabled // Example: disable if not implemented
-                  />
-                  Bank Transfer (Coming Soon)
                 </label>
               </div>
             </section>
@@ -127,7 +284,10 @@ const Checkout = () => {
               <h3>Order Summary</h3>
               <div className="summary-items">
                 {items.map((item) => (
-                  <div key={item.book} className="summary-item-row">
+                  <div
+                    key={item.book._id || item.book}
+                    className="summary-item-row"
+                  >
                     <span>
                       {item.quantity} x {item.title}
                     </span>
@@ -152,10 +312,27 @@ const Checkout = () => {
               <button
                 className="btn primary full-width"
                 onClick={handlePlaceOrder}
-                disabled={loading}
+                disabled={loading || !isAddressSaved}
+                style={{
+                  opacity: isAddressSaved ? 1 : 0.6,
+                  cursor: isAddressSaved ? "pointer" : "not-allowed",
+                }}
               >
                 {loading ? "Processing..." : "Place Order"}
               </button>
+
+              {!isAddressSaved && (
+                <p
+                  style={{
+                    fontSize: "0.8em",
+                    color: "red",
+                    textAlign: "center",
+                    marginTop: "5px",
+                  }}
+                >
+                  Please save address to place order
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -165,4 +342,3 @@ const Checkout = () => {
 };
 
 export default Checkout;
-

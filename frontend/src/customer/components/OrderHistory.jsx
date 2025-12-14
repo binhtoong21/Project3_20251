@@ -57,7 +57,7 @@ const OrderHistory = () => {
                 </td>
                 <td data-label="Action">
                   <Link
-                    to={`/account/orders/${order._id}`}
+                    to={`/orders/${order._id}`}
                     className="btn-view"
                   >
                     View Details

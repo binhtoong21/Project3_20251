@@ -74,14 +74,23 @@
   color: #856404;
 }
 .status-text {
-    font-weight: bold;
+  font-weight: bold;
 }
-.status-text-pending { color: #8c6d00; }
-.status-text-processing { color: #2c5282; }
-.status-text-shipped { color: #007a7a; }
-.status-text-delivered { color: #155724; }
-.status-text-cancelled { color: #721c24; }
-
+.status-text-pending {
+  color: #8c6d00;
+}
+.status-text-processing {
+  color: #2c5282;
+}
+.status-text-shipped {
+  color: #007a7a;
+}
+.status-text-delivered {
+  color: #155724;
+}
+.status-text-cancelled {
+  color: #721c24;
+}
 
 .summary-card .summary-items {
   display: flex;
@@ -99,29 +108,28 @@
   gap: 1rem;
 }
 .item-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 .item-image {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 4px;
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
 }
 .item-title {
-    font-weight: 500;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    line-height: 1.3;
-
+  font-weight: 500;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
 }
 .item-qty {
-    font-size: 0.9rem;
-    color: #666;
-    display: block;
+  font-size: 0.9rem;
+  color: #666;
+  display: block;
 }
 
 .summary-card hr {
@@ -143,14 +151,14 @@
   margin-top: 1rem;
 }
 .btn-back {
-    display: inline-block;
-    margin-top: 1rem;
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: 600;
+  display: inline-block;
+  margin-top: 1rem;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
 }
 .btn-back:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 @media (max-width: 992px) {

@@ -70,7 +70,7 @@ export function AuthProvider({ children }) {
     setUser,
     login,
     logout,
-    handleAuthSuccess, // Expose the new handler
+    handleAuthSuccess,
     isAuthenticated: !!user,
     loading,
   };

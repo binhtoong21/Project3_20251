@@ -105,11 +105,29 @@ export function CartProvider({ children }) {
           throw err;
         }
       },
-       async refetchCart() {
-        await fetchCart(dispatch);
+      async refetchCart() {
+        try {
+          await fetchCart(dispatch);
+        } catch (err) {
+          console.error("Failed to refetch cart:", err);
+          throw err;
+        }
+      },
+      async clearCart() {
+        dispatch({ type: "REQUEST_START" });
+        try {
+          const data = await apiClient.delete("/cart/clear");
+          dispatch({ type: "REQUEST_SUCCESS", payload: data });
+        } catch (err) {
+          dispatch({
+            type: "REQUEST_ERROR",
+            payload: err.message || "Failed to clear cart",
+          });
+          throw err;
+        }
       },
     }),
-    [dispatch]
+    []
   );
 
   return (

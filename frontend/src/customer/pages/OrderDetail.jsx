@@ -74,11 +74,16 @@ const OrderDetail = () => {
                 <div className="status-badge not-paid">Not Paid</div>
               )}
             </div>
-             {/* Order Status */}
+            {/* Order Status */}
             <div className="detail-card">
               <h3>Order Status</h3>
-               <p>
-                Current Status: <strong className={`status-text status-text-${order.status.toLowerCase()}`}>{order.status}</strong>
+              <p>
+                Current Status:{" "}
+                <strong
+                  className={`status-text status-text-${order.status.toLowerCase()}`}
+                >
+                  {order.status}
+                </strong>
               </p>
               {order.isDelivered ? (
                 <div className="status-badge delivered">
@@ -98,11 +103,17 @@ const OrderDetail = () => {
                 {order.orderItems.map((item) => (
                   <div key={item.book} className="summary-item-row">
                     <div className="item-info">
-                       <img src={item.cover} alt={item.title} className="item-image" />
-                       <div>
+                      <img
+                        src={item.cover}
+                        alt={item.title}
+                        className="item-image"
+                      />
+                      <div>
                         <span className="item-title">{item.title}</span>
-                        <span className="item-qty">Quantity: {item.quantity}</span>
-                       </div>
+                        <span className="item-qty">
+                          Quantity: {item.quantity}
+                        </span>
+                      </div>
                     </div>
                     <span>{formatPrice(item.price * item.quantity)}</span>
                   </div>
@@ -122,8 +133,8 @@ const OrderDetail = () => {
                 <span>{formatPrice(order.totalPrice)}</span>
               </div>
             </div>
-             <Link to="/account/orders" className="btn-back">
-                &larr; Back to Order History
+            <Link to="/account/orders" className="btn-back">
+              &larr; Back to Order History
             </Link>
           </div>
         </div>

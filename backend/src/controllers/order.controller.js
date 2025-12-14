@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Order from "../models/order.model.js";
 import Cart from "../models/cart.model.js";
 
@@ -8,7 +9,7 @@ export const addOrderItems = async (req, res, next) => {
   try {
     const { paymentMethod, shippingAddress } = req.body;
 
-    // 1. Lấy giỏ hàng của user từ DB để đảm bảo dữ liệu chính xác (không tin tưởng hoàn toàn dữ liệu từ frontend gửi lên)
+    // 1. Lấy giỏ hàng từ DB (Bỏ .session(session))
     const cart = await Cart.findOne({ user: req.user._id });
 
     if (!cart || cart.items.length === 0) {
@@ -16,28 +17,29 @@ export const addOrderItems = async (req, res, next) => {
       throw new Error("No order items (Cart is empty)");
     }
 
-    // 2. Tính toán lại giá tiền tại server
+    // 2. Tính toán giá tiền
     const itemsPrice = cart.items.reduce(
       (acc, item) => acc + item.price * item.quantity,
       0
     );
-    const shippingPrice = itemsPrice > 100000 ? 0 : 30000; // Ví dụ: free ship cho đơn > 100k
+    const shippingPrice = itemsPrice > 100000 ? 0 : 30000;
     const totalPrice = itemsPrice + shippingPrice;
 
     // 3. Tạo Order mới
     const order = new Order({
       user: req.user._id,
-      orderItems: cart.items, // Copy items từ Cart sang Order
-      shippingAddress: shippingAddress, // Địa chỉ từ frontend gửi lên (đã lấy từ user profile)
+      orderItems: cart.items,
+      shippingAddress: shippingAddress,
       paymentMethod: paymentMethod,
       itemsPrice,
       shippingPrice,
       totalPrice,
     });
 
+    // 4. Lưu đơn hàng (Bỏ { session })
     const createdOrder = await order.save();
 
-    // 4. Xóa items trong Cart sau khi đặt hàng thành công
+    // 5. Xóa giỏ hàng (Bỏ { session })
     cart.items = [];
     await cart.save();
 
@@ -72,7 +74,7 @@ export const getOrderById = async (req, res, next) => {
     );
 
     if (order) {
-      // Make sure the user is authorized to see this order
+      // Kiểm tra quyền xem đơn hàng (chính chủ hoặc admin)
       if (
         order.user._id.toString() !== req.user._id.toString() &&
         !req.user.isAdmin

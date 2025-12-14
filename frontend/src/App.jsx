@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import CustomerLayout from "./customer/layouts/CustomerLayout";
 import AdminLayout from "./admin/layouts/AdminLayout";
 import Home from "./customer/pages/Home";
@@ -12,86 +12,36 @@ import Account from "./customer/pages/Account";
 import OrderDetail from "./customer/pages/OrderDetail";
 import Dashboard from "./admin/pages/Dashboard";
 import AdminRoute from "./admin/components/AdminRoute";
-import ProtectedRoute from "./shared/components/ProtectedRoute";
-import PublicRoute from "./shared/components/PublicRoute";
+import { AuthProvider } from "./shared/context/AuthContext";
+import { CartProvider } from "./shared/context/CartContext";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Routes for Public and Customer (handled by CustomerLayout) */}
-        <Route path="/" element={<CustomerLayout />}>
-          {/* Publicly accessible routes */}
-          <Route index element={<Home />} />
-          <Route path="books" element={<Books />} />
-          <Route path="books/:id" element={<BookDetail />} />
-
-          {/* Routes accessible only to non-logged-in users */}
-          <Route
-            path="login"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="register"
-            element={
-              <PublicRoute>
-                <Register />
-              </PublicRoute>
-            }
-          />
-
-          {/* Routes accessible only to logged-in customers */}
-           <Route
-            path="account/orders/:id"
-            element={
-              <ProtectedRoute>
-                <OrderDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="account/:tab?"
-            element={
-              <ProtectedRoute>
-                <Account />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="cart"
-            element={
-              <ProtectedRoute>
-                <Cart />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="checkout"
-            element={
-              <ProtectedRoute>
-                <Checkout />
-              </ProtectedRoute>
-            }
-          />
-        </Route>
-
-        {/* Admin-only routes */}
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminLayout />
-            </AdminRoute>
-          }
-        >
-          <Route index element={<Dashboard />} /> {/* Dashboard is now the index route */}
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <CartProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<CustomerLayout />}>
+              <Route index element={<Home />} />
+              <Route path="books" element={<Books />} />
+              <Route path="books/:id" element={<BookDetail />} />
+              <Route path="cart" element={<Cart />} />
+              <Route path="checkout" element={<Checkout />} />
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
+              <Route path="account" element={<Navigate to="/account/profile" replace />} />
+              <Route path="account/:tab" element={<Account />} />
+              <Route path="orders/:id" element={<OrderDetail />} />
+            </Route>
+            <Route path="/admin" element={<AdminRoute />}>
+              <Route element={<AdminLayout />}>
+                <Route path="dashboard" element={<Dashboard />} />
+              </Route>
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

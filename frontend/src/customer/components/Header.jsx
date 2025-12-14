@@ -1,6 +1,6 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { FaShoppingCart, FaUser, FaSearch, FaBell, FaBook } from "react-icons/fa"; // Thêm icon FaBook
+import { FaShoppingCart, FaUser, FaSearch, FaBook } from "react-icons/fa";
 import { useAuth } from "../../shared/context/AuthContext";
 import { useCartState } from "../../shared/context/CartContext";
 import "./header.css";
@@ -19,7 +19,6 @@ export default function Header() {
     if (searchTerm.trim()) {
       // Điều hướng sang trang Books kèm query params search
       navigate(`/books?search=${encodeURIComponent(searchTerm.trim())}`);
- 
     }
   };
 
@@ -58,19 +57,21 @@ export default function Header() {
         <div className="header-right">
           <nav>
             <NavLink to="/books" className="icon-link">
-               <FaBook />
-               <span>Tủ sách</span>
+              <FaBook />
+              <span>Tủ sách</span>
             </NavLink>
 
             {user ? (
               <>
-                <NavLink to="/notifications" className="icon-link">
-                  <FaBell />
+                <div className="icon-link">
+                  <Notification />
                   <span>Thông báo</span>
-                </NavLink>
+                </div>
                 <NavLink to="/cart" className="icon-link">
                   <FaShoppingCart />
-                  {totalQuantity > 0 && <span className="cart-badge">{totalQuantity}</span>}
+                  {totalQuantity > 0 && (
+                    <span className="cart-badge">{totalQuantity}</span>
+                  )}
                   <span>Giỏ hàng</span>
                 </NavLink>
                 <div

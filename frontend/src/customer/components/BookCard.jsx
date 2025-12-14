@@ -42,26 +42,8 @@ export default function BookCard({ book }) {
   };
 
   return (
-    <article className="book-card" style={{ position: "relative" }}>
-      {isSale && (
-        <div
-          style={{
-            position: "absolute",
-            top: "10px",
-            right: "10px",
-            backgroundColor: "#ff3b30",
-            color: "white",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            fontSize: "12px",
-            fontWeight: "bold",
-            zIndex: 10,
-            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-          }}
-        >
-          -{discountPercent}%
-        </div>
-      )}
+    <article className="book-card">
+      {isSale && <div className="sale-badge">-{discountPercent}%</div>}
 
       <Link to={`/books/${book._id}`} className="book-cover-link">
         <img
@@ -79,24 +61,9 @@ export default function BookCard({ book }) {
 
         <div className="book-footer">
           <div className="price-container">
-            <span
-              className="price"
-              style={{ color: "#d32f2f", fontWeight: "bold" }}
-            >
-              {formatPrice(book.price)}
-            </span>
+            <span className="price">{formatPrice(book.price)}</span>
             {isSale && (
-              <span
-                className="old-price"
-                style={{
-                  textDecoration: "line-through",
-                  color: "#999",
-                  fontSize: "0.9em",
-                  marginLeft: "8px",
-                }}
-              >
-                {formatPrice(book.oldPrice)}
-              </span>
+              <span className="old-price">{formatPrice(book.oldPrice)}</span>
             )}
           </div>
 
