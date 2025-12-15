@@ -1,16 +1,25 @@
 .account-page {
+  padding: 40px 0;
+  min-height: 80vh;
+  background-color: #f8f9fa;
+}
+
+.account-page .container {
   display: flex;
-  padding: 2rem;
-  gap: 2rem;
-  min-height: 70vh;
+  gap: 30px;
+  align-items: flex-start;
 }
 
 .account-sidebar {
-  width: 250px;
+  padding: 20px;
+  width: 260px;
   flex-shrink: 0;
-  background-color: var(--white); /* Changed to white */
-  padding: 1.5rem;
-  height: fit-content;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  position: sticky;
+  top: 90px;
 }
 
 .account-sidebar ul {
@@ -19,46 +28,71 @@
   margin: 0;
 }
 
-.account-sidebar li {
-  margin-bottom: 0.2rem;
-  padding: 1rem;
-  cursor: pointer;
-  font-weight: 500;
-  color: var(--dark-text); /* Changed to dark text */
-  transition: background-color 0.2s, color 0.2s;
+.account-sidebar li a {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  padding: 15px 20px;
+  text-decoration: none;
+  color: #4b5563;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
 }
 
-.account-sidebar li:hover,
-.account-sidebar li.active {
-  background-color: var(--primary-color);
-  color: var(--white); /* Changed to white */
+.account-sidebar li a svg {
+  margin-right: 12px;
+  font-size: 1.1rem;
+  color: #9ca3af;
+}
+
+.account-sidebar li.active a {
+  background-color: #f3f4f6;
+  color: #2563eb;
+  border-left-color: #2563eb;
+}
+
+.account-sidebar li.active a svg {
+  color: #2563eb;
+}
+
+.account-sidebar li a:hover:not(.active a) {
+  background-color: #f9fafb;
+  color: #111827;
 }
 
 .account-sidebar li.logout {
-  margin-top: 1rem;
-  color: var(--danger-color);
+  border-top: 1px solid #e5e7eb;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  color: #ef4444;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.account-sidebar li.logout svg {
+  margin-right: 12px;
+  font-size: 1.1rem;
 }
 
 .account-sidebar li.logout:hover {
-  background-color: var(--danger-color);
-  color: var(--white);
+  background-color: #fef2f2;
 }
 
 .account-content {
-  flex-grow: 1;
-  padding: 2rem;
-  background-color: var(--white); /* Ensured white */
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  flex: 1;
+  width: 100%;
 }
 
-.account-content h2 {
-  margin-top: 0;
-  font-size: 1.8rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid var(--primary-blue); /* Changed to primary blue */
-  padding-bottom: 1rem;
+@media (max-width: 768px) {
+  .account-page .container {
+    flex-direction: column;
+  }
+
+  .account-sidebar {
+    width: 100%;
+    position: static;
+    margin-bottom: 20px;
+  }
 }

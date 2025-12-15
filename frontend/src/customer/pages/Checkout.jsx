@@ -1,33 +1,33 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useCartState, useCartActions } from "../../shared/context/CartContext";
 import { useAuth } from "../../shared/context/AuthContext";
 import apiClient from "../../shared/utils/apiClient";
 import { formatPrice } from "../../shared/utils/formatters";
+import { isValidAddress, isValidPhone } from "../../shared/utils/validators";
 import "./Checkout.css";
 
 const Checkout = () => {
   const { items, subtotal } = useCartState();
   const { refetchCart } = useCartActions();
-  const { user, setUser } = useAuth(); // Lấy setUser để cập nhật context sau khi lưu địa chỉ
+  const { user, setUser } = useAuth();
   const navigate = useNavigate();
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [loading, setLoading] = useState(false);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  // State quản lý form địa chỉ
+  const hasValidPhone = user && user.phone && isValidPhone(user.phone);
+
   const [addressForm, setAddressForm] = useState({
     street: "",
-    city: "",
-    state: "",
-    postalCode: "",
+    ward: "",
+    district: "",
+    province: "",
     country: "Việt Nam",
   });
 
-  // Biến kiểm soát xem địa chỉ đã được lưu/đồng bộ với server chưa
-  const [isAddressSaved, setIsAddressSaved] = useState(false);
-
-  // Tính toán phí ship và tổng tiền
   const shippingPrice = useMemo(
     () => (subtotal > 100000 ? 0 : 30000),
     [subtotal]
@@ -43,294 +43,313 @@ const Checkout = () => {
     } else if (items.length === 0) {
       navigate("/cart");
     } else {
-      // Nếu user đã có địa chỉ trong DB, điền sẵn vào form
-      if (user.address && user.address.street) {
+      if (user.address && isValidAddress(user.address)) {
         setAddressForm({
           street: user.address.street || "",
-          city: user.address.city || "",
-          state: user.address.state || "",
-          postalCode: user.address.postalCode || "",
+          ward: user.address.ward || "",
+          district: user.address.district || "",
+          province: user.address.province || "",
           country: user.address.country || "Việt Nam",
         });
-        setIsAddressSaved(true);
+        setIsEditingAddress(false);
+      } else {
+        setIsEditingAddress(true);
       }
     }
   }, [user, items, navigate]);
 
   const handleAddressChange = (e) => {
     setAddressForm({ ...addressForm, [e.target.name]: e.target.value });
-    // Khi người dùng sửa form, đánh dấu là chưa lưu để bắt buộc họ nhấn "Save Address"
-    setIsAddressSaved(false);
+    setErrorMsg("");
   };
 
   const handleSaveAddress = async () => {
-    if (!addressForm.street || !addressForm.city) {
-      alert("Vui lòng nhập Địa chỉ và Thành phố");
+    if (!isValidAddress(addressForm)) {
+      setErrorMsg("Vui lòng điền đầy đủ Tỉnh, Huyện, Xã và Đường.");
       return;
     }
 
     setLoading(true);
     try {
-      // Gọi API updateAddress bạn đã có ở backend
       const updatedUser = await apiClient.put("/users/profile/address", {
         address: addressForm,
       });
 
-      // Cập nhật lại Auth Context và LocalStorage
       setUser(updatedUser);
       localStorage.setItem(
         "userData",
         JSON.stringify({ ...updatedUser, token: updatedUser.token })
       );
 
-      setIsAddressSaved(true);
-      alert("Đã lưu địa chỉ giao hàng!");
+      setIsEditingAddress(false);
     } catch (error) {
       console.error(error);
-      alert("Lỗi khi lưu địa chỉ: " + error.message);
+      setErrorMsg("Lỗi khi lưu địa chỉ: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handlePlaceOrder = async () => {
-    // Chặn đặt hàng nếu chưa lưu địa chỉ
-    if (!isAddressSaved) {
-      alert("Vui lòng lưu địa chỉ giao hàng trước khi đặt hàng.");
+    if (isEditingAddress) {
+      setErrorMsg("Vui lòng lưu địa chỉ trước khi đặt hàng");
+      return;
+    }
+
+    if (!hasValidPhone) {
+      setErrorMsg("Số điện thoại không hợp lệ. Vui lòng cập nhật trong hồ sơ.");
       return;
     }
 
     setLoading(true);
     try {
       const orderData = {
-        shippingAddress: addressForm,
+        shippingAddress: {
+          province: addressForm.province,
+          district: addressForm.district,
+          ward: addressForm.ward,
+          street: addressForm.street,
+          country: addressForm.country,
+          name: user.name,
+          phone: user.phone,
+        },
         paymentMethod: paymentMethod,
       };
 
       const createdOrder = await apiClient.post("/orders", orderData);
-
-      await refetchCart(); // Làm mới giỏ hàng (về 0)
-
-      alert("Đặt hàng thành công!");
-      navigate(`/account/orders/${createdOrder._id}`);
+      await refetchCart();
+      navigate(`/orders/${createdOrder._id}`);
     } catch (error) {
       console.error(error);
-      alert(error.message || "Đặt hàng thất bại");
+      setErrorMsg(error.message || "Đặt hàng thất bại");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!user) return <div className="container">Loading checkout info...</div>;
+  if (!user) return <div className="container">Loading checkout...</div>;
 
   return (
     <div className="page checkout-page">
       <div className="container">
-        <h2>Checkout</h2>
+        <h2 className="section-title">Thanh toán</h2>
 
         <div className="checkout-grid">
           <div className="checkout-left">
-            {/* Form nhập địa chỉ */}
             <section className="checkout-section">
-              <h3>Shipping Address</h3>
-              <div
-                className="address-form-container"
-                style={{ display: "grid", gap: "10px" }}
-              >
-                <div className="form-group">
-                  <label>Street Address</label>
-                  <input
-                    type="text"
-                    name="street"
-                    value={addressForm.street}
-                    onChange={handleAddressChange}
-                    placeholder="Số nhà, tên đường..."
-                    className="form-control"
-                    style={{
-                      width: "100%",
-                      padding: "8px",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                </div>
-
-                <div
-                  className="form-group-row"
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "10px",
-                  }}
-                >
-                  <div>
-                    <label>City</label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={addressForm.city}
-                      onChange={handleAddressChange}
-                      placeholder="Thành phố"
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        boxSizing: "border-box",
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <label>State / District</label>
-                    <input
-                      type="text"
-                      name="state"
-                      value={addressForm.state}
-                      onChange={handleAddressChange}
-                      placeholder="Quận/Huyện"
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        boxSizing: "border-box",
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div
-                  className="form-group-row"
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "10px",
-                  }}
-                >
-                  <div>
-                    <label>Postal Code</label>
-                    <input
-                      type="text"
-                      name="postalCode"
-                      value={addressForm.postalCode}
-                      onChange={handleAddressChange}
-                      placeholder="700000"
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        boxSizing: "border-box",
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <label>Country</label>
-                    <input
-                      type="text"
-                      name="country"
-                      value={addressForm.country}
-                      onChange={handleAddressChange}
-                      disabled
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        boxSizing: "border-box",
-                        backgroundColor: "#f0f0f0",
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Nút lưu địa chỉ: Chỉ hiện khi địa chỉ chưa được lưu/bị sửa đổi */}
-                {!isAddressSaved && (
+              <div className="section-header">
+                <h3>Địa chỉ giao hàng</h3>
+                {!isEditingAddress && (
                   <button
-                    className="btn secondary"
-                    onClick={handleSaveAddress}
-                    disabled={loading}
-                    style={{ marginTop: "10px" }}
+                    className="btn-text"
+                    onClick={() => setIsEditingAddress(true)}
                   >
-                    {loading ? "Saving..." : "Save Address"}
+                    Thay đổi
                   </button>
                 )}
-
-                {isAddressSaved && (
-                  <div
-                    style={{
-                      color: "green",
-                      marginTop: "10px",
-                      fontSize: "0.9em",
-                    }}
-                  >
-                    ✓ Address saved/verified
-                  </div>
-                )}
               </div>
+
+              {!isEditingAddress ? (
+                <div className="address-summary-card">
+                  <p className="user-name">{user.name}</p>
+                  <p className="address-line">{addressForm.street}</p>
+                  <p className="address-line">
+                    {addressForm.ward}, {addressForm.district},{" "}
+                    {addressForm.province}
+                  </p>
+                  <p className="address-country">{addressForm.country}</p>
+
+                  {hasValidPhone ? (
+                    <p className="user-phone">SĐT: {user.phone}</p>
+                  ) : (
+                    <p className="user-phone error-text">
+                      SĐT chưa hợp lệ -{" "}
+                      <Link to="/account/profile">Cập nhật ngay</Link>
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="address-form-container">
+                  {errorMsg && <div className="form-error">{errorMsg}</div>}
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Tỉnh / Thành phố</label>
+                      <input
+                        type="text"
+                        name="province"
+                        value={addressForm.province}
+                        onChange={handleAddressChange}
+                        placeholder="Vd: Hà Nội"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Quận / Huyện</label>
+                      <input
+                        type="text"
+                        name="district"
+                        value={addressForm.district}
+                        onChange={handleAddressChange}
+                        placeholder="Vd: Cầu Giấy"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Phường / Xã</label>
+                      <input
+                        type="text"
+                        name="ward"
+                        value={addressForm.ward}
+                        onChange={handleAddressChange}
+                        placeholder="Vd: Dịch Vọng"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Số nhà, Tên đường</label>
+                      <input
+                        type="text"
+                        name="street"
+                        value={addressForm.street}
+                        onChange={handleAddressChange}
+                        placeholder="Vd: 123 Xuân Thủy"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-actions">
+                    <button
+                      className="btn secondary"
+                      onClick={() => setIsEditingAddress(false)}
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      className="btn primary"
+                      onClick={handleSaveAddress}
+                      disabled={loading}
+                    >
+                      Lưu địa chỉ
+                    </button>
+                  </div>
+                </div>
+              )}
             </section>
 
             <section className="checkout-section">
-              <h3>Payment Method</h3>
+              <h3>Phương thức thanh toán</h3>
               <div className="payment-options">
                 <label
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                  className={`payment-option ${
+                    paymentMethod === "COD" ? "selected" : ""
+                  }`}
                 >
                   <input
                     type="radio"
+                    name="payment"
                     value="COD"
                     checked={paymentMethod === "COD"}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                   />
-                  Cash on Delivery (COD)
+                  <div className="payment-content">
+                    <span className="payment-title">
+                      Thanh toán khi nhận hàng (COD)
+                    </span>
+                    <span className="payment-desc">
+                      Thanh toán tiền mặt cho shipper.
+                    </span>
+                  </div>
+                </label>
+                <label
+                  className={`payment-option ${
+                    paymentMethod === "BANKING" ? "selected" : ""
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="BANKING"
+                    checked={paymentMethod === "BANKING"}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  />
+                  <div className="payment-content">
+                    <span className="payment-title">
+                      Chuyển khoản ngân hàng
+                    </span>
+                    <span className="payment-desc">
+                      Quét mã QR qua ứng dụng ngân hàng.
+                    </span>
+                  </div>
                 </label>
               </div>
             </section>
           </div>
 
           <div className="checkout-right">
-            <div className="cart-summary">
-              <h3>Order Summary</h3>
-              <div className="summary-items">
+            <div className="order-summary-box">
+              <h3>Đơn hàng ({items.length} sản phẩm)</h3>
+              <div className="summary-list">
                 {items.map((item) => (
                   <div
                     key={item.book._id || item.book}
-                    className="summary-item-row"
+                    className="summary-item"
                   >
-                    <span>
-                      {item.quantity} x {item.title}
+                    <div className="item-info">
+                      <span className="item-qty">{item.quantity}x</span>
+                      <span className="item-name">{item.title}</span>
+                    </div>
+                    <span className="item-price">
+                      {formatPrice(item.price * item.quantity)}
                     </span>
-                    <span>{formatPrice(item.price * item.quantity)}</span>
                   </div>
                 ))}
               </div>
-              <hr />
+
+              <div className="summary-divider"></div>
+
               <div className="summary-row">
-                <span>Subtotal</span>
+                <span>Tạm tính</span>
                 <span>{formatPrice(subtotal)}</span>
               </div>
               <div className="summary-row">
-                <span>Shipping</span>
-                <span>{formatPrice(shippingPrice)}</span>
+                <span>Phí vận chuyển</span>
+                <span>
+                  {shippingPrice === 0
+                    ? "Miễn phí"
+                    : formatPrice(shippingPrice)}
+                </span>
               </div>
+
+              <div className="summary-divider"></div>
+
               <div className="summary-row total">
-                <span>Total</span>
-                <span>{formatPrice(totalPrice)}</span>
+                <span>Tổng cộng</span>
+                <span className="total-amount">{formatPrice(totalPrice)}</span>
               </div>
+
+              {errorMsg && !isEditingAddress && (
+                <p className="checkout-error-text">{errorMsg}</p>
+              )}
 
               <button
-                className="btn primary full-width"
+                className="btn checkout-btn"
                 onClick={handlePlaceOrder}
-                disabled={loading || !isAddressSaved}
-                style={{
-                  opacity: isAddressSaved ? 1 : 0.6,
-                  cursor: isAddressSaved ? "pointer" : "not-allowed",
-                }}
+                disabled={loading || isEditingAddress || !hasValidPhone}
+                title={
+                  !hasValidPhone ? "Cập nhật SĐT để mua hàng" : "Đặt hàng ngay"
+                }
               >
-                {loading ? "Processing..." : "Place Order"}
+                {loading ? "Đang xử lý..." : "Đặt hàng"}
               </button>
 
-              {!isAddressSaved && (
-                <p
-                  style={{
-                    fontSize: "0.8em",
-                    color: "red",
-                    textAlign: "center",
-                    marginTop: "5px",
-                  }}
-                >
-                  Please save address to place order
+              {!hasValidPhone && (
+                <p className="phone-warning-text">
+                  Vui lòng{" "}
+                  <Link to="/account/profile">
+                    cập nhật Số điện thoại hợp lệ
+                  </Link>{" "}
+                  để hoàn tất.
                 </p>
               )}
             </div>

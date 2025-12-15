@@ -13,30 +13,43 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  //  HÀM XỬ LÝ KHI ĐĂNG NHẬP/ĐĂNG KÝ THÀNH CÔNG
   const handleAuthSuccess = useCallback((authData) => {
+    //  Lưu token vào LocalStorage
     localStorage.setItem("userData", JSON.stringify({ token: authData.token }));
+
+    //  Cấu trúc lại dữ liệu user để lưu vào State
+    // QUAN TRỌNG: Phải map đầy đủ các trường từ Backend trả về
     const userData = {
       _id: authData.userId || authData._id,
       name: authData.name,
       email: authData.email,
       role: authData.role,
+      phone: authData.phone || "",
+      avatar: authData.avatar || "",
+      address: authData.address || {},
     };
+
     setUser(userData);
     return userData;
   }, []);
 
+  //  HÀM LẤY PROFILE KHI F5 (RELOAD TRANG)
   const fetchUserProfile = useCallback(async () => {
     try {
       const storedData = JSON.parse(localStorage.getItem("userData"));
+
       if (storedData && storedData.token) {
-        // apiClient handles the token automatically, no need for headers
+        // Gọi API lấy thông tin mới nhất từ Server
         const profile = await apiClient.get("/users/profile");
+        // API getProfile trả về full info
         setUser(profile);
       } else {
         setUser(null);
       }
     } catch (error) {
       console.error("Failed to fetch user profile", error);
+      // Nếu token hết hạn hoặc lỗi, xóa storage
       localStorage.removeItem("userData");
       setUser(null);
     } finally {
@@ -62,7 +75,6 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     localStorage.removeItem("userData");
     setUser(null);
-    setLoading(false);
   }, []);
 
   const authValue = {

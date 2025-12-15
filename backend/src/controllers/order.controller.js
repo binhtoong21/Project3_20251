@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Order from "../models/order.model.js";
 import Cart from "../models/cart.model.js";
+import Book from "../models/book.model.js";
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -9,15 +10,45 @@ export const addOrderItems = async (req, res, next) => {
   try {
     const { paymentMethod, shippingAddress } = req.body;
 
-    // 1. Lấy giỏ hàng từ DB (Bỏ .session(session))
+    //  Lấy giỏ hàng từ DB
     const cart = await Cart.findOne({ user: req.user._id });
 
     if (!cart || cart.items.length === 0) {
       res.status(400);
       throw new Error("No order items (Cart is empty)");
     }
+    //  LOGIC TRỪ TỒN KHO
+    //  Kiểm tra tồn kho cho TẤT CẢ sản phẩm trước
+    const updateOperations = [];
 
-    // 2. Tính toán giá tiền
+    for (const item of cart.items) {
+      const book = await Book.findById(item.book);
+      if (!book) {
+        res.status(400);
+        throw new Error(`Sách "${item.title}" không còn tồn tại.`);
+      }
+      if (book.stock < item.quantity) {
+        res.status(400);
+        throw new Error(
+          `Sách "${item.title}" không đủ số lượng tồn kho (Còn lại: ${book.stock}).`
+        );
+      }
+
+      // Chuẩn bị lệnh update
+      updateOperations.push({
+        updateOne: {
+          filter: { _id: item.book },
+          update: { $inc: { stock: -item.quantity } },
+        },
+      });
+    }
+
+    //  Thực hiện trừ tồn kho hàng loạt
+    if (updateOperations.length > 0) {
+      await Book.bulkWrite(updateOperations);
+    }
+
+    //  Tính toán giá tiền
     const itemsPrice = cart.items.reduce(
       (acc, item) => acc + item.price * item.quantity,
       0
@@ -25,7 +56,7 @@ export const addOrderItems = async (req, res, next) => {
     const shippingPrice = itemsPrice > 100000 ? 0 : 30000;
     const totalPrice = itemsPrice + shippingPrice;
 
-    // 3. Tạo Order mới
+    //  Tạo Order mới
     const order = new Order({
       user: req.user._id,
       orderItems: cart.items,
@@ -36,10 +67,10 @@ export const addOrderItems = async (req, res, next) => {
       totalPrice,
     });
 
-    // 4. Lưu đơn hàng (Bỏ { session })
+    //  Lưu đơn hàng
     const createdOrder = await order.save();
 
-    // 5. Xóa giỏ hàng (Bỏ { session })
+    //  Xóa giỏ hàng
     cart.items = [];
     await cart.save();
 

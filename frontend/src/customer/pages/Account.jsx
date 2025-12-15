@@ -3,7 +3,6 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import "./account.css";
 import { useAuth } from "../../shared/context/AuthContext";
 
-// Import icons
 import {
   FaUser,
   FaMapMarkerAlt,
@@ -16,7 +15,7 @@ import {
 import UserProfile from "../components/UserProfile";
 import ShippingAddress from "../components/ShippingAddress";
 import OrderHistory from "../components/OrderHistory";
-import PaymentMethods from "../components/PaymentMethods";
+import PaymentMethods from "../components/PaymentMethods"; // Uncomment khi bạn đã tạo file này
 
 export default function Account() {
   const { tab } = useParams();
@@ -25,14 +24,10 @@ export default function Account() {
   const { logout } = useAuth();
 
   useEffect(() => {
-    // A list of valid tabs
     const validTabs = ["profile", "address", "orders", "payment"];
-    // If a tab is provided and it's valid, set it as active.
-    // Otherwise, default to "profile".
     if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
     } else {
-      // Optionally, navigate to the default tab's URL for consistency
       navigate("/account/profile", { replace: true });
     }
   }, [tab, navigate]);
@@ -51,41 +46,47 @@ export default function Account() {
       case "orders":
         return <OrderHistory />;
       case "payment":
-        return <PaymentMethods />;
+        return <div>Payment Methods Content (Đang cập nhật)</div>;
       default:
         return <UserProfile />;
     }
   };
 
   const sidebarItems = [
-    { id: "profile", icon: <FaUser />, label: "User Profile" },
-    { id: "address", icon: <FaMapMarkerAlt />, label: "Shipping Address" },
-    { id: "orders", icon: <FaHistory />, label: "Order History" },
-    { id: "payment", icon: <FaCreditCard />, label: "Payment Methods" },
+    { id: "profile", icon: <FaUser />, label: "Thông tin tài khoản" },
+    { id: "address", icon: <FaMapMarkerAlt />, label: "Địa chỉ giao hàng" },
+    { id: "orders", icon: <FaHistory />, label: "Lịch sử đơn hàng" },
+    { id: "payment", icon: <FaCreditCard />, label: "Phương thức thanh toán" },
   ];
 
   return (
     <div className="account-page">
-      <div className="account-sidebar">
-        <ul>
-          {sidebarItems.map((item) => (
-            <li
-              key={item.id}
-              className={activeTab === item.id ? "active" : ""}
-            >
-              <Link to={`/account/${item.id}`}>
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
+      <div className="container">
+        <div className="account-sidebar">
+          <div className="sidebar-header">
+            <h3>Tài khoản</h3>
+          </div>
+          <ul>
+            {sidebarItems.map((item) => (
+              <li
+                key={item.id}
+                className={activeTab === item.id ? "active" : ""}
+              >
+                <Link to={`/account/${item.id}`}>
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              </li>
+            ))}
+            <li className="logout" onClick={handleLogout}>
+              <FaSignOutAlt />
+              <span>Đăng xuất</span>
             </li>
-          ))}
-          <li className="logout" onClick={handleLogout}>
-            <FaSignOutAlt />
-            <span>Logout</span>
-          </li>
-        </ul>
+          </ul>
+        </div>
+
+        <div className="account-content">{renderContent()}</div>
       </div>
-      <div className="account-content">{renderContent()}</div>
     </div>
   );
 }

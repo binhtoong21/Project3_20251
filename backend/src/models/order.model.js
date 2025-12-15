@@ -21,19 +21,20 @@ const orderSchema = new mongoose.Schema(
       },
     ],
     shippingAddress: {
+      province: { type: String, required: true },
+      district: { type: String, required: true },
+      ward: { type: String, required: true },
       street: { type: String, required: true },
-      city: { type: String, required: true },
-      state: { type: String },
-      postalCode: { type: String },
-      country: { type: String, required: true },
+      name: { type: String, required: true },
+      phone: { type: String, required: true },
     },
     paymentMethod: {
       type: String,
       required: true,
-      default: "COD", // Ví dụ: COD, Banking, Paypal
+      default: "COD",
     },
     paymentResult: {
-      // Dành cho khi bạn tích hợp thanh toán online sau này
+      // Dành cho tích hợp thanh toán online sau này
       id: String,
       status: String,
       update_time: String,

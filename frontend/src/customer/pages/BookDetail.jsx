@@ -18,6 +18,9 @@ export default function BookDetail() {
   const [feedback, setFeedback] = useState("");
   const cartActions = useCartActions();
 
+  const stock = book?.stock ?? 0;
+  const isOutOfStock = stock === 0;
+
   useEffect(() => {
     let mounted = true;
     setLoading(true);
@@ -56,7 +59,6 @@ export default function BookDetail() {
           sort: "newest",
         });
         if (mounted) {
-          // --- SỬA LẠI DÒNG NÀY: đổi .id thành ._id ---
           const filteredBooks = items.filter((item) => item._id !== book._id);
           // --------------------------------------------
           setRelatedBooks(filteredBooks.slice(0, 4));
@@ -74,14 +76,22 @@ export default function BookDetail() {
 
   const handleAddToCart = async () => {
     if (!book || adding) return;
+
+    // Check tồn kho sơ bộ ở frontend
+    if (quantity > stock) {
+      setFeedback(`Chỉ còn ${stock} sản phẩm.`);
+      return;
+    }
+
     try {
       setAdding(true);
       await cartActions.addItem(book._id, quantity);
       setFeedback("Added to cart");
       setTimeout(() => setFeedback(""), 2500);
     } catch (err) {
+      // Hiển thị lỗi từ backend
       console.error("Failed to add to cart", err);
-      setFeedback("Failed to add to cart");
+      setFeedback(err.message || "Failed to add to cart");
       setTimeout(() => setFeedback(""), 2500);
     } finally {
       setAdding(false);
@@ -131,6 +141,7 @@ export default function BookDetail() {
           <div className="detail-body">
             <h2>{book.title}</h2>
             <p className="author">by {book.author}</p>
+            <p className="stock">Tồn kho: {book.stock}</p>
             <p className="price">{formatPrice(book.price)}</p>
 
             <div className="quantity-selector">
@@ -190,7 +201,7 @@ export default function BookDetail() {
 
         {relatedBooks.length > 0 && (
           <BookSection
-            title="Sách liên quan"
+            title="Sách cùng thể loại"
             books={relatedBooks}
             link={`/books?category=${book.category}`}
           />

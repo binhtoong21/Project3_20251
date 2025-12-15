@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import BookCard from "../components/BookCard";
 import { listBooks } from "../../shared/utils/booksService";
 import "./page.css";
+import "./books.css";
 
 export default function Books() {
   const [books, setBooks] = useState([]);
@@ -115,18 +116,8 @@ export default function Books() {
     <div className="page books-page">
       <div className="container">
         {/* HEADER & FILTER */}
-        <div
-          className="books-header"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "20px",
-            flexWrap: "wrap",
-            gap: "10px",
-          }}
-        >
-          <h2 style={{ margin: 0 }}>
+        <div className="books-header">
+          <h2 className="books-title">
             {currentSearch
               ? `Kết quả cho "${currentSearch}"`
               : isSale
@@ -134,18 +125,10 @@ export default function Books() {
               : "Tủ Sách"}
           </h2>
 
-          <div
-            className="filter-controls"
-            style={{ display: "flex", gap: "10px" }}
-          >
+          <div className="filter-controls">
             <select
               value={currentCategory}
               onChange={(e) => handleFilterChange("category", e.target.value)}
-              style={{
-                padding: "8px",
-                borderRadius: "4px",
-                border: "1px solid #ddd",
-              }}
             >
               <option value="">-- Tất cả thể loại --</option>
               <option value="business">Kinh doanh</option>
@@ -157,11 +140,6 @@ export default function Books() {
             <select
               value={currentSort}
               onChange={(e) => handleFilterChange("sort", e.target.value)}
-              style={{
-                padding: "8px",
-                borderRadius: "4px",
-                border: "1px solid #ddd",
-              }}
             >
               <option value="newest">Mới nhất</option>
               <option value="price_asc">Giá tăng dần</option>
@@ -169,17 +147,7 @@ export default function Books() {
             </select>
 
             {(currentCategory || isSale || currentSearch) && (
-              <button
-                onClick={handleClearFilter}
-                style={{
-                  padding: "8px 12px",
-                  background: "#f44336",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={handleClearFilter} className="clear-filter-btn">
                 Xóa lọc
               </button>
             )}
@@ -188,20 +156,11 @@ export default function Books() {
 
         {/* DANH SÁCH SÁCH */}
         {books.length === 0 ? (
-          <div
-            style={{ textAlign: "center", marginTop: "40px", color: "#666" }}
-          >
+          <div className="no-books-message">
             <p>Không tìm thấy cuốn sách nào phù hợp.</p>
             <button
               onClick={handleClearFilter}
-              style={{
-                marginTop: "10px",
-                color: "blue",
-                textDecoration: "underline",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-              }}
+              className="back-to-all-books-btn"
             >
               Quay lại xem tất cả sách
             </button>
@@ -216,53 +175,26 @@ export default function Books() {
 
             {/*  PHÂN TRANG (PAGINATION)  */}
             {totalPages > 1 && (
-              <div
-                className="pagination"
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  marginTop: "40px",
-                  gap: "10px",
-                }}
-              >
+              <div className="pagination">
                 {/* Nút Previous */}
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  style={{
-                    padding: "8px 16px",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                    background: currentPage === 1 ? "#f5f5f5" : "white",
-                    cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                    color: currentPage === 1 ? "#aaa" : "#333",
-                  }}
                 >
                   &laquo; Trước
                 </button>
 
                 {/* Hiển thị số trang */}
-                <div style={{ display: "flex", gap: "5px" }}>
+                <div className="page-numbers">
                   {[...Array(totalPages)].map((_, index) => {
                     const pageNum = index + 1;
                     return (
                       <button
                         key={pageNum}
                         onClick={() => handlePageChange(pageNum)}
-                        style={{
-                          padding: "8px 12px",
-                          border:
-                            pageNum === currentPage
-                              ? "1px solid #007bff"
-                              : "1px solid #ddd",
-                          borderRadius: "4px",
-                          background:
-                            pageNum === currentPage ? "#007bff" : "white",
-                          color: pageNum === currentPage ? "white" : "#333",
-                          cursor: "pointer",
-                          fontWeight:
-                            pageNum === currentPage ? "bold" : "normal",
-                        }}
+                        className={`page-number-btn ${
+                          pageNum === currentPage ? "active" : ""
+                        }`}
                       >
                         {pageNum}
                       </button>
@@ -274,16 +206,6 @@ export default function Books() {
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  style={{
-                    padding: "8px 16px",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                    background:
-                      currentPage === totalPages ? "#f5f5f5" : "white",
-                    cursor:
-                      currentPage === totalPages ? "not-allowed" : "pointer",
-                    color: currentPage === totalPages ? "#aaa" : "#333",
-                  }}
                 >
                   Sau &raquo;
                 </button>

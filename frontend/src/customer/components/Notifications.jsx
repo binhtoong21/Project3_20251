@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useRef } from "react";
 import { FaBell } from "react-icons/fa";
 import "./Notifications.css";
-
+import "./header.css";
 export default function Notification() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -26,8 +25,12 @@ export default function Notification() {
 
   return (
     <div className="notification-container" ref={dropdownRef}>
-      <div className="notification-icon-wrapper" onClick={toggleDropdown}>
+      <div
+        className="notification-icon-wrapper icon-link"
+        onClick={toggleDropdown}
+      >
         <FaBell />
+        <span>Thông báo</span>
       </div>
       {isOpen && (
         <div className="notification-dropdown">

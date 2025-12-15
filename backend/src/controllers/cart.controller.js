@@ -47,8 +47,15 @@ export async function add(req, res, next) {
     if (!book) {
       return res.status(404).json({ message: "Book not found" });
     }
-
     const existingItem = cart.items.find((item) => item.book.equals(book._id));
+    const currentQtyInCart = existingItem ? existingItem.quantity : 0;
+    const totalRequested = currentQtyInCart + qty;
+
+    if (totalRequested > book.stock) {
+      return res.status(400).json({
+        message: `Chỉ còn ${book.stock} cuốn trong kho. Bạn đã có ${currentQtyInCart} cuốn trong giỏ.`,
+      });
+    }
 
     if (existingItem) {
       existingItem.quantity += qty;
@@ -93,7 +100,18 @@ export async function updateQuantity(req, res, next) {
     if (qty <= 0) {
       item.deleteOne();
     } else {
-      item.quantity = qty;
+      // -- LOGIC CHECK TỒN KHO --
+      // Cần query lại sách để lấy stock mới nhất
+      const book = await Book.findById(item.book);
+      if (!book) {
+        item.deleteOne(); // Sách bị xóa thì xóa khỏi giỏ
+      } else if (qty > book.stock) {
+        return res
+          .status(400)
+          .json({ message: `Số lượng vượt quá tồn kho (${book.stock})` });
+      } else {
+        item.quantity = qty;
+      }
     }
 
     await cart.save();

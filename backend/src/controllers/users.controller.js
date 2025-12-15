@@ -7,6 +7,7 @@ const generateToken = (id) => {
   });
 };
 
+//  ĐĂNG KÝ
 export const register = async (req, res, next) => {
   const { name, email, password } = req.body;
 
@@ -30,6 +31,9 @@ export const register = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        phone: user.phone,
+        avatar: user.avatar,
+        address: user.address,
         token: generateToken(user._id),
       });
     } else {
@@ -41,6 +45,7 @@ export const register = async (req, res, next) => {
   }
 };
 
+//  ĐĂNG NHẬP
 export const login = async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -49,10 +54,14 @@ export const login = async (req, res, next) => {
 
     if (user && (await user.matchPassword(password))) {
       res.json({
+        _id: user._id,
         userId: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
+        phone: user.phone,
+        avatar: user.avatar,
+        address: user.address,
         token: generateToken(user._id),
         message: "Login successful",
       });
@@ -65,6 +74,7 @@ export const login = async (req, res, next) => {
   }
 };
 
+//  LẤY PROFILE
 export const getProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id).select("-password");
@@ -79,6 +89,7 @@ export const getProfile = async (req, res, next) => {
   }
 };
 
+//  CẬP NHẬT PROFILE
 export const updateProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
@@ -86,15 +97,23 @@ export const updateProfile = async (req, res, next) => {
     if (user) {
       user.name = req.body.name || user.name;
       user.phone = req.body.phone || user.phone;
+      user.avatar = req.body.avatar || user.avatar;
+
+      // Nếu có gửi password mới thì cập nhật
+      if (req.body.password) {
+        user.password = req.body.password;
+      }
 
       const updatedUser = await user.save();
 
+      // Trả về dữ liệu mới nhất
       res.json({
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
         phone: updatedUser.phone,
+        avatar: updatedUser.avatar,
         address: updatedUser.address,
         token: generateToken(updatedUser._id),
       });
@@ -107,11 +126,13 @@ export const updateProfile = async (req, res, next) => {
   }
 };
 
+//  CẬP NHẬT ĐỊA CHỈ
 export const updateAddress = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
 
     if (user) {
+      // Cập nhật từng trường địa chỉ
       user.address = req.body.address || user.address;
 
       const updatedUser = await user.save();
@@ -122,6 +143,7 @@ export const updateAddress = async (req, res, next) => {
         email: updatedUser.email,
         role: updatedUser.role,
         phone: updatedUser.phone,
+        avatar: updatedUser.avatar,
         address: updatedUser.address,
         token: generateToken(updatedUser._id),
       });

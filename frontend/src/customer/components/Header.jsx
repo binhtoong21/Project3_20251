@@ -65,7 +65,6 @@ export default function Header() {
               <>
                 <div className="icon-link">
                   <Notification />
-                  <span>Thông báo</span>
                 </div>
                 <NavLink to="/cart" className="icon-link">
                   <FaShoppingCart />

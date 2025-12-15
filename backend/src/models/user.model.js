@@ -1,56 +1,52 @@
-  import { Schema, model } from "mongoose";
-  import bcrypt from "bcryptjs";
+import { Schema, model } from "mongoose";
+import bcrypt from "bcryptjs";
 
-  const userSchema = new Schema(
-    {
-      name: {
-        type: String,
-        required: true,
-      },
-      email: {
-        type: String,
-        required: true,
-        unique: true,
-      },
-      password: {
-        type: String,
-        required: true,
-      },
-      role: {
-        type: String,
-        enum: ["customer", "admin"],
-        default: "customer",
-      },
-      phone: {
-        type: String,
-        default: "",
-      },
-      address: {
-        street: { type: String, default: "" },
-        city: { type: String, default: "" },
-        state: { type: String, default: "" },
-        postalCode: { type: String, default: "" },
-        country: { type: String, default: "Việt Nam" },
+const userSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, enum: ["customer", "admin"], default: "customer" },
+    avatar: { type: String, default: "" },
+
+    // VALIDATE SỐ ĐIỆN THOẠI
+    phone: {
+      type: String,
+      default: "",
+      validate: {
+        validator: function (v) {
+          // Cho phép rỗng (lúc mới tạo) HOẶC phải đúng định dạng VN (10 số, đầu 03, 05, 07, 08, 09)
+          return v === "" || /(84|0[3|5|7|8|9])+([0-9]{8})\b/.test(v);
+        },
+        message: (props) =>
+          `${props.value} không phải là số điện thoại hợp lệ!`,
       },
     },
-    {
-      timestamps: true,
-    }
-  );
 
-  userSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) {
-      return next();
-    }
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  });
+    // CẤU TRÚC ĐỊA CHỈ CHUẨN VIỆT NAM
+    address: {
+      province: { type: String, default: "" }, // Tỉnh/Thành phố
+      district: { type: String, default: "" }, // Quận/Huyện
+      ward: { type: String, default: "" }, // Phường/Xã
+      street: { type: String, default: "" }, // Số nhà, tên đường
+    },
+  },
+  { timestamps: true }
+);
 
-  userSchema.methods.matchPassword = async function (enteredPassword) {
-    return await bcrypt.compare(enteredPassword, this.password);
-  };
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next();
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
 
-  const User = model("User", userSchema);
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
-  export default User;
+const User = model("User", userSchema);
+
+export default User;

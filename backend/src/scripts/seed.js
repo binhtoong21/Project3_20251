@@ -3,6 +3,7 @@ import connectDB from "../config/db.js";
 import Book from "../models/book.model.js";
 import Cart from "../models/cart.model.js";
 import User from "../models/user.model.js";
+import Order from "../models/order.model.js";
 
 import "dotenv/config";
 
@@ -255,11 +256,10 @@ const usersData = [
     role: "admin",
     phone: "",
     address: {
+      province: "",
+      district: "",
+      ward: "",
       street: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      country: "Việt Nam",
     },
   },
   {
@@ -269,11 +269,10 @@ const usersData = [
     role: "customer",
     phone: "0987654321",
     address: {
+      province: "Thành phố Hồ Chí Minh",
+      district: "Quận 1",
+      ward: "Phường Bến Nghé",
       street: "123 Đường ABC",
-      city: "Thành phố Hồ Chí Minh",
-      state: "Thành phố Hồ Chí Minh",
-      postalCode: "700000",
-      country: "Việt Nam",
     },
   },
 ];
@@ -284,20 +283,91 @@ const seedDatabase = async () => {
     console.log("🌱 Database connected for seeding...");
 
     // Xóa dữ liệu cũ
+    await Order.deleteMany({});
     await Book.deleteMany({});
     await User.deleteMany({});
     await Cart.deleteMany({});
     console.log("🗑️  Old data cleared.");
 
-    // Thêm dữ liệu mới
-    await Book.insertMany(booksData);
-    console.log(`✨ Added ${booksData.length} books successfully!`);
+    // Thêm dữ liệu sách
+    const createdBooks = await Book.insertMany(booksData);
+    console.log(`✨ Added ${createdBooks.length} books successfully!`);
 
-    // Tạo user (Dùng create để kích hoạt pre-save hook hash password nếu có trong Model)
-    for (const userData of usersData) {
-      await User.create(userData);
+    // Thêm dữ liệu người dùng
+    const createdUsers = await User.create(usersData);
+    console.log(`✨ Added ${createdUsers.length} users successfully!`);
+
+    // Lấy ID của admin và customer user
+    const adminUser = createdUsers.find((u) => u.role === "admin");
+    const customerUser = createdUsers.find((u) => u.role === "customer");
+
+    // Tạo dữ liệu đơn hàng mẫu
+    if (customerUser && createdBooks.length >= 2) {
+      const ordersData = [
+        {
+          user: customerUser._id,
+          orderItems: [
+            {
+              book: createdBooks[0]._id,
+              title: createdBooks[0].title,
+              quantity: 1,
+              price: createdBooks[0].price,
+              cover: createdBooks[0].cover,
+            },
+            {
+              book: createdBooks[1]._id,
+              title: createdBooks[1].title,
+              quantity: 2,
+              price: createdBooks[1].price,
+              cover: createdBooks[1].cover,
+            },
+          ],
+          shippingAddress: {
+            name: customerUser.name,
+            phone: customerUser.phone,
+            ...customerUser.address,
+          },
+          paymentMethod: "COD",
+          itemsPrice:
+            createdBooks[0].price * 1 + createdBooks[1].price * 2,
+          shippingPrice: 30000,
+          totalPrice:
+            createdBooks[0].price * 1 + createdBooks[1].price * 2 + 30000,
+          status: "Processing",
+        },
+        // Thêm một đơn hàng khác
+        {
+          user: customerUser._id,
+          orderItems: [
+            {
+              book: createdBooks[2]._id,
+              title: createdBooks[2].title,
+              quantity: 1,
+              price: createdBooks[2].price,
+              cover: createdBooks[2].cover,
+            },
+          ],
+          shippingAddress: {
+            name: "Người nhận khác",
+            phone: "0123456789",
+            province: "Thành phố Hà Nội",
+            district: "Quận Hoàn Kiếm",
+            ward: "Phường Hàng Trống",
+            street: "456 Phố XYZ",
+          },
+          paymentMethod: "Banking",
+          itemsPrice: createdBooks[2].price * 1,
+          shippingPrice: 35000,
+          totalPrice: createdBooks[2].price * 1 + 35000,
+          isPaid: true,
+          paidAt: new Date(),
+          status: "Shipped",
+        },
+      ];
+
+      await Order.insertMany(ordersData);
+      console.log(`✨ Added ${ordersData.length} orders successfully!`);
     }
-    console.log("✨ Added users successfully!");
 
     console.log("✅ Database seeding completed.");
   } catch (error) {
