@@ -122,3 +122,50 @@ export const getOrderById = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Get all orders (Admin)
+// @route   GET /api/orders/all
+// @access  Private/Admin
+export const getAllOrders = async (req, res, next) => {
+  try {
+    // Lấy tất cả đơn hàng, populate thêm tên và id của người mua
+    const orders = await Order.find({})
+      .populate("user", "id name")
+      .sort({ createdAt: -1 }); // Mới nhất lên đầu
+    res.json(orders);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update order status (Admin)
+// @route   PUT /api/orders/:id/status
+// @access  Private/Admin
+export const updateOrderStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (order) {
+      order.status = status;
+
+      // Nếu chuyển sang Delivered thì cập nhật luôn thời gian giao
+      if (status === "Delivered") {
+        order.isDelivered = true;
+        order.deliveredAt = Date.now();
+      }
+
+      // Nếu trạng thái là Paid
+      if (status === "Processing" || status === "Shipped") {
+      }
+
+      const updatedOrder = await order.save();
+      res.json(updatedOrder);
+    } else {
+      res.status(404);
+      throw new Error("Order not found");
+    }
+  } catch (error) {
+    next(error);
+  }
+};

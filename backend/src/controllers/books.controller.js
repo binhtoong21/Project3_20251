@@ -116,3 +116,45 @@ export async function getById(req, res, next) {
     next(err);
   }
 }
+
+// [POST] /api/books (Admin only)
+export async function create(req, res, next) {
+  try {
+    const newBook = new Book(req.body);
+    const savedBook = await newBook.save();
+    res.status(201).json(savedBook);
+  } catch (err) {
+    next(err);
+  }
+}
+
+// [PUT] /api/books/:id (Admin only)
+export async function update(req, res, next) {
+  try {
+    const { id } = req.params;
+    const updatedBook = await Book.findByIdAndUpdate(id, req.body, {
+      new: true, // Trả về data mới sau khi update
+      runValidators: true,
+    });
+    if (!updatedBook) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+    res.json(updatedBook);
+  } catch (err) {
+    next(err);
+  }
+}
+
+// [DELETE] /api/books/:id (Admin only)
+export async function remove(req, res, next) {
+  try {
+    const { id } = req.params;
+    const book = await Book.findByIdAndDelete(id);
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+    res.json({ message: "Book removed successfully" });
+  } catch (err) {
+    next(err);
+  }
+}

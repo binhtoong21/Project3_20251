@@ -3,7 +3,6 @@ import {
   addOrderItems,
   getMyOrders,
   getOrderById,
-  // 👇 Import các hàm cho admin
   getAllOrders,
   updateOrderStatus,
 } from "../controllers/order.controller.js";
@@ -11,15 +10,15 @@ import { protect, admin } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-// --- Customer Routes ---
+//  Customer Routes
 router.route("/").post(protect, addOrderItems);
 router.route("/myorders").get(protect, getMyOrders);
 
-// --- Admin Routes ---
+//  Admin Routes
 router.route("/all").get(protect, admin, getAllOrders);
 router.route("/:id/status").put(protect, admin, updateOrderStatus);
 
-// --- Common Route (để cuối cùng) ---
+//  Common Route
 router.route("/:id").get(protect, getOrderById);
 
 export default router;
