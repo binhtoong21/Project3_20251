@@ -12,6 +12,8 @@ router
   .put(protect, usersCtrl.updateProfile);
 router.put("/profile/address", protect, usersCtrl.updateAddress);
 
+//  Admin routes
 router.get("/", protect, admin, usersCtrl.getUsers);
+router.put("/:id/block", protect, admin, usersCtrl.toggleBlockUser);
 
 export default router;

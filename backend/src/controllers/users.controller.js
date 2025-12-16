@@ -51,6 +51,11 @@ export const login = async (req, res, next) => {
 
   try {
     const user = await User.findOne({ email });
+    //check if user is blocked
+    if (user && user.isBlocked) {
+      res.status(403); // 403 Forbidden
+      throw new Error("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.");
+    }
 
     if (user && (await user.matchPassword(password))) {
       res.json({
@@ -158,8 +163,27 @@ export const updateAddress = async (req, res, next) => {
 
 export const getUsers = async (req, res, next) => {
   try {
-    const users = await User.find({});
+    const users = await User.find({}).select("-password");
     res.json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+//  ADMIN: BLOCK/UNBLOCK USER
+export const toggleBlockUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (user) {
+      user.isBlocked = !user.isBlocked;
+      await user.save();
+      res.json({
+        message: `User ${user.isBlocked ? "blocked" : "unblocked"}`,
+        isBlocked: user.isBlocked,
+      });
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
   } catch (error) {
     next(error);
   }

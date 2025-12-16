@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem("userData", JSON.stringify({ token: authData.token }));
 
     //  Cấu trúc lại dữ liệu user để lưu vào State
-    // QUAN TRỌNG: Phải map đầy đủ các trường từ Backend trả về
+    // Phải map đầy đủ các trường từ Backend trả về
     const userData = {
       _id: authData.userId || authData._id,
       name: authData.name,

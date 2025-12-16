@@ -7,6 +7,9 @@ const userSchema = new Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["customer", "admin"], default: "customer" },
+
+    isBlocked: { type: Boolean, default: false }, // dùng cho block user ở admin
+    
     avatar: { type: String, default: "" },
 
     // VALIDATE SỐ ĐIỆN THOẠI

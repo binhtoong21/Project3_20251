@@ -1,28 +1,36 @@
-import express from 'express';
-import cors from 'cors';
-import morgan from 'morgan';
-import router from './routes/index.js';
+import express from "express";
+import cors from "cors";
+import morgan from "morgan";
+import router from "./routes/index.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime() });
+//  Serve static files từ thư mục uploads
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", uptime: process.uptime() });
 });
 
-app.use('/api', router);
+app.use("/api", router);
 
 app.use((req, res) => {
-  res.status(404).json({ message: 'Not found' });
+  res.status(404).json({ message: "Not found" });
 });
 
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(err.status || 500).json({ 
-    message: err.message || 'Internal server error' 
+  res.status(err.status || 500).json({
+    message: err.message || "Internal server error",
   });
 });
 

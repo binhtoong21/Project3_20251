@@ -5,7 +5,7 @@ const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div>Loading...</div>; // Or a spinner component
+    return <div>Loading...</div>;
   }
 
   if (user) {
@@ -17,7 +17,7 @@ const PublicRoute = ({ children }) => {
     return <Navigate to="/" replace />;
   }
 
-  // If no user is logged in, allow access to the public route (e.g., login, register)
+  // If no user is logged in, allow access to the public route
   return children;
 };
 

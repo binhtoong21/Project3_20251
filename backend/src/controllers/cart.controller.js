@@ -100,7 +100,7 @@ export async function updateQuantity(req, res, next) {
     if (qty <= 0) {
       item.deleteOne();
     } else {
-      // -- LOGIC CHECK TỒN KHO --
+      //  CHECK TỒN KHO
       // Cần query lại sách để lấy stock mới nhất
       const book = await Book.findById(item.book);
       if (!book) {

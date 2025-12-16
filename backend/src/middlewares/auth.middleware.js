@@ -15,6 +15,10 @@ export const protect = async (req, res, next) => {
         process.env.JWT_SECRET || "somethingsecret"
       );
       req.user = await User.findById(decoded.id).select("-password");
+      if (!req.user || req.user.isBlocked) {
+        res.status(403);
+        throw new Error("Tài khoản đã bị khóa hoặc không tồn tại.");
+      }
       return next();
     } catch (error) {
       console.error(error);

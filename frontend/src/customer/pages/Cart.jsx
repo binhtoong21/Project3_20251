@@ -21,7 +21,7 @@ export default function Cart() {
       return;
     }
     updateItem(itemId, currentQty + 1).catch((err) => {
-      alert(err.message); // Bắt lỗi từ Backend nếu Backend check kỹ
+      alert(err.message); // Bắt lỗi từ Backend 
     });
   };
 
