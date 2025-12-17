@@ -1,9 +1,16 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../shared/context/AuthContext";
 import "./AdminLayout.css";
+import {
+  FaHome,
+  FaBook,
+  FaShoppingCart,
+  FaUsers,
+  FaSignOutAlt,
+} from "react-icons/fa";
 
 export default function AdminLayout() {
-  const { logout } = useAuth();
+  const { logout } = useAuth(); //
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -12,28 +19,60 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="admin-layout">
-      <header className="admin-header">
-        <h1>Admin Dashboard</h1>
-        <button onClick={handleLogout} className="logout-button-admin">
-          Logout
-        </button>
-      </header>
-      <div className="admin-body">
-        <aside className="admin-sidebar">
-          <nav>
-            <ul>
-              <li>
-                <a href="/admin/dashboard">Dashboard</a>
-              </li>
-              {/* Add more admin links here */}
-            </ul>
-          </nav>
-        </aside>
-        <main className="admin-main">
-          <Outlet />
-        </main>
-      </div>
+    <div className="admin-container">
+      {/* Sidebar  */}
+      <aside className="admin-sidebar">
+        <div>
+          <div className="sidebar-header">BookStore Admin</div>
+          <ul className="sidebar-menu">
+            <li>
+              <NavLink
+                to="/admin/dashboard"
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                <FaHome style={{ marginRight: "10px" }} /> Dashboard
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/books"
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                <FaBook style={{ marginRight: "10px" }} /> Quản lý Sách
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/orders"
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                <FaShoppingCart style={{ marginRight: "10px" }} /> Quản lý Đơn
+                hàng
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/users"
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                <FaUsers style={{ marginRight: "10px" }} /> Quản lý Users
+              </NavLink>
+            </li>
+          </ul>
+        </div>
+
+        {/* Nút Logout  */}
+        <div className="sidebar-footer">
+          <button onClick={handleLogout} className="logout-btn">
+            <FaSignOutAlt /> Đăng xuất
+          </button>
+        </div>
+      </aside>
+
+      {/* Nội dung  */}
+      <main className="admin-content">
+        <Outlet />
+      </main>
     </div>
   );
 }

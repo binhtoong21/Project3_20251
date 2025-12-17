@@ -22,20 +22,15 @@ export default function Home() {
 
     const fetchBooks = async () => {
       try {
-        const [featuredRes, newRes, saleRes] = await Promise.all([
-          listBooks({ page: 1, limit: 5, sort: "newest", category: "fiction" }),
-          listBooks({
-            page: 1,
-            limit: 5,
-            sort: "newest",
-            category: "business",
-          }),
+        const [newRes, saleRes, featuredRes] = await Promise.all([
+          listBooks({ page: 1, limit: 5, sort: "newest" }),
           listBooks({ page: 1, limit: 5, sort: "price_asc", sale: true }),
+          listBooks({ page: 1, limit: 5, sort: "newest", category: "fiction" }),
         ]);
         if (!mounted) return;
-        setFeaturedBooks(featuredRes.items || []);
         setNewBooks(newRes.items || []);
         setSaleBooks(saleRes.items || []);
+        setFeaturedBooks(featuredRes.items || []);
       } catch (err) {
         console.error("Failed to load books:", err);
       } finally {
@@ -62,6 +57,11 @@ export default function Home() {
         </div>
       </div>
       <BookSection
+        title="Sách Mới Cập Nhật"
+        books={newBooks}
+        link="/books?sort=newest"
+      />
+      <BookSection
         title="Sách Đang Giảm Giá"
         books={saleBooks}
         link="/books?sale=true"
@@ -73,11 +73,6 @@ export default function Home() {
         link="/books?category=fiction"
       />
 
-      <BookSection
-        title="Sách Mới Cập Nhật"
-        books={newBooks}
-        link="/books?sort=newest"
-      />
       <NewsLetter />
     </div>
   );

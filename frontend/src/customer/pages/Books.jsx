@@ -142,8 +142,11 @@ export default function Books() {
               onChange={(e) => handleFilterChange("sort", e.target.value)}
             >
               <option value="newest">Mới nhất</option>
+              <option value="oldest">Cũ nhất</option>
               <option value="price_asc">Giá tăng dần</option>
               <option value="price_desc">Giá giảm dần</option>
+              <option value="a_z">Tên A-Z</option>
+              <option value="z_a">Tên Z-A</option>
             </select>
 
             {(currentCategory || isSale || currentSearch) && (

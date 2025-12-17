@@ -1,0 +1,79 @@
+.orders-manager-container {
+  padding-bottom: 50px;
+}
+
+/* Bộ lọc trạng thái đơn giản */
+.filter-bar {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-btn {
+  border: none;
+  background: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #718096;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  background-color: #edf2f7;
+}
+
+.filter-btn.active {
+  background-color: #3182ce;
+  color: white;
+}
+
+/* Select box để đổi trạng thái trong bảng */
+.status-select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e0;
+  background-color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.status-select:focus {
+  border-color: #3182ce;
+  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+}
+
+/* Màu sắc cho từng trạng thái trong select */
+.status-select.pending {
+  color: #d69e2e;
+  border-color: #d69e2e;
+}
+.status-select.processing {
+  color: #3182ce;
+  border-color: #3182ce;
+}
+.status-select.shipped {
+  color: #805ad5;
+  border-color: #805ad5;
+}
+.status-select.delivered {
+  color: #38a169;
+  border-color: #38a169;
+}
+.status-select.cancelled {
+  color: #e53e3e;
+  border-color: #e53e3e;
+}
+
+.order-detail-mini {
+  font-size: 0.85rem;
+  color: #718096;
+  margin-top: 4px;
+}

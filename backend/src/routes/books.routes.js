@@ -7,7 +7,7 @@ const router = Router();
 router.get("/", booksCtrl.list);
 router.get("/:id", booksCtrl.getById);
 
-// Thêm các route cho Admin
+//  các route cho Admin
 router.post("/", protect, admin, booksCtrl.create);
 router.put("/:id", protect, admin, booksCtrl.update);
 router.delete("/:id", protect, admin, booksCtrl.remove);
