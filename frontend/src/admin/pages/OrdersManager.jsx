@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import apiClient from "../../shared/utils/apiClient";
-import { formatPrice, formatDate } from "../../shared/utils/formatters";
+import { formatCurrency, formatDate } from "../../shared/utils/formatters";
 import { FaEye } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import "./OrdersManager.css";
@@ -133,7 +133,7 @@ export default function OrdersManager() {
                 </td>
                 <td>{formatDate(order.createdAt)}</td>
                 <td style={{ fontWeight: "bold", color: "#2d3748" }}>
-                  {formatPrice(order.totalPrice)}
+                  {formatCurrency(order.totalPrice)}
                 </td>
                 <td>
                   <select
@@ -157,7 +157,7 @@ export default function OrdersManager() {
                 <td>
                   {/* Link tới trang chi tiết đơn hàng  */}
                   <Link
-                    to={`/orders/${order._id}`}
+                    to={`/admin/orders/${order._id}`}
                     className="btn-edit"
                     title="Xem chi tiết"
                   >
@@ -172,3 +172,4 @@ export default function OrdersManager() {
     </div>
   );
 }
+

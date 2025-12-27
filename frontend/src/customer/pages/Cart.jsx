@@ -1,7 +1,7 @@
 import "./cart.css";
 import { useCartActions, useCartState } from "../../shared/context/CartContext";
 import { useNavigate } from "react-router-dom";
-import { formatPrice } from "../../shared/utils/formatters";
+import { formatCurrency } from "../../shared/utils/formatters";
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -71,7 +71,7 @@ export default function Cart() {
                     <div className="cart-item-info">
                       <h3>{item.title}</h3>
                       <p className="cart-item-price">
-                        {formatPrice(item.price)}
+                        {formatCurrency(item.price)}
                       </p>
 
                       {currentStock < item.quantity && (
@@ -130,7 +130,7 @@ export default function Cart() {
                         Remove
                       </button>
                       <p className="cart-item-total">
-                        {formatPrice(item.price * item.quantity)}
+                        {formatCurrency(item.price * item.quantity)}
                       </p>
                     </div>
                   </article>
@@ -146,7 +146,7 @@ export default function Cart() {
               </div>
               <div className="summary-row">
                 <span>Subtotal</span>
-                <span>{formatPrice(subtotal)}</span>
+                <span>{formatCurrency(subtotal)}</span>
               </div>
               <p className="summary-note">
                 Shipping and taxes calculated at checkout.
@@ -166,3 +166,4 @@ export default function Cart() {
     </div>
   );
 }
+

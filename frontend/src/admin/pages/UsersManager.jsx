@@ -123,7 +123,7 @@ export default function UsersManager() {
                 </td>
                 <td>
                   {/* Không cho phép Admin tự block chính mình hoặc block admin khác  */}
-                  {user._id !== currentUser._id && (
+                  {user._id !== currentUser._id && user.role !== 'admin' ? (
                     <button
                       className={`btn-toggle-block ${
                         user.isBlocked ? "unblock" : "block"
@@ -142,7 +142,9 @@ export default function UsersManager() {
                         </>
                       )}
                     </button>
-                  )}
+                  ) : user.role === 'admin' && user._id !== currentUser._id ? (
+                    <span style={{ color: '#888', fontStyle: 'italic' }}>Không thể khóa Admin</span>
+                  ) : null}
                 </td>
               </tr>
             ))

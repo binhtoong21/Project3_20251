@@ -9,13 +9,19 @@ import {
   FaHistory,
   FaCreditCard,
   FaSignOutAlt,
+  FaWallet,
+  FaBookMedical,
+  FaReceipt,
 } from "react-icons/fa";
 
 // Import content components
 import UserProfile from "../components/UserProfile";
 import ShippingAddress from "../components/ShippingAddress";
 import OrderHistory from "../components/OrderHistory";
-import PaymentMethods from "../components/PaymentMethods"; // Uncomment khi bạn đã tạo file này
+import PaymentMethods from "../components/PaymentMethods";
+import Wallet from "../components/Wallet";
+import MyBooks from "../components/MyBooks";
+import MySales from "./MySales"; // Import the new component
 
 export default function Account() {
   const { tab } = useParams();
@@ -24,7 +30,7 @@ export default function Account() {
   const { logout } = useAuth();
 
   useEffect(() => {
-    const validTabs = ["profile", "address", "orders", "payment"];
+    const validTabs = ["profile", "address", "orders", "payment", "wallet", "my-books", "my-sales"];
     if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
     } else {
@@ -45,6 +51,12 @@ export default function Account() {
         return <ShippingAddress />;
       case "orders":
         return <OrderHistory />;
+      case "wallet":
+        return <Wallet />;
+      case "my-books":
+        return <MyBooks />;
+      case "my-sales":
+        return <MySales />;
       case "payment":
         return <div>Payment Methods Content (Đang cập nhật)</div>;
       default:
@@ -54,8 +66,11 @@ export default function Account() {
 
   const sidebarItems = [
     { id: "profile", icon: <FaUser />, label: "Thông tin tài khoản" },
+    { id: "wallet", icon: <FaWallet />, label: "Ví của tôi" },
+    { id: "my-books", icon: <FaBookMedical />, label: "Sách của tôi (Bán)" },
+    { id: "my-sales", icon: <FaReceipt />, label: "Đơn hàng đã bán" },
+    { id: "orders", icon: <FaHistory />, label: "Lịch sử mua hàng" },
     { id: "address", icon: <FaMapMarkerAlt />, label: "Địa chỉ giao hàng" },
-    { id: "orders", icon: <FaHistory />, label: "Lịch sử đơn hàng" },
     { id: "payment", icon: <FaCreditCard />, label: "Phương thức thanh toán" },
   ];
 

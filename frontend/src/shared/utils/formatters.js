@@ -1,4 +1,4 @@
-export function formatPrice(price) {
+export function formatCurrency(price) {
   if (typeof price !== "number") {
     return "";
   }

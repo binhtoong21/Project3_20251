@@ -18,3 +18,23 @@ export async function listBooks(params) {
 export async function getBook(id) {
   return apiClient.get(`/books/${id}`);
 }
+
+// ===============================================
+// C2C User Book Service
+// ===============================================
+
+export async function listMyBooks() {
+  return apiClient.get("/books/my-books");
+}
+
+export async function createUserBook(formData) {
+  return apiClient.postMultipart("/books/user", formData);
+}
+
+export async function updateUserBook(id, formData) {
+  return apiClient.putMultipart(`/books/user/${id}`, formData);
+}
+
+export async function deleteUserBook(id) {
+  return apiClient.delete(`/books/user/${id}`);
+}

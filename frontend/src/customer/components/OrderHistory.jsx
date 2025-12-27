@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import apiClient from "../../shared/utils/apiClient";
-import { formatPrice, formatDate } from "../../shared/utils/formatters";
+import { formatCurrency, formatDate } from "../../shared/utils/formatters";
 import "./OrderHistory.css";
 
 const OrderHistory = () => {
@@ -49,7 +49,7 @@ const OrderHistory = () => {
               <tr key={order._id}>
                 <td data-label="Order ID">#{order._id.substring(0, 7)}...</td>
                 <td data-label="Date">{formatDate(order.createdAt)}</td>
-                <td data-label="Total">{formatPrice(order.totalPrice)}</td>
+                <td data-label="Total">{formatCurrency(order.totalPrice)}</td>
                 <td data-label="Status">
                   <span className={`status status-${order.status.toLowerCase()}`}>
                     {order.status}

@@ -3,52 +3,26 @@ import Order from "../models/order.model.js";
 import Cart from "../models/cart.model.js";
 import Book from "../models/book.model.js";
 
+import User from "../models/user.model.js";
+import Transaction from "../models/transaction.model.js";
+
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Private
 export const addOrderItems = async (req, res, next) => {
-  try {
-    const { paymentMethod, shippingAddress } = req.body;
+  const { paymentMethod, shippingAddress } = req.body;
 
-    //  Lấy giỏ hàng từ DB
-    const cart = await Cart.findOne({ user: req.user._id });
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const cart = await Cart.findOne({ user: req.user._id }).session(session);
 
     if (!cart || cart.items.length === 0) {
       res.status(400);
       throw new Error("No order items (Cart is empty)");
     }
-    //  LOGIC TRỪ TỒN KHO
-    //  Kiểm tra tồn kho cho TẤT CẢ sản phẩm trước
-    const updateOperations = [];
 
-    for (const item of cart.items) {
-      const book = await Book.findById(item.book);
-      if (!book) {
-        res.status(400);
-        throw new Error(`Sách "${item.title}" không còn tồn tại.`);
-      }
-      if (book.stock < item.quantity) {
-        res.status(400);
-        throw new Error(
-          `Sách "${item.title}" không đủ số lượng tồn kho (Còn lại: ${book.stock}).`
-        );
-      }
-
-      // Chuẩn bị lệnh update
-      updateOperations.push({
-        updateOne: {
-          filter: { _id: item.book },
-          update: { $inc: { stock: -item.quantity } },
-        },
-      });
-    }
-
-    //  Thực hiện trừ tồn kho hàng loạt
-    if (updateOperations.length > 0) {
-      await Book.bulkWrite(updateOperations);
-    }
-
-    //  Tính toán giá tiền
     const itemsPrice = cart.items.reduce(
       (acc, item) => acc + item.price * item.quantity,
       0
@@ -56,27 +30,129 @@ export const addOrderItems = async (req, res, next) => {
     const shippingPrice = itemsPrice > 100000 ? 0 : 30000;
     const totalPrice = itemsPrice + shippingPrice;
 
-    //  Tạo Order mới
+    // --- Wallet Payment Logic ---
+    if (paymentMethod === "wallet") {
+      const user = await User.findById(req.user._id).session(session);
+      if (user.walletBalance < totalPrice) {
+        res.status(400);
+        throw new Error("Số dư ví không đủ để thực hiện thanh toán.");
+      }
+      user.walletBalance -= totalPrice;
+      await user.save({ session });
+    }
+    
+    // --- Prepare Order Items and Check Stock ---
+    const bookIds = cart.items.map(item => item.book);
+    const books = await Book.find({ '_id': { $in: bookIds } }).session(session).lean();
+    
+    const bookMap = books.reduce((map, book) => {
+      map[book._id.toString()] = book;
+      return map;
+    }, {});
+
+    const updateOps = [];
+    const orderItemsWithSeller = cart.items.map(item => {
+      const book = bookMap[item.book.toString()];
+      if (!book) {
+        throw new Error(`Sách "${item.title}" không tồn tại hoặc đã bị xóa.`);
+      }
+      if (book.stock < item.quantity) {
+        throw new Error(`Sách "${item.title}" không đủ tồn kho (Chỉ còn: ${book.stock}).`);
+      }
+      
+      updateOps.push({
+        updateOne: {
+          filter: { _id: item.book },
+          update: { $inc: { stock: -item.quantity } },
+        },
+      });
+
+      return {
+        book: item.book,
+        title: item.title,
+        quantity: item.quantity,
+        price: item.price,
+        cover: item.cover,
+        seller: book.owner, // <-- Key change: Assign the book's owner as the seller
+      };
+    });
+
+    if (updateOps.length > 0) {
+      await Book.bulkWrite(updateOps, { session });
+    }
+    
+    // --- Order Creation ---
     const order = new Order({
       user: req.user._id,
-      orderItems: cart.items,
-      shippingAddress: shippingAddress,
-      paymentMethod: paymentMethod,
+      orderItems: orderItemsWithSeller, // Use the new array with seller info
+      shippingAddress,
+      paymentMethod,
       itemsPrice,
       shippingPrice,
       totalPrice,
+      isPaid: paymentMethod === "wallet",
+      paidAt: paymentMethod === "wallet" ? Date.now() : null,
     });
+    const createdOrder = await order.save({ session });
 
-    //  Lưu đơn hàng
-    const createdOrder = await order.save();
+    // --- Transaction Record & Payouts for Wallet Payment ---
+    if (paymentMethod === "wallet") {
+      // Buyer's transaction
+      const buyerTransaction = {
+        user: req.user._id,
+        type: 'purchase',
+        amount: -totalPrice,
+        status: 'completed',
+        relatedEntity: { id: createdOrder._id, model: 'Order' },
+        description: `Thanh toán cho đơn hàng ${createdOrder._id}`
+      };
 
-    //  Xóa giỏ hàng
+      // C2C Seller Payout Logic
+      const sellerPayouts = new Map();
+      for (const item of createdOrder.orderItems) {
+        if (item.seller) {
+          const sellerId = item.seller.toString();
+          const earnings = item.price * item.quantity;
+          sellerPayouts.set(sellerId, (sellerPayouts.get(sellerId) || 0) + earnings);
+        }
+      }
+
+      const transactionCreateOps = [buyerTransaction];
+      if (sellerPayouts.size > 0) {
+        const sellerUpdateOps = [];
+        for (const [sellerId, amount] of sellerPayouts.entries()) {
+          sellerUpdateOps.push({
+            updateOne: {
+              filter: { _id: sellerId },
+              update: { $inc: { walletBalance: amount } },
+            },
+          });
+          transactionCreateOps.push({
+            user: sellerId,
+            type: 'sale_income',
+            amount: amount,
+            status: 'completed',
+            relatedEntity: { id: createdOrder._id, model: 'Order' },
+            description: `Tiền bán sách từ đơn hàng ${createdOrder._id}`,
+          });
+        }
+        await User.bulkWrite(sellerUpdateOps, { session });
+      }
+      await Transaction.create(transactionCreateOps, { session });
+    }
+
+    // --- Clear Cart ---
     cart.items = [];
-    await cart.save();
+    await cart.save({ session });
 
+    await session.commitTransaction();
     res.status(201).json(createdOrder);
+
   } catch (error) {
+    await session.abortTransaction();
     next(error);
+  } finally {
+    session.endSession();
   }
 };
 
@@ -108,7 +184,7 @@ export const getOrderById = async (req, res, next) => {
       // Kiểm tra quyền xem đơn hàng (chính chủ hoặc admin)
       if (
         order.user._id.toString() !== req.user._id.toString() &&
-        !req.user.isAdmin
+        req.user.role !== 'admin'
       ) {
         res.status(401);
         throw new Error("Not authorized to view this order");
@@ -165,6 +241,53 @@ export const updateOrderStatus = async (req, res, next) => {
       res.status(404);
       throw new Error("Order not found");
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get all items a user has sold
+// @route   GET /api/orders/my-sales
+// @access  Private
+export const getMySales = async (req, res, next) => {
+  try {
+    // Find orders where the current user is listed as a seller in at least one orderItem
+    const ordersWithUserSales = await Order.find({ 
+      'orderItems.seller': req.user._id 
+    }).populate('user', 'name').sort({ createdAt: -1 });
+
+    if (!ordersWithUserSales) {
+      return res.json([]);
+    }
+
+    // Process the orders to return a flat list of sold items
+    const sales = ordersWithUserSales.flatMap(order => {
+      // Filter to get only the items sold by the current user in this order
+      const userSoldItems = order.orderItems.filter(
+        item => item.seller && item.seller.toString() === req.user._id.toString()
+      );
+
+      // Map these items to a more useful format
+      return userSoldItems.map(item => ({
+        orderId: order._id,
+        soldAt: order.createdAt,
+        status: order.status,
+        buyer: {
+          name: order.user.name,
+        },
+        shippingAddress: order.shippingAddress,
+        item: {
+          title: item.title,
+          quantity: item.quantity,
+          price: item.price,
+          cover: item.cover,
+        },
+        totalSaleValue: item.quantity * item.price,
+      }));
+    });
+
+    res.json(sales);
+
   } catch (error) {
     next(error);
   }

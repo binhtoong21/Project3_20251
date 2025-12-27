@@ -1,0 +1,93 @@
+.my-books-container {
+  padding: 2rem;
+}
+
+.my-books-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.my-books-header h2 {
+  font-size: 2rem;
+  margin: 0;
+}
+
+.my-books-header .btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.my-books-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.my-book-card {
+    display: flex;
+    gap: 1.5rem;
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    align-items: center;
+}
+
+.my-book-card img {
+    width: 80px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.my-book-card-info {
+    flex-grow: 1;
+}
+
+.my-book-card-info h4 {
+    margin: 0 0 0.5rem;
+    font-size: 1.2rem;
+}
+
+.my-book-card-info p {
+    margin: 0.25rem 0;
+    color: #666;
+}
+.my-book-card-info .price {
+    font-weight: bold;
+    color: #333;
+}
+
+
+.my-book-card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.my-book-card-actions button {
+    background: #f0f0f0;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.my-book-card-actions button:hover {
+    background-color: #e0e0e0;
+}
+
+.my-book-card-actions .btn-delete {
+    color: #dc3545;
+}
+.my-book-card-actions .btn-delete:hover {
+    background-color: #dc3545;
+    color: #fff;
+}

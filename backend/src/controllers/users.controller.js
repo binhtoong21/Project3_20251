@@ -174,16 +174,23 @@ export const getUsers = async (req, res, next) => {
 export const toggleBlockUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
-    if (user) {
-      user.isBlocked = !user.isBlocked;
-      await user.save();
-      res.json({
-        message: `User ${user.isBlocked ? "blocked" : "unblocked"}`,
-        isBlocked: user.isBlocked,
-      });
-    } else {
-      res.status(404).json({ message: "User not found" });
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
     }
+
+    // Prevent blocking an admin user
+    if (user.role === "admin") {
+      res.status(403); // Forbidden
+      throw new Error("Cannot block an administrator account.");
+    }
+
+    user.isBlocked = !user.isBlocked;
+    await user.save();
+    res.json({
+      message: `User ${user.isBlocked ? "blocked" : "unblocked"}`,
+      isBlocked: user.isBlocked,
+    });
   } catch (error) {
     next(error);
   }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import apiClient from "../../shared/utils/apiClient";
-import { formatPrice } from "../../shared/utils/formatters";
+import { formatCurrency } from "../../shared/utils/formatters";
 import { FaPlus, FaEdit, FaTrash, FaTimes } from "react-icons/fa";
 import "./BooksManager.css";
 
@@ -23,7 +23,7 @@ export default function BooksManager() {
     category: "",
     price: "",
     oldPrice: "",
-    stock: "", // Quan trọng: Trường mới thêm
+    stock: "", 
     publisher: "",
     description: "",
     cover: "", // Đường dẫn ảnh (string)
@@ -36,7 +36,7 @@ export default function BooksManager() {
   const fetchBooks = async () => {
     try {
       setLoading(true);
-      // Gọi API listBooks (Backend đã có sẵn)
+      // Gọi API listBooks 
       const res = await apiClient.get(
         `/books?page=${page}&limit=10&sort=newest`
       );
@@ -99,7 +99,7 @@ export default function BooksManager() {
     const formData = new FormData();
     formData.append("image", file);
 
-    // Lấy token để xác thực (nếu cần)
+    // Lấy token để xác thực 
     const token = JSON.parse(localStorage.getItem("userData"))?.token;
 
     const response = await fetch("/api/uploads", {
@@ -207,7 +207,7 @@ export default function BooksManager() {
                 </td>
                 <td>{book.title}</td>
                 <td>{book.author}</td>
-                <td>{formatPrice(book.price)}</td>
+                <td>{formatCurrency(book.price)}</td>
                 <td>{book.stock !== undefined ? book.stock : 0}</td>
                 <td>{book.category}</td>
                 <td>
@@ -410,3 +410,4 @@ export default function BooksManager() {
     </div>
   );
 }
+

@@ -1,0 +1,89 @@
+.mp-book-item {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: box-shadow 0.2s, border-color 0.2s;
+    align-items: flex-start;
+}
+
+.mp-book-item:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border-color: #ccc;
+}
+
+.item-cover-link {
+    flex-shrink: 0;
+}
+
+.item-cover-link img {
+    width: 120px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.item-details {
+    flex-grow: 1;
+}
+
+.item-title {
+    margin: 0 0 5px;
+    font-size: 1.5rem;
+    color: #333;
+}
+.item-details a {
+    text-decoration: none;
+}
+.item-details a:hover .item-title {
+    color: #5669FF;
+}
+
+
+.item-author {
+    margin: 0 0 10px;
+    font-style: italic;
+    color: #777;
+}
+
+.item-description {
+    margin: 0 0 15px;
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.item-meta {
+    display: flex;
+    gap: 20px;
+    font-size: 0.85rem;
+    color: #888;
+}
+.item-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.item-meta strong {
+    color: #444;
+}
+
+.item-price-section {
+    flex-shrink: 0;
+    text-align: right;
+    min-width: 150px;
+}
+
+.item-price {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #d32f2f;
+    margin-bottom: 10px;
+}

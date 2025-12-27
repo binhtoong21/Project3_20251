@@ -5,14 +5,16 @@ import {
   getOrderById,
   getAllOrders,
   updateOrderStatus,
+  getMySales,
 } from "../controllers/order.controller.js";
 import { protect, admin } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-//  Customer Routes
+//  Customer & Seller Routes
 router.route("/").post(protect, addOrderItems);
 router.route("/myorders").get(protect, getMyOrders);
+router.route("/my-sales").get(protect, getMySales);
 
 //  Admin Routes
 router.route("/all").get(protect, admin, getAllOrders);

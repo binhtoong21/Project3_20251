@@ -1,6 +1,7 @@
 import NewsLetter from "../components/NewsLetter";
 import BookSection from "../components/BookSection";
 import HeroSlider from "../components/HeroSlider";
+import MarketplacePromo from "../components/MarketplacePromo";
 import "./page.css";
 import { useState, useEffect } from "react";
 import { listBooks } from "../../shared/utils/booksService";
@@ -72,6 +73,8 @@ export default function Home() {
         books={featuredBooks}
         link="/books?category=fiction"
       />
+
+      <MarketplacePromo />
 
       <NewsLetter />
     </div>

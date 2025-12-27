@@ -65,7 +65,8 @@ export async function add(req, res, next) {
         quantity: qty,
         price: book.price,
         title: book.title,
-        cover: book.cover,
+        // FIX: Use only the first image from the book's cover array
+        cover: (book.cover && book.cover.length > 0) ? book.cover[0] : '',
       });
     }
 

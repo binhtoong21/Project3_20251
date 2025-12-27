@@ -33,6 +33,7 @@ const userSchema = new Schema(
       ward: { type: String, default: "" }, // Phường/Xã
       street: { type: String, default: "" }, // Số nhà, tên đường
     },
+    walletBalance: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

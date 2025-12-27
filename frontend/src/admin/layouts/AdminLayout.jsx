@@ -7,6 +7,7 @@ import {
   FaShoppingCart,
   FaUsers,
   FaSignOutAlt,
+  FaMoneyCheckAlt,
 } from "react-icons/fa";
 
 export default function AdminLayout() {
@@ -56,6 +57,14 @@ export default function AdminLayout() {
                 className={({ isActive }) => (isActive ? "active" : "")}
               >
                 <FaUsers style={{ marginRight: "10px" }} /> Quản lý Users
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/deposits"
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                <FaMoneyCheckAlt style={{ marginRight: "10px" }} /> Quản lý Nạp tiền
               </NavLink>
             </li>
           </ul>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import apiClient from "../../shared/utils/apiClient";
-import { formatPrice, formatDate } from "../../shared/utils/formatters";
+import { formatCurrency, formatDate } from "../../shared/utils/formatters";
 import "./OrderDetail.css";
 
 const OrderDetail = () => {
@@ -115,22 +115,22 @@ const OrderDetail = () => {
                         </span>
                       </div>
                     </div>
-                    <span>{formatPrice(item.price * item.quantity)}</span>
+                    <span>{formatCurrency(item.price * item.quantity)}</span>
                   </div>
                 ))}
               </div>
               <hr />
               <div className="summary-row">
                 <span>Subtotal</span>
-                <span>{formatPrice(order.itemsPrice)}</span>
+                <span>{formatCurrency(order.itemsPrice)}</span>
               </div>
               <div className="summary-row">
                 <span>Shipping</span>
-                <span>{formatPrice(order.shippingPrice)}</span>
+                <span>{formatCurrency(order.shippingPrice)}</span>
               </div>
               <div className="summary-row total">
                 <span>Total</span>
-                <span>{formatPrice(order.totalPrice)}</span>
+                <span>{formatCurrency(order.totalPrice)}</span>
               </div>
             </div>
             <Link to="/account/orders" className="btn-back">
@@ -144,3 +144,4 @@ const OrderDetail = () => {
 };
 
 export default OrderDetail;
+

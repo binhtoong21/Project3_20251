@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getBook, listBooks } from "../../shared/utils/booksService";
-import { formatPrice } from "../../shared/utils/formatters";
+import { formatCurrency } from "../../shared/utils/formatters";
 import { useCartActions } from "../../shared/context/CartContext.jsx";
 import BookSection from "../components/BookSection.jsx";
 import "./page.css";
@@ -142,7 +142,7 @@ export default function BookDetail() {
             <h2>{book.title}</h2>
             <p className="author">by {book.author}</p>
             <p className="stock">Tồn kho: {book.stock}</p>
-            <p className="price">{formatPrice(book.price)}</p>
+            <p className="price">{formatCurrency(book.price)}</p>
 
             <div className="quantity-selector">
               <button onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
@@ -210,3 +210,4 @@ export default function BookDetail() {
     </div>
   );
 }
+

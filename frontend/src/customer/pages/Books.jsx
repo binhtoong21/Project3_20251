@@ -34,6 +34,7 @@ export default function Books() {
           sort: currentSort,
           sale: isSale,
           search: currentSearch,
+          mode: 'new', // Chỉ lấy sách mới của cửa hàng
         };
 
         const response = await listBooks(params);

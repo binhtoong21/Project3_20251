@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FaShoppingCart } from "react-icons/fa";
 import "./bookcard.css";
 import PropTypes from "prop-types";
-import { formatPrice } from "../../shared/utils/formatters";
+import { formatCurrency } from "../../shared/utils/formatters";
 import { useCartActions } from "../../shared/context/CartContext.jsx";
 
 export default function BookCard({ book }) {
@@ -44,10 +44,12 @@ export default function BookCard({ book }) {
   return (
     <article className="book-card">
       {isSale && <div className="sale-badge">-{discountPercent}%</div>}
+      {book.owner && <div className="c2c-badge">Used</div>}
+
 
       <Link to={`/books/${book._id}`} className="book-cover-link">
         <img
-          src={book.cover}
+          src={book.cover[0] || book.cover} // Handle both array and string for cover
           alt={book.title}
           className="book-cover"
           onError={handleError}
@@ -59,11 +61,18 @@ export default function BookCard({ book }) {
           {book.title}
         </Link>
 
+        {book.owner ? (
+            <p className="seller-info">Sold by: {book.owner.name}</p>
+        ) : (
+            <p className="seller-info">{book.author}</p>
+        )}
+
+
         <div className="book-footer">
           <div className="price-container">
-            <span className="price">{formatPrice(book.price)}</span>
+            <span className="price">{formatCurrency(book.price)}</span>
             {isSale && (
-              <span className="old-price">{formatPrice(book.oldPrice)}</span>
+              <span className="old-price">{formatCurrency(book.oldPrice)}</span>
             )}
           </div>
 
@@ -96,10 +105,18 @@ export default function BookCard({ book }) {
 BookCard.propTypes = {
   book: PropTypes.shape({
     _id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    cover: PropTypes.string.isRequired,
+    cover: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.arrayOf(PropTypes.string)
+    ]).isRequired,
     title: PropTypes.string.isRequired,
     author: PropTypes.string.isRequired,
     price: PropTypes.number.isRequired,
     oldPrice: PropTypes.number,
+    owner: PropTypes.shape({
+      _id: PropTypes.string,
+      name: PropTypes.string,
+    }),
   }).isRequired,
 };
+

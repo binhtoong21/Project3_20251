@@ -1,0 +1,168 @@
+.wallet-container {
+    padding: 2rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.wallet-container h2 {
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    color: #333;
+}
+
+.wallet-balance-card {
+    background: linear-gradient(135deg, #5669FF, #3D4ED8);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.wallet-balance-card p {
+    margin: 0;
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.wallet-balance-card h3 {
+    margin: 0.5rem 0 0;
+    font-size: 2.5rem;
+    letter-spacing: 1px;
+}
+
+.wallet-actions {
+    margin-bottom: 2.5rem;
+}
+
+.deposit-section {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.deposit-section h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+.deposit-section p {
+    margin-bottom: 1.5rem;
+    color: #666;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #444;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #5669FF;
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.btn-primary {
+    background-color: #5669FF;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #3D4ED8;
+}
+.btn-primary:disabled {
+    background-color: #aab2ff;
+    cursor: not-allowed;
+}
+
+
+.success-message {
+    color: #28a745;
+    margin-top: 1rem;
+}
+
+.error-message {
+    color: #dc3545;
+    margin-top: 1rem;
+}
+
+
+.transaction-history h4 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.transaction-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.transaction-table th,
+.transaction-table td {
+    padding: 1rem 1.2rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.transaction-table th {
+    background-color: #f7f7f7;
+    font-weight: 600;
+    color: #555;
+}
+
+.transaction-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.transaction-table .amount-positive {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.transaction-table .amount-negative {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.transaction-table .status-completed {
+    color: #28a745;
+}
+.transaction-table .status-pending {
+    color: #ffc107;
+}
+.transaction-table .status-failed {
+    color: #dc3545;
+}

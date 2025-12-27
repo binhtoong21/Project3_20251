@@ -18,6 +18,7 @@ const orderSchema = new mongoose.Schema(
         quantity: { type: Number, required: true },
         price: { type: Number, required: true }, // Giá tại thời điểm mua
         cover: { type: String },
+        seller: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null }, // ID người bán. Nếu là null -> sách của cửa hàng
       },
     ],
     shippingAddress: {

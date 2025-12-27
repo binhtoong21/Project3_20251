@@ -3,14 +3,14 @@ import { useNavigate, Link } from "react-router-dom";
 import { useCartState, useCartActions } from "../../shared/context/CartContext";
 import { useAuth } from "../../shared/context/AuthContext";
 import apiClient from "../../shared/utils/apiClient";
-import { formatPrice } from "../../shared/utils/formatters";
+import { formatCurrency } from "../../shared/utils/formatters";
 import { isValidAddress, isValidPhone } from "../../shared/utils/validators";
 import "./Checkout.css";
 
 const Checkout = () => {
   const { items, subtotal } = useCartState();
   const { refetchCart } = useCartActions();
-  const { user, setUser } = useAuth();
+  const { user, setUser, refetchUser } = useAuth();
   const navigate = useNavigate();
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
@@ -37,24 +37,36 @@ const Checkout = () => {
     [subtotal, shippingPrice]
   );
 
+  // Fetch user data on mount to get latest wallet balance
   useEffect(() => {
+    if (refetchUser) {
+      refetchUser();
+    }
+  }, [refetchUser]);
+
+  // Handle navigation and address state changes
+  useEffect(() => {
+    // Wait until user object is loaded
     if (!user) {
-      navigate("/login");
-    } else if (items.length === 0) {
+      return;
+    }
+    
+    if (items.length === 0) {
       navigate("/cart");
+      return;
+    }
+
+    if (user.address && isValidAddress(user.address)) {
+      setAddressForm({
+        street: user.address.street || "",
+        ward: user.address.ward || "",
+        district: user.address.district || "",
+        province: user.address.province || "",
+        country: user.address.country || "Việt Nam",
+      });
+      setIsEditingAddress(false);
     } else {
-      if (user.address && isValidAddress(user.address)) {
-        setAddressForm({
-          street: user.address.street || "",
-          ward: user.address.ward || "",
-          district: user.address.district || "",
-          province: user.address.province || "",
-          country: user.address.country || "Việt Nam",
-        });
-        setIsEditingAddress(false);
-      } else {
-        setIsEditingAddress(true);
-      }
+      setIsEditingAddress(true);
     }
   }, [user, items, navigate]);
 
@@ -91,6 +103,7 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async () => {
+    setErrorMsg("");
     if (isEditingAddress) {
       setErrorMsg("Vui lòng lưu địa chỉ trước khi đặt hàng");
       return;
@@ -101,6 +114,12 @@ const Checkout = () => {
       return;
     }
 
+    if (paymentMethod === 'wallet' && user.walletBalance < totalPrice) {
+        setErrorMsg("Số dư ví không đủ. Vui lòng nạp thêm hoặc chọn phương thức khác.");
+        return;
+    }
+
+
     setLoading(true);
     try {
       const orderData = {
@@ -109,15 +128,15 @@ const Checkout = () => {
           district: addressForm.district,
           ward: addressForm.ward,
           street: addressForm.street,
-          country: addressForm.country,
-          name: user.name,
-          phone: user.phone,
+          name: user.name, // Use name from auth context
+          phone: user.phone, // Use phone from auth context
         },
         paymentMethod: paymentMethod,
       };
 
       const createdOrder = await apiClient.post("/orders", orderData);
       await refetchCart();
+      if(refetchUser) await refetchUser(); // update wallet balance after order
       navigate(`/orders/${createdOrder._id}`);
     } catch (error) {
       console.error(error);
@@ -157,7 +176,7 @@ const Checkout = () => {
                     {addressForm.ward}, {addressForm.district},{" "}
                     {addressForm.province}
                   </p>
-                  <p className="address-country">{addressForm.country}</p>
+                  <p className="address-country">Việt Nam</p>
 
                   {hasValidPhone ? (
                     <p className="user-phone">SĐT: {user.phone}</p>
@@ -261,25 +280,29 @@ const Checkout = () => {
                     </span>
                   </div>
                 </label>
+                
                 <label
                   className={`payment-option ${
-                    paymentMethod === "BANKING" ? "selected" : ""
-                  }`}
+                    paymentMethod === "wallet" ? "selected" : ""
+                  } ${user.walletBalance < totalPrice ? "disabled" : ""}`}
+                  title={user.walletBalance < totalPrice ? "Số dư không đủ" : ""}
                 >
                   <input
                     type="radio"
                     name="payment"
-                    value="BANKING"
-                    checked={paymentMethod === "BANKING"}
+                    value="wallet"
+                    checked={paymentMethod === "wallet"}
                     onChange={(e) => setPaymentMethod(e.target.value)}
+                    disabled={user.walletBalance < totalPrice}
                   />
                   <div className="payment-content">
                     <span className="payment-title">
-                      Chuyển khoản ngân hàng
+                      Thanh toán bằng Ví
                     </span>
                     <span className="payment-desc">
-                      Quét mã QR qua ứng dụng ngân hàng.
+                      Số dư: {formatCurrency(user.walletBalance)}
                     </span>
+                     {user.walletBalance < totalPrice && <span className="wallet-error">Không đủ số dư</span>}
                   </div>
                 </label>
               </div>
@@ -300,7 +323,7 @@ const Checkout = () => {
                       <span className="item-name">{item.title}</span>
                     </div>
                     <span className="item-price">
-                      {formatPrice(item.price * item.quantity)}
+                      {formatCurrency(item.price * item.quantity)}
                     </span>
                   </div>
                 ))}
@@ -310,14 +333,14 @@ const Checkout = () => {
 
               <div className="summary-row">
                 <span>Tạm tính</span>
-                <span>{formatPrice(subtotal)}</span>
+                <span>{formatCurrency(subtotal)}</span>
               </div>
               <div className="summary-row">
                 <span>Phí vận chuyển</span>
                 <span>
                   {shippingPrice === 0
                     ? "Miễn phí"
-                    : formatPrice(shippingPrice)}
+                    : formatCurrency(shippingPrice)}
                 </span>
               </div>
 
@@ -325,7 +348,7 @@ const Checkout = () => {
 
               <div className="summary-row total">
                 <span>Tổng cộng</span>
-                <span className="total-amount">{formatPrice(totalPrice)}</span>
+                <span className="total-amount">{formatCurrency(totalPrice)}</span>
               </div>
 
               {errorMsg && !isEditingAddress && (
@@ -361,3 +384,4 @@ const Checkout = () => {
 };
 
 export default Checkout;
+

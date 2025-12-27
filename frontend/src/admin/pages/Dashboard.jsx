@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import apiClient from "../../shared/utils/apiClient";
-import { formatPrice, formatDate } from "../../shared/utils/formatters";
+import { formatCurrency, formatDate } from "../../shared/utils/formatters";
 import {
   FaShoppingBag,
   FaBook,
@@ -52,7 +52,7 @@ export default function Dashboard() {
           </div>
           <div className="stat-info">
             <h3>Tổng Doanh Thu</h3>
-            <div className="stat-number">{formatPrice(stats.totalRevenue)}</div>
+            <div className="stat-number">{formatCurrency(stats.totalRevenue)}</div>
           </div>
         </div>
 
@@ -101,7 +101,7 @@ export default function Dashboard() {
                 <div
                   className="bar"
                   style={{ height: `${heightPercent}%` }}
-                  data-tooltip={`${formatPrice(day.revenue)} (${
+                  data-tooltip={`${formatCurrency(day.revenue)} (${
                     day.count
                   } đơn)`}
                 ></div>
@@ -136,7 +136,7 @@ export default function Dashboard() {
                   <td>#{order._id.substring(0, 6)}...</td>
                   <td>{order.user ? order.user.name : "Unknown"}</td>
                   <td>{formatDate(order.createdAt)}</td>
-                  <td>{formatPrice(order.totalPrice)}</td>
+                  <td>{formatCurrency(order.totalPrice)}</td>
                   <td>
                     <span
                       className={`status status-${order.status.toLowerCase()}`}
@@ -153,3 +153,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

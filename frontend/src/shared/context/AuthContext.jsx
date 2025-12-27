@@ -28,6 +28,7 @@ export function AuthProvider({ children }) {
       phone: authData.phone || "",
       avatar: authData.avatar || "",
       address: authData.address || {},
+      walletBalance: authData.walletBalance || 0,
     };
 
     setUser(userData);
@@ -85,6 +86,7 @@ export function AuthProvider({ children }) {
     handleAuthSuccess,
     isAuthenticated: !!user,
     loading,
+    refetchUser: fetchUserProfile,
   };
 
   return (

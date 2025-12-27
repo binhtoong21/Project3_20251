@@ -12,6 +12,7 @@ export async function list(req, res, next) {
       minPrice,
       maxPrice,
       sale,
+      mode, // new or used
     } = req.query;
 
     const pageNum = Math.max(1, Number(page) || 1);
@@ -20,6 +21,13 @@ export async function list(req, res, next) {
 
     //  1. Bộ lọc
     const filter = {};
+
+    // Filter by mode
+    if (mode === 'new') {
+      filter.owner = null;
+    } else if (mode === 'used') {
+      filter.owner = { $ne: null };
+    }
 
     // Tìm kiếm
     if (search) {
@@ -81,6 +89,7 @@ export async function list(req, res, next) {
     //  3. Thực thi Query
     const total = await Book.countDocuments(filter);
     const items = await Book.find(filter)
+      .populate("owner", "name")
       .sort(sortOptions)
       .skip(skip)
       .limit(limitNum)
@@ -107,7 +116,7 @@ export async function getById(req, res, next) {
       return res.status(400).json({ message: "Invalid book ID format" });
     }
 
-    const book = await Book.findById(id).lean();
+    const book = await Book.findById(id).populate("owner", "name").lean();
     if (!book) {
       return res.status(404).json({ message: "Book not found" });
     }
@@ -154,6 +163,106 @@ export async function remove(req, res, next) {
       return res.status(404).json({ message: "Book not found" });
     }
     res.json({ message: "Book removed successfully" });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// =================================================================
+// USER C2C CONTROLLERS
+// =================================================================
+
+// [GET] /api/books/my-books (User only)
+export async function getMyBooks(req, res, next) {
+  try {
+    const myBooks = await Book.find({ owner: req.user._id }).sort({ createdAt: -1 });
+    res.json(myBooks);
+  } catch (err) {
+    next(err);
+  }
+}
+
+// [POST] /api/books/user (User only)
+export async function createUserBook(req, res, next) {
+  try {
+    const { title, author, description, category, price, condition, stock } = req.body;
+
+    // Validate that at least one image is uploaded
+    if (!req.files || req.files.length === 0) {
+      res.status(400);
+      throw new Error("Bạn phải tải lên ít nhất một hình ảnh.");
+    }
+
+    const newBook = new Book({
+      title,
+      author,
+      description,
+      category,
+      price,
+      condition,
+      stock,
+      owner: req.user._id, // Set the owner
+      cover: req.files.map(file => `/uploads/${file.filename}`),
+    });
+
+    const savedBook = await newBook.save();
+    res.status(201).json(savedBook);
+  } catch (err) {
+    next(err);
+  }
+}
+
+// [PUT] /api/books/user/:id (User only)
+export async function updateUserBook(req, res, next) {
+  try {
+    const { id } = req.params;
+    const book = await Book.findById(id);
+
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    // Check if the user owns the book
+    if (book.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "User not authorized to update this book" });
+    }
+
+    const { title, author, description, category, price, condition, stock } = req.body;
+
+    book.title = title || book.title;
+    book.author = author || book.author;
+    book.description = description || book.description;
+    book.category = category || book.category;
+    book.price = price || book.price;
+    book.condition = condition || book.condition;
+    book.stock = stock || book.stock;
+
+    if (req.files && req.files.length > 0) {
+      book.cover = req.files.map(file => `/uploads/${file.filename}`);
+    }
+
+    const updatedBook = await book.save();
+    res.json(updatedBook);
+  } catch (err) {
+    next(err);
+  }
+}
+
+// [DELETE] /api/books/user/:id (User only)
+export async function deleteUserBook(req, res, next) {
+  try {
+    const { id } = req.params;
+    
+    // Atomically find a book matching the ID and the owner, and delete it.
+    const book = await Book.findOneAndDelete({ _id: id, owner: req.user._id });
+
+    if (!book) {
+      // This will happen if the book doesn't exist OR the user is not the owner.
+      // For security, we don't differentiate the error message.
+      return res.status(404).json({ message: "Book not found or user not authorized" });
+    }
+
+    res.json({ message: "Book listing removed successfully" });
   } catch (err) {
     next(err);
   }

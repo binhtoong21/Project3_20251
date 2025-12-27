@@ -103,6 +103,18 @@
   background-color: #eff6ff;
 }
 
+.payment-option.disabled {
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+    color: #6c757d;
+}
+
+.payment-option.disabled .payment-title,
+.payment-option.disabled .payment-desc {
+    color: #6c757d;
+}
+
+
 .payment-option input[type="radio"] {
   margin-top: 4px;
   accent-color: #2563eb;
@@ -123,6 +135,13 @@
 .payment-desc {
   font-size: 0.85rem;
   color: #6b7280;
+}
+
+.wallet-error {
+    font-size: 0.8rem;
+    color: #ef4444;
+    font-weight: 600;
+    margin-top: 4px;
 }
 
 .order-summary-box {
