@@ -1,25 +1,34 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getBook, listBooks } from "../../shared/utils/booksService";
-import { formatCurrency } from "../../shared/utils/formatters";
+import { formatCurrency, formatDate } from "../../shared/utils/formatters";
 import { useCartActions } from "../../shared/context/CartContext.jsx";
+import { useAuth } from "../../shared/context/AuthContext.jsx";
+import { useProfileCheck } from "../../shared/hooks/useProfileCheck";
+import apiClient from "../../shared/utils/apiClient";
 import BookSection from "../components/BookSection.jsx";
 import "./page.css";
 import "./BookDetail.css";
 
 export default function BookDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [book, setBook] = useState(null);
   const [relatedBooks, setRelatedBooks] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [isExpanded, setIsExpanded] = useState(false);
   const cartActions = useCartActions();
+  const { user } = useAuth();
+  const checkProfile = useProfileCheck();
 
   const stock = book?.stock ?? 0;
   const isOutOfStock = stock === 0;
+  const isOwner = user && book && book.owner && (book.owner === user._id || book.owner._id === user._id);
 
   useEffect(() => {
     let mounted = true;
@@ -32,6 +41,15 @@ export default function BookDetail() {
         const data = await getBook(id);
         if (!mounted) return;
         setBook(data);
+        
+        // Fetch reviews
+        try {
+            const reviewsData = await apiClient.get(`/reviews/${id}`);
+            if (mounted) setReviews(reviewsData);
+        } catch (rErr) {
+            console.error("Failed to fetch reviews", rErr);
+        }
+
       } catch (err) {
         console.error("Failed to load book:", err);
         if (mounted) setError("Book not found");
@@ -74,28 +92,51 @@ export default function BookDetail() {
     };
   }, [book]);
 
+  const handleBuyNow = () => {
+    checkProfile(() => {
+      // Handle cover image: if it's an array, take the first one; otherwise use as is
+      const coverImage = Array.isArray(book.cover) ? book.cover[0] : book.cover;
+      
+      // Redirect to Checkout with state
+      navigate('/checkout', { 
+          state: { 
+              directPurchaseItem: {
+                  book: book._id,
+                  title: book.title,
+                  price: book.price,
+                  cover: coverImage,
+                  quantity: quantity,
+                  seller: book.owner
+              }
+          } 
+      });
+    });
+  };
+
   const handleAddToCart = async () => {
     if (!book || adding) return;
 
-    // Check tồn kho sơ bộ ở frontend
-    if (quantity > stock) {
-      setFeedback(`Chỉ còn ${stock} sản phẩm.`);
-      return;
-    }
+    checkProfile(async () => {
+      // Check tồn kho sơ bộ ở frontend
+      if (quantity > stock) {
+        setFeedback(`Chỉ còn ${stock} sản phẩm.`);
+        return;
+      }
 
-    try {
-      setAdding(true);
-      await cartActions.addItem(book._id, quantity);
-      setFeedback("Added to cart");
-      setTimeout(() => setFeedback(""), 2500);
-    } catch (err) {
-      // Hiển thị lỗi từ backend
-      console.error("Failed to add to cart", err);
-      setFeedback(err.message || "Failed to add to cart");
-      setTimeout(() => setFeedback(""), 2500);
-    } finally {
-      setAdding(false);
-    }
+      try {
+        setAdding(true);
+        await cartActions.addItem(book._id, quantity);
+        setFeedback("Added to cart");
+        setTimeout(() => setFeedback(""), 2500);
+      } catch (err) {
+        // Hiển thị lỗi từ backend
+        console.error("Failed to add to cart", err);
+        setFeedback(err.message || "Failed to add to cart");
+        setTimeout(() => setFeedback(""), 2500);
+      } finally {
+        setAdding(false);
+      }
+    });
   };
 
   if (loading) {
@@ -128,7 +169,7 @@ export default function BookDetail() {
         <div className="book-detail">
           <div className="detail-cover-wrapper">
             <img
-              src={book.cover}
+              src={Array.isArray(book.cover) ? book.cover[0] : book.cover}
               alt={book.title}
               className="detail-cover"
               onError={(e) => {
@@ -140,8 +181,8 @@ export default function BookDetail() {
           </div>
           <div className="detail-body">
             <h2>{book.title}</h2>
-            <p className="author">by {book.author}</p>
-            <p className="stock">Tồn kho: {book.stock}</p>
+            <p className="author">Tác giả: {book.author}</p>
+            {!book.owner && <p className="stock">Tồn kho: {book.stock}</p>}
             <p className="price">{formatCurrency(book.price)}</p>
 
             <div className="quantity-selector">
@@ -152,50 +193,93 @@ export default function BookDetail() {
               <button onClick={() => setQuantity((q) => q + 1)}>+</button>
             </div>
 
-            <button
-              className="btn primary"
-              onClick={handleAddToCart}
-              disabled={adding}
-            >
-              {adding ? "Adding..." : "Add to cart"}
-            </button>
+            {book.owner ? (
+                <button
+                className="btn primary"
+                onClick={handleBuyNow}
+                disabled={isOwner || isOutOfStock}
+                style={{
+                    backgroundColor: isOwner ? '#ccc' : '#28a745', // Green for Buy Now
+                    cursor: isOwner ? 'not-allowed' : '',
+                    borderColor: '#28a745'
+                }}
+                >
+                {isOwner ? "Bạn là người bán" : "Mua ngay"}
+                </button>
+            ) : (
+                <button
+                className="btn primary"
+                onClick={handleAddToCart}
+                disabled={adding || isOwner || isOutOfStock}
+                style={{
+                    backgroundColor: isOwner ? '#ccc' : '',
+                    cursor: isOwner ? 'not-allowed' : ''
+                }}
+                >
+                {isOwner ? "Bạn là người bán" : adding ? "Adding..." : "Add to cart"}
+                </button>
+            )}
             {feedback && <p className="cart-feedback">{feedback}</p>}
           </div>
         </div>
 
-        <div className="book-content-section">
-          <h3>Giới thiệu sách</h3>
-          <div className="book-description">{renderDescription()}</div>
-        </div>
-
-        <div className="book-content-section">
-          <h3>Thông tin chi tiết</h3>
-          <div className="detail-info-grid">
-            <div className="info-label">Mã hàng</div>
-            <div className="info-value">{book.id}</div>
-
-            <div className="info-label">Nhà cung cấp</div>
-            <div className="info-value">Đang cập nhật</div>
-
-            <div className="info-label">Tác giả</div>
-            <div className="info-value">{book.author}</div>
-
-            <div className="info-label">Nhà xuất bản</div>
-            <div className="info-value">
-              {book.publisher || "Đang cập nhật"}
+        <div className="book-info-container">
+          {/* Cột trái: Mô tả sản phẩm */}
+          <div className="book-description-card">
+            <h3 className="card-title">Mô tả sản phẩm</h3>
+            <div className={`description-content ${isExpanded ? 'expanded' : 'collapsed'}`}>
+              {renderDescription()}
             </div>
+            
+            {book.description && book.description.length > 500 && (
+                <button 
+                  className="btn-toggle-description"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                >
+                  {isExpanded ? "Thu gọn" : "Xem thêm"} {isExpanded ? '▲' : '▼'}
+                </button>
+            )}
+          </div>
 
-            <div className="info-label">Năm xuất bản</div>
-            <div className="info-value">Đang cập nhật</div>
-
-            <div className="info-label">Trọng lượng</div>
-            <div className="info-value">Đang cập nhật</div>
-
-            <div className="info-label">Kích thước</div>
-            <div className="info-value">Đang cập nhật</div>
-
-            <div className="info-label">Số trang</div>
-            <div className="info-value">Đang cập nhật</div>
+          {/* Cột phải: Thông tin chi tiết */}
+          <div className="book-details-card">
+            <h3 className="card-title">Thông tin chi tiết</h3>
+            <table className="details-table">
+              <tbody>
+                <tr>
+                  <td className="detail-label">Mã hàng</td>
+                  <td className="detail-value">{book.id}</td>
+                </tr>
+                <tr>
+                  <td className="detail-label">Tác giả</td>
+                  <td className="detail-value">{book.author}</td>
+                </tr>
+                <tr>
+                  <td className="detail-label">Nhà xuất bản</td>
+                  <td className="detail-value">{book.publisher || "Đang cập nhật"}</td>
+                </tr>
+                <tr>
+                  <td className="detail-label">Năm xuất bản</td>
+                  <td className="detail-value">{book.publishedYear || "Đang cập nhật"}</td>
+                </tr>
+                 <tr>
+                  <td className="detail-label">Trọng lượng</td>
+                  <td className="detail-value">{book.weight ? `${book.weight} gr` : "Đang cập nhật"}</td>
+                </tr>
+                <tr>
+                  <td className="detail-label">Kích thước</td>
+                   <td className="detail-value">{book.size || "Đang cập nhật"}</td>
+                </tr>
+                <tr>
+                  <td className="detail-label">Số trang</td>
+                  <td className="detail-value">{book.pageCount || "Đang cập nhật"}</td>
+                </tr>
+                 <tr>
+                  <td className="detail-label">Hình thức</td>
+                  <td className="detail-value">{book.form || "Bìa mềm"}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 

@@ -7,7 +7,6 @@ import {
   FaUser,
   FaMapMarkerAlt,
   FaHistory,
-  FaCreditCard,
   FaSignOutAlt,
   FaWallet,
   FaBookMedical,
@@ -16,9 +15,7 @@ import {
 
 // Import content components
 import UserProfile from "../components/UserProfile";
-import ShippingAddress from "../components/ShippingAddress";
 import OrderHistory from "../components/OrderHistory";
-import PaymentMethods from "../components/PaymentMethods";
 import Wallet from "../components/Wallet";
 import MyBooks from "../components/MyBooks";
 import MySales from "./MySales"; // Import the new component
@@ -30,7 +27,7 @@ export default function Account() {
   const { logout } = useAuth();
 
   useEffect(() => {
-    const validTabs = ["profile", "address", "orders", "payment", "wallet", "my-books", "my-sales"];
+    const validTabs = ["profile", "orders", "wallet", "my-books", "my-sales"];
     if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
     } else {
@@ -47,8 +44,6 @@ export default function Account() {
     switch (activeTab) {
       case "profile":
         return <UserProfile />;
-      case "address":
-        return <ShippingAddress />;
       case "orders":
         return <OrderHistory />;
       case "wallet":
@@ -57,8 +52,6 @@ export default function Account() {
         return <MyBooks />;
       case "my-sales":
         return <MySales />;
-      case "payment":
-        return <div>Payment Methods Content (Đang cập nhật)</div>;
       default:
         return <UserProfile />;
     }
@@ -67,11 +60,9 @@ export default function Account() {
   const sidebarItems = [
     { id: "profile", icon: <FaUser />, label: "Thông tin tài khoản" },
     { id: "wallet", icon: <FaWallet />, label: "Ví của tôi" },
-    { id: "my-books", icon: <FaBookMedical />, label: "Sách của tôi (Bán)" },
+    { id: "my-books", icon: <FaBookMedical />, label: "Gian hàng của tôi" },
     { id: "my-sales", icon: <FaReceipt />, label: "Đơn hàng đã bán" },
     { id: "orders", icon: <FaHistory />, label: "Lịch sử mua hàng" },
-    { id: "address", icon: <FaMapMarkerAlt />, label: "Địa chỉ giao hàng" },
-    { id: "payment", icon: <FaCreditCard />, label: "Phương thức thanh toán" },
   ];
 
   return (

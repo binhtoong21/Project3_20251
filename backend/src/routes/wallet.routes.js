@@ -5,28 +5,22 @@ import {
   approveDeposit,
   getTransactions,
   getPendingDeposits,
+  createWithdrawalRequest,
+  getPendingWithdrawals,
+  updateWithdrawalStatus
 } from '../controllers/wallet.controller.js';
 
 const router = express.Router();
 
-// @desc    Tạo yêu cầu nạp tiền
-// @route   POST /api/wallet/deposit
-// @access  Private
+// Deposit Routes
 router.post('/deposit', protect, createDepositRequest);
-
-// @desc    Lấy lịch sử giao dịch của user
-// @route   GET /api/wallet/transactions
-// @access  Private
 router.get('/transactions', protect, getTransactions);
-
-// @desc    Admin duyệt yêu cầu nạp tiền
-// @route   PUT /api/wallet/approve/:id
-// @access  Private/Admin
+router.get('/pending-deposits', protect, admin, getPendingDeposits);
 router.put('/approve/:id', protect, admin, approveDeposit);
 
-// @desc    Admin xem các yêu cầu nạp tiền đang chờ
-// @route   GET /api/wallet/pending-deposits
-// @access  Private/Admin
-router.get('/pending-deposits', protect, admin, getPendingDeposits);
+// Withdrawal Routes
+router.post('/withdraw', protect, createWithdrawalRequest);
+router.get('/withdrawals/pending', protect, admin, getPendingWithdrawals);
+router.put('/withdrawals/:id', protect, admin, updateWithdrawalStatus);
 
 export default router;

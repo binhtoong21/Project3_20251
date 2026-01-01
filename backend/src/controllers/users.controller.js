@@ -195,3 +195,42 @@ export const toggleBlockUser = async (req, res, next) => {
     next(error);
   }
 };
+//  THÊM TÀI KHOẢN NGÂN HÀNG
+export const addBankAccount = async (req, res, next) => {
+  try {
+    const { bankName, accountNumber, accountName, branch } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      const newAccount = { bankName, accountNumber, accountName, branch };
+      user.bankAccounts.push(newAccount);
+      const updatedUser = await user.save();
+      res.json(updatedUser.bankAccounts);
+    } else {
+      res.status(404);
+      throw new Error("User not found");
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+//  XÓA TÀI KHOẢN NGÂN HÀNG
+export const removeBankAccount = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.bankAccounts = user.bankAccounts.filter(
+        (acc) => acc._id.toString() !== req.params.id
+      );
+      const updatedUser = await user.save();
+      res.json(updatedUser.bankAccounts);
+    } else {
+      res.status(404);
+      throw new Error("User not found");
+    }
+  } catch (error) {
+    next(error);
+  }
+};

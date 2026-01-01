@@ -47,6 +47,17 @@ export async function add(req, res, next) {
     if (!book) {
       return res.status(404).json({ message: "Book not found" });
     }
+
+    // Check 1: Prevent self-purchase
+    if (book.owner && book.owner.toString() === req.user._id.toString()) {
+      return res.status(400).json({ message: "Bạn không thể mua sách do chính mình đăng bán." });
+    }
+
+    // Check 2: Used Books (C2C) cannot be added to cart (Buy Now only)
+    if (book.owner) {
+       return res.status(400).json({ message: "Sách cũ chỉ có thể Mua Ngay, không thể thêm vào giỏ hàng." });
+    }
+
     const existingItem = cart.items.find((item) => item.book.equals(book._id));
     const currentQtyInCart = existingItem ? existingItem.quantity : 0;
     const totalRequested = currentQtyInCart + qty;
@@ -65,8 +76,8 @@ export async function add(req, res, next) {
         quantity: qty,
         price: book.price,
         title: book.title,
-        // FIX: Use only the first image from the book's cover array
-        cover: (book.cover && book.cover.length > 0) ? book.cover[0] : '',
+        // FIX: Use only the first image from the book's cover array, or use as is if string
+        cover: Array.isArray(book.cover) ? (book.cover.length > 0 ? book.cover[0] : '') : (book.cover || ''),
       });
     }
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import BookCard from "../components/BookCard";
 import { listBooks } from "../../shared/utils/booksService";
+import { BOOK_CATEGORIES } from "../../shared/constants/categories";
 import "./page.css";
 import "./books.css";
 
@@ -132,10 +133,11 @@ export default function Books() {
               onChange={(e) => handleFilterChange("category", e.target.value)}
             >
               <option value="">-- Tất cả thể loại --</option>
-              <option value="business">Kinh doanh</option>
-              <option value="fiction">Viễn tưởng</option>
-              <option value="horror">Kinh dị</option>
-              <option value="skills">Kỹ năng</option>
+              {BOOK_CATEGORIES.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
             </select>
 
             <select

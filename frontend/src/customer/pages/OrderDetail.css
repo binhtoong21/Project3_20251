@@ -175,3 +175,189 @@
     padding: 1.25rem;
   }
 }
+
+/* Escrow Banner Styles */
+.escrow-banner {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.escrow-banner h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.escrow-banner p {
+  margin-bottom: 1rem;
+  color: #6c757d;
+}
+
+.status-held {
+  border-left: 5px solid #ffc107;
+  background-color: #fff3cd;
+}
+
+.status-held h3 {
+  color: #856404;
+}
+
+.status-released {
+  border-left: 5px solid #28a745;
+  background-color: #d4edda;
+}
+
+.status-released h3 {
+  color: #155724;
+}
+
+.status-refunded {
+  border-left: 5px solid #6c757d;
+  background-color: #e2e3e5;
+}
+
+.status-disputed {
+  border-left: 5px solid #dc3545;
+  background-color: #f8d7da;
+}
+
+.status-disputed h3 {
+  color: #721c24;
+}
+
+/* Escrow Action Buttons */
+.escrow-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-confirm-receipt {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 1rem;
+}
+
+.btn-confirm-receipt:hover {
+  background-color: #218838;
+}
+
+.btn-dispute {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 1rem;
+}
+
+.btn-dispute:hover {
+  background-color: #c82333;
+}
+
+.dispute-info {
+  font-weight: bold;
+  color: #dc3545;
+}
+
+/* Order Tracker Timeline */
+.order-tracker {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    padding: 20px 0;
+    position: relative;
+    overflow-x: auto;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-width: 80px;
+}
+
+.step-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+    transition: background-color 0.3s;
+}
+
+.step.active .step-icon {
+    background-color: #28a745;
+}
+
+.step-text {
+    font-size: 0.9rem;
+    color: #999;
+    text-align: center;
+    font-weight: 500;
+}
+
+.step.active .step-text {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.step-date {
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-top: 4px;
+}
+
+.step-line {
+    flex: 1;
+    height: 3px;
+    background-color: #e0e0e0;
+    margin-top: 14px; /* Align with center of icon (30px/2-3px/2 + padding top) */
+    margin-left: -15px; /* Pull line under the icon */
+    margin-right: -15px;
+    z-index: 0;
+}
+
+/* Adjustments for line connections - complex with flex, simplified version */
+.order-tracker {
+    position: relative;
+}
+.order-tracker::before {
+    content: '';
+    position: absolute;
+    top: 34px; /* 20px padding + 15px (half icon height) - 1.5px (half line height) */
+    left: 40px; /* Approximate center of first icon */
+    right: 40px; /* Approximate center of last icon */
+    height: 3px;
+    background-color: #e0e0e0;
+    z-index: 0;
+}
+
+/* Helper to color active line segment? 
+   CSS-only active line requires partial filling which is hard without JS calculating width.
+   Visual trick: just color active icons green for now.
+*/

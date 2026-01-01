@@ -67,6 +67,14 @@ export default function AdminLayout() {
                 <FaMoneyCheckAlt style={{ marginRight: "10px" }} /> Quản lý Nạp tiền
               </NavLink>
             </li>
+             <li>
+              <NavLink
+                to="/admin/withdrawals"
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                <FaMoneyCheckAlt style={{ marginRight: "10px" }} /> Quản lý Rút tiền
+              </NavLink>
+            </li>
           </ul>
         </div>
 

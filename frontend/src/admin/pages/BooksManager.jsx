@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import apiClient from "../../shared/utils/apiClient";
 import { formatCurrency } from "../../shared/utils/formatters";
 import { FaPlus, FaEdit, FaTrash, FaTimes } from "react-icons/fa";
+import { BOOK_CATEGORIES } from "../../shared/constants/categories";
 import "./BooksManager.css";
 
 export default function BooksManager() {
@@ -205,12 +206,16 @@ export default function BooksManager() {
                     }
                   />
                 </td>
-                <td>{book.title}</td>
+                <td>
+                  <div className="book-title-cell" title={book.title}>
+                    {book.title}
+                  </div>
+                </td>
                 <td>{book.author}</td>
                 <td>{formatCurrency(book.price)}</td>
                 <td>{book.stock !== undefined ? book.stock : 0}</td>
                 <td>{book.category}</td>
-                <td>
+                <td className="action-cell">
                   <div className="action-buttons">
                     <button
                       className="btn-edit"
@@ -299,11 +304,11 @@ export default function BooksManager() {
                       }
                     >
                       <option value="">-- Chọn thể loại --</option>
-                      <option value="business">Kinh doanh</option>
-                      <option value="fiction">Viễn tưởng</option>
-                      <option value="horror">Kinh dị</option>
-                      <option value="skills">Kỹ năng</option>
-                      {/* Thêm các option khác tùy DB */}
+                      {BOOK_CATEGORIES.map((cat) => (
+                        <option key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
 

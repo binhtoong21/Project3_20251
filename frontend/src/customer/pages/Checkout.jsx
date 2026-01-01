@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useCartState, useCartActions } from "../../shared/context/CartContext";
 import { useAuth } from "../../shared/context/AuthContext";
 import apiClient from "../../shared/utils/apiClient";
@@ -12,6 +12,18 @@ const Checkout = () => {
   const { refetchCart } = useCartActions();
   const { user, setUser, refetchUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Detect Direct Purchase Mode
+  const directPurchaseItem = location.state?.directPurchaseItem;
+  
+  // Decide which items to use (Direct Item or Cart Items)
+  const checkoutItems = directPurchaseItem ? [directPurchaseItem] : items;
+  
+  // Calculate Subtotal based on chosen items
+  const currentSubtotal = directPurchaseItem 
+    ? directPurchaseItem.price * directPurchaseItem.quantity
+    : subtotal;
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [loading, setLoading] = useState(false);
@@ -28,13 +40,22 @@ const Checkout = () => {
     country: "Việt Nam",
   });
 
-  const shippingPrice = useMemo(
-    () => (subtotal > 100000 ? 0 : 30000),
-    [subtotal]
-  );
+  const shippingPrice = useMemo(() => {
+    // If it's a direct purchase from a seller (C2C), shipping is 0 (Self-arranged)
+    if (directPurchaseItem && directPurchaseItem.seller) {
+        return 0;
+    }
+    return currentSubtotal > 100000 ? 0 : 30000;
+  }, [currentSubtotal, directPurchaseItem]);
+
+  // Platform Fee Logic Update: 
+  // Fees are now deducted from the Seller's earnings, NOT charged to the Buyer.
+  // So transactionFee for Buyer is always 0.
+  const transactionFee = 0;
+
   const totalPrice = useMemo(
-    () => subtotal + shippingPrice,
-    [subtotal, shippingPrice]
+    () => currentSubtotal + shippingPrice + transactionFee,
+    [currentSubtotal, shippingPrice, transactionFee]
   );
 
   // Fetch user data on mount to get latest wallet balance
@@ -51,7 +72,7 @@ const Checkout = () => {
       return;
     }
     
-    if (items.length === 0) {
+    if (items.length === 0 && !directPurchaseItem) {
       navigate("/cart");
       return;
     }
@@ -68,7 +89,7 @@ const Checkout = () => {
     } else {
       setIsEditingAddress(true);
     }
-  }, [user, items, navigate]);
+  }, [user, items, navigate, directPurchaseItem]);
 
   const handleAddressChange = (e) => {
     setAddressForm({ ...addressForm, [e.target.name]: e.target.value });
@@ -133,6 +154,11 @@ const Checkout = () => {
         },
         paymentMethod: paymentMethod,
       };
+
+      // If direct purchase, include orderItems
+      if (directPurchaseItem) {
+        orderData.orderItems = [directPurchaseItem];
+      }
 
       const createdOrder = await apiClient.post("/orders", orderData);
       await refetchCart();
@@ -311,9 +337,9 @@ const Checkout = () => {
 
           <div className="checkout-right">
             <div className="order-summary-box">
-              <h3>Đơn hàng ({items.length} sản phẩm)</h3>
+              <h3>Đơn hàng ({checkoutItems.length} sản phẩm)</h3>
               <div className="summary-list">
-                {items.map((item) => (
+                {checkoutItems.map((item) => (
                   <div
                     key={item.book._id || item.book}
                     className="summary-item"
@@ -333,7 +359,7 @@ const Checkout = () => {
 
               <div className="summary-row">
                 <span>Tạm tính</span>
-                <span>{formatCurrency(subtotal)}</span>
+                <span>{formatCurrency(currentSubtotal)}</span>
               </div>
               <div className="summary-row">
                 <span>Phí vận chuyển</span>
@@ -343,6 +369,8 @@ const Checkout = () => {
                     : formatCurrency(shippingPrice)}
                 </span>
               </div>
+
+
 
               <div className="summary-divider"></div>
 

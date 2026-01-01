@@ -18,7 +18,10 @@ export default function OrdersManager() {
     "Shipped",
     "Delivered",
     "Cancelled",
+    "Completed"
   ];
+
+  const ESCROW_FILTER_OPTIONS = ["Disputed", "Held"];
 
   useEffect(() => {
     fetchOrders();
@@ -28,6 +31,8 @@ export default function OrdersManager() {
   useEffect(() => {
     if (filter === "All") {
       setFilteredOrders(orders);
+    } else if (ESCROW_FILTER_OPTIONS.includes(filter)) {
+      setFilteredOrders(orders.filter((order) => order.escrowStatus === filter));
     } else {
       setFilteredOrders(orders.filter((order) => order.status === filter));
     }
@@ -92,6 +97,13 @@ export default function OrdersManager() {
             {status} ({orders.filter((o) => o.status === status).length})
           </button>
         ))}
+         <button
+            className={`filter-btn ${filter === "Disputed" ? "active" : ""}`}
+            onClick={() => setFilter("Disputed")}
+            style={{borderColor: 'red', color: filter === 'Disputed' ? 'white' : 'red', backgroundColor: filter === 'Disputed' ? 'red' : 'transparent'}}
+        >
+            Khiếu nại ({orders.filter((o) => o.escrowStatus === "Disputed").length})
+        </button>
       </div>
 
       <table className="admin-table">
@@ -102,17 +114,18 @@ export default function OrdersManager() {
             <th>Ngày đặt</th>
             <th>Tổng tiền</th>
             <th>Trạng thái</th>
+            <th>Thanh toán</th>
             <th>Hành động</th>
           </tr>
         </thead>
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan="6">Đang tải danh sách đơn hàng...</td>
+              <td colSpan="7">Đang tải danh sách đơn hàng...</td>
             </tr>
           ) : filteredOrders.length === 0 ? (
             <tr>
-              <td colSpan="6">Không tìm thấy đơn hàng nào.</td>
+              <td colSpan="7">Không tìm thấy đơn hàng nào.</td>
             </tr>
           ) : (
             filteredOrders.map((order) => (
@@ -144,7 +157,8 @@ export default function OrdersManager() {
                     }
                     disabled={
                       order.status === "Cancelled" ||
-                      order.status === "Delivered"
+                      order.status === "Delivered" ||
+                      order.status === "Completed"
                     }
                   >
                     {STATUS_OPTIONS.map((opt) => (
@@ -153,6 +167,13 @@ export default function OrdersManager() {
                       </option>
                     ))}
                   </select>
+                </td>
+                <td>
+                     {order.escrowStatus ? (
+                         <span className={`status-badge status-${order.escrowStatus.toLowerCase()}`} style={{fontSize: '0.8rem'}}>
+                             {order.escrowStatus}
+                         </span>
+                     ) : '-'}
                 </td>
                 <td>
                   {/* Link tới trang chi tiết đơn hàng  */}

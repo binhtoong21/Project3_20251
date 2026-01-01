@@ -19,11 +19,10 @@ const bookSchema = new mongoose.Schema(
 
     // Tùy chọn: Thêm trending để làm mục "Sách bán chạy"
     trending: { type: Boolean, default: false },
+    
     stock: { type: Number, required: true, min: 0, default: 0 },
 
-    // ===================================================
     // MỞ RỘNG CHO CHỨC NĂNG C2C
-    // ===================================================
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // ID người bán. Nếu là null -> sách của cửa hàng
     condition: { type: String, enum: ['new', 'like-new', 'good', 'fair', 'poor'], default: 'new' }, // Tình trạng sách
     isPromoted: { type: Boolean, default: false }, // Dùng để đẩy bài đăng bán sách lên top

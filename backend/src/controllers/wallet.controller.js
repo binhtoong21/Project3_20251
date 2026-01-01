@@ -101,3 +101,108 @@ export {
   getPendingDeposits,
   approveDeposit,
 };
+// @desc    Create a withdrawal request
+// @route   POST /api/wallet/withdraw
+// @access  Private
+export const createWithdrawalRequest = async (req, res, next) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const { amount, bankInfo } = req.body;
+        const user = await User.findById(req.user._id).session(session);
+
+        if (amount <= 0) {
+            res.status(400);
+            throw new Error("Amount must be positive");
+        }
+
+        if (user.walletBalance < amount) {
+            res.status(400);
+            throw new Error("Insufficient wallet balance");
+        }
+
+        // Deduct balance immediately
+        user.walletBalance -= amount;
+        await user.save({ session });
+
+        const transaction = await Transaction.create([{
+            user: req.user._id,
+            type: "withdrawal",
+            amount: -amount,
+            status: "pending",
+            description: "Yêu cầu rút tiền",
+            bankInfo: bankInfo // Store snapshot of bank details
+        }], { session });
+
+        await session.commitTransaction();
+        res.status(201).json(transaction[0]);
+
+    } catch (error) {
+        await session.abortTransaction();
+        next(error);
+    } finally {
+        session.endSession();
+    }
+};
+
+// @desc    Get all pending withdrawals (Admin)
+// @route   GET /api/wallet/withdrawals/pending
+// @access  Private/Admin
+export const getPendingWithdrawals = async (req, res, next) => {
+    try {
+        const withdrawals = await Transaction.find({ type: "withdrawal", status: "pending" })
+            .populate("user", "name email phone bankAccount") // Ensure bankAccount exists in User model or just contact info
+            .sort({ createdAt: -1 });
+        res.json(withdrawals);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Approve or Reject withdrawal
+// @route   PUT /api/wallet/withdrawals/:id
+// @access  Private/Admin
+export const updateWithdrawalStatus = async (req, res, next) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const { status } = req.body; // 'completed' (Approve) or 'failed' (Reject)
+        const transaction = await Transaction.findById(req.params.id).session(session);
+
+        if (!transaction) {
+             res.status(404);
+             throw new Error("Transaction not found");
+        }
+
+        if (transaction.type !== "withdrawal" || transaction.status !== "pending") {
+            res.status(400);
+            throw new Error("Invalid transaction or already processed");
+        }
+
+        if (status === "completed") {
+            // Admin confirms transfer done outside system
+            transaction.status = "completed";
+            await transaction.save({ session });
+        } else if (status === "failed") {
+            // Admin rejects -> Refund balance
+            transaction.status = "failed";
+            await transaction.save({ session });
+
+            await User.findByIdAndUpdate(transaction.user, {
+                $inc: { walletBalance: Math.abs(transaction.amount) } // Refund absolute amount
+            }).session(session);
+        } else {
+             res.status(400);
+             throw new Error("Invalid status. Use 'completed' or 'failed'.");
+        }
+
+        await session.commitTransaction();
+        res.json(transaction);
+
+    } catch (error) {
+        await session.abortTransaction();
+        next(error);
+    } finally {
+        session.endSession();
+    }
+};

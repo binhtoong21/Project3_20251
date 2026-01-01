@@ -19,6 +19,10 @@ export async function getBook(id) {
   return apiClient.get(`/books/${id}`);
 }
 
+export async function getCategories() {
+  return apiClient.get("/books/categories");
+}
+
 // ===============================================
 // C2C User Book Service
 // ===============================================

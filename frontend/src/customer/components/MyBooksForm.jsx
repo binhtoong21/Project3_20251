@@ -10,7 +10,7 @@ const MyBooksForm = ({ book, onClose, onSuccess }) => {
     category: book?.category || "",
     price: book?.price || "",
     condition: book?.condition || "good",
-    stock: book?.stock || 1,
+    stock: 1, // Default to 1, C2C items are unique
   });
   const [files, setFiles] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -104,13 +104,9 @@ const MyBooksForm = ({ book, onClose, onSuccess }) => {
           </div>
 
           <div className="form-row">
-            <div className="form-group">
+            <div className="form-group" style={{width: '100%'}}>
                 <label>Giá (VNĐ)</label>
                 <input type="number" name="price" value={formData.price} onChange={handleChange} required />
-            </div>
-            <div className="form-group">
-                <label>Số lượng</label>
-                <input type="number" name="stock" value={formData.stock} onChange={handleChange} required />
             </div>
           </div>
 

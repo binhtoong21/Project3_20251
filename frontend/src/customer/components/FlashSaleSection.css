@@ -1,0 +1,48 @@
+.flash-sale-section {
+  background-color: #ffe5e7; /* A light pink/red background for flash sales */
+}
+
+.flash-sale-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.countdown-timer {
+  display: flex;
+  gap: 10px;
+  background-color: #ffffff;
+  padding: 8px 15px;
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.timer-segment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.timer-segment strong {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.timer-segment .timer-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #6c757d;
+}
+
+/* Reusing grid styles from booksection.css for consistency */
+/* The .grid class is assumed to be available globally or from an imported sheet */
+
+@media (max-width: 768px) {
+    .flash-sale-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}

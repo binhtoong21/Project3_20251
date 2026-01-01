@@ -34,6 +34,14 @@ const userSchema = new Schema(
       street: { type: String, default: "" }, // Số nhà, tên đường
     },
     walletBalance: { type: Number, default: 0 },
+    bankAccounts: [
+      {
+        bankName: { type: String, required: true },
+        accountNumber: { type: String, required: true },
+        accountName: { type: String, required: true },
+        branch: { type: String }
+      }
+    ]
   },
   { timestamps: true }
 );

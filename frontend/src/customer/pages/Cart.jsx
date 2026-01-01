@@ -2,9 +2,11 @@ import "./cart.css";
 import { useCartActions, useCartState } from "../../shared/context/CartContext";
 import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "../../shared/utils/formatters";
+import { useProfileCheck } from "../../shared/hooks/useProfileCheck";
 
 export default function Cart() {
   const navigate = useNavigate();
+  const checkProfile = useProfileCheck();
   const { items, totalQuantity, subtotal, status, error } = useCartState();
   const { updateItem, removeItem } = useCartActions();
 
@@ -154,7 +156,7 @@ export default function Cart() {
               <button
                 type="button"
                 className="btn primary"
-                onClick={() => navigate("/checkout")}
+                onClick={() => checkProfile(() => navigate("/checkout"))}
                 disabled={isLoading || isEmpty}
               >
                 Checkout

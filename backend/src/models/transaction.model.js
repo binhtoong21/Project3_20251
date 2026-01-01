@@ -9,12 +9,21 @@ const transactionSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ["deposit", "purchase", "sale_income", "withdrawal"], // Nạp tiền, Mua hàng, Tiền bán sách, Rút tiền
+      enum: ["deposit", "purchase", "sale_income", "withdrawal", "refund"], // Nạp tiền, Mua hàng, Tiền bán sách, Rút tiền, Hoàn tiền
       required: true,
     },
     amount: {
       type: Number,
       required: true,
+    },
+    fee: { // Fee deducted by platform (for sale_income)
+      type: Number,
+      default: 0
+    },
+    bankInfo: {
+        bankName: String,
+        accountNumber: String,
+        accountName: String
     },
     status: {
       type: String,

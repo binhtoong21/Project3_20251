@@ -4,8 +4,8 @@ const walletService = {
   /**
    * Lấy lịch sử giao dịch của người dùng hiện tại
    */
-  getTransactions: () => {
-    return apiClient.get("/wallet/transactions");
+  getTransactions: async () => {
+    return await apiClient.get("/wallet/transactions");
   },
 
   /**
@@ -14,6 +14,14 @@ const walletService = {
    */
   createDepositRequest: (data) => {
     return apiClient.post("/wallet/deposit", data);
+  },
+
+  /**
+   * Tạo yêu cầu rút tiền
+   * @param {{ amount: number, bankInfo: object }} data
+   */
+  createWithdrawalRequest: (data) => {
+    return apiClient.post("/wallet/withdraw", data);
   },
   
   // ===============================================
@@ -35,6 +43,22 @@ const walletService = {
    */
   approveDeposit: (transactionId) => {
     return apiClient.put(`/wallet/approve/${transactionId}`);
+  },
+
+  /**
+   * Lấy danh sách yêu cầu rút tiền đang chờ xử lý (Admin)
+   */
+  getPendingWithdrawals: () => {
+    return apiClient.get("/wallet/withdrawals/pending");
+  },
+
+  /**
+   * Cập nhật trạng thái yêu cầu rút tiền (Admin)
+   * @param {string} transactionId
+   * @param {'completed' | 'failed'} status
+   */
+  updateWithdrawalStatus: (transactionId, status) => {
+    return apiClient.put(`/wallet/withdrawals/${transactionId}`, { status });
   },
 };
 

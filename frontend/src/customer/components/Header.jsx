@@ -80,10 +80,10 @@ const Header = () => {
                     onMouseEnter={() => setAccountDropdownVisible(true)}
                     onMouseLeave={() => setAccountDropdownVisible(false)}
                   >
-                    <div className="icon-link">
+                    <Link to="/account" className="icon-link">
                       <FaUser />
                       <span>{user.name}</span>
-                    </div>
+                    </Link>
                     {isAccountDropdownVisible && (
                       <div className="account-dropdown">
                         <Link to="/account">Hồ sơ</Link>

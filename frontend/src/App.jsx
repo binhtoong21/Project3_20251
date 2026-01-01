@@ -17,6 +17,7 @@ import BooksManager from "./admin/pages/BooksManager";
 import OrdersManager from "./admin/pages/OrdersManager";
 import UsersManager from "./admin/pages/UsersManager";
 import DepositsManager from "./admin/pages/DepositsManager";
+import WithdrawalsManager from "./admin/pages/WithdrawalsManager";
 
 import { AuthProvider } from "./shared/context/AuthContext";
 import { CartProvider } from "./shared/context/CartContext";
@@ -51,6 +52,7 @@ function App() {
                 <Route path="orders/:id" element={<OrderDetail />} />
                 <Route path="users" element={<UsersManager />} />
                 <Route path="deposits" element={<DepositsManager />} />
+                <Route path="withdrawals" element={<WithdrawalsManager />} />
               </Route>
             </Route>
           </Routes>

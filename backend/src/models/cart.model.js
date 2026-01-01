@@ -8,9 +8,7 @@ const cartItemSchema = new mongoose.Schema(
     title: { type: String, required: true },
     cover: { type: String },
   },
-  {
-    _id: true,
-  }
+  { timestamps: true }
 );
 
 const cartSchema = new mongoose.Schema(

@@ -61,3 +61,54 @@ svg {
 main {
   flex-grow: 1;
 }
+
+/* Global Button Styles */
+.btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn.primary {
+  background-color: var(--primary-color);
+  color: var(--white);
+}
+.btn.primary:hover {
+  background-color: var(--primary-color-dark);
+}
+
+.btn.secondary {
+  background-color: #6c757d;
+  color: var(--white);
+}
+.btn.secondary:hover {
+  background-color: #5a6268;
+}
+
+.btn.success {
+  background-color: #28a745;
+  color: var(--white);
+}
+.btn.success:hover {
+  background-color: #218838;
+}
+
+.btn.danger {
+  background-color: #dc3545;
+  color: var(--white);
+}
+.btn.danger:hover {
+  background-color: #c82333;
+}
+
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}

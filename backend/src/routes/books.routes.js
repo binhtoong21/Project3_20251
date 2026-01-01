@@ -12,6 +12,9 @@ router.get("/", booksCtrl.list);
 router.get("/my-books", protect, booksCtrl.getMyBooks);
 router.post("/user", protect, upload.array("cover", 5), booksCtrl.createUserBook);
 
+// --- Public category route ---
+router.get("/categories", booksCtrl.getCategories);
+
 // --- Public detail route ---
 router.get("/:id", booksCtrl.getById);
 

@@ -4,8 +4,10 @@ import { formatCurrency, formatDate } from "../../shared/utils/formatters";
 import "./MyBooks.css";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import MyBooksForm from "./MyBooksForm"; // A new component for the form
+import { useProfileCheck } from "../../shared/hooks/useProfileCheck";
 
 const MyBooks = () => {
+  const checkProfile = useProfileCheck();
   const [myBooks, setMyBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,8 +32,10 @@ const MyBooks = () => {
   }, [fetchMyBooks]);
 
   const handleOpenModalForCreate = () => {
-    setEditingBook(null);
-    setIsModalOpen(true);
+    checkProfile(() => {
+        setEditingBook(null);
+        setIsModalOpen(true);
+    });
   };
 
   const handleOpenModalForEdit = (book) => {
@@ -99,7 +103,7 @@ const MyBooks = () => {
             </div>
           ))
         ) : (
-          <p>Bạn chưa đăng bán cuốn sách nào.</p>
+          <p>Bạn hiện không đăng bán cuốn sách nào.</p>
         )}
       </div>
     </div>

@@ -29,6 +29,9 @@ export async function list(req, res, next) {
       filter.owner = { $ne: null };
     }
 
+    // Hide out-of-stock items (Standard Store Rule + C2C Rule)
+    filter.stock = { $gt: 0 };
+
     // Tìm kiếm
     if (search) {
       // Dùng Regex để tìm kiếm tương đối (chứa từ khóa là được)
@@ -126,6 +129,15 @@ export async function getById(req, res, next) {
   }
 }
 
+export async function getCategories(req, res, next) {
+  try {
+    const categories = await Book.find({ owner: null }).distinct("category");
+    res.json(categories);
+  } catch (err) {
+    next(err);
+  }
+}
+
 // [POST] /api/books (Admin only)
 export async function create(req, res, next) {
   try {
@@ -175,7 +187,10 @@ export async function remove(req, res, next) {
 // [GET] /api/books/my-books (User only)
 export async function getMyBooks(req, res, next) {
   try {
-    const myBooks = await Book.find({ owner: req.user._id }).sort({ createdAt: -1 });
+    const myBooks = await Book.find({ 
+        owner: req.user._id,
+        stock: { $gt: 0 } // Only show active listings (not sold)
+    }).sort({ createdAt: -1 });
     res.json(myBooks);
   } catch (err) {
     next(err);
@@ -199,8 +214,9 @@ export async function createUserBook(req, res, next) {
       description,
       category,
       price,
+      price,
       condition,
-      stock,
+      stock: 1, // Enforce stock = 1 for used books
       owner: req.user._id, // Set the owner
       cover: req.files.map(file => `/uploads/${file.filename}`),
     });
@@ -235,7 +251,7 @@ export async function updateUserBook(req, res, next) {
     book.category = category || book.category;
     book.price = price || book.price;
     book.condition = condition || book.condition;
-    book.stock = stock || book.stock;
+    // book.stock = stock || book.stock; // Do not allow stock updates for C2C items
 
     if (req.files && req.files.length > 0) {
       book.cover = req.files.map(file => `/uploads/${file.filename}`);

@@ -43,6 +43,7 @@ const orderSchema = new mongoose.Schema(
     },
     itemsPrice: { type: Number, required: true, default: 0.0 },
     shippingPrice: { type: Number, required: true, default: 0.0 },
+    transactionFee: { type: Number, default: 0.0 }, // Fee for C2C wallet transactions
     totalPrice: { type: Number, required: true, default: 0.0 },
     isPaid: { type: Boolean, required: true, default: false },
     paidAt: { type: Date },
@@ -50,8 +51,19 @@ const orderSchema = new mongoose.Schema(
     deliveredAt: { type: Date },
     status: {
       type: String,
-      enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
+      enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Completed"],
       default: "Pending",
+    },
+    escrowStatus: {
+      type: String,
+      enum: ["Held", "Released", "Refunded", "Disputed", "ReturnRequested", null],
+      default: null, // Null for non-wallet orders
+    },
+    disputeReason: {
+      type: String, // Reason provided by buyer when disputing
+    },
+    autoConfirmAt: {
+      type: Date,
     },
   },
   {

@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import router from "./routes/index.js";
+import reviewRoutes from "./routes/review.routes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -22,6 +23,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api", router);
+app.use("/api/reviews", reviewRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Not found" });

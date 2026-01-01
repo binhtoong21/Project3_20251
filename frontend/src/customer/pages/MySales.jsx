@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { getMySales } from '../../shared/utils/orderService';
 import './MySales.css';
 import { formatCurrency, formatDate } from '../../shared/utils/formatters';
@@ -64,6 +65,11 @@ const MySales = () => {
                   <p><strong>Địa chỉ giao hàng:</strong></p>
                   <p>{sale.shippingAddress.name}, {sale.shippingAddress.phone}</p>
                   <p>{`${sale.shippingAddress.street}, ${sale.shippingAddress.ward}, ${sale.shippingAddress.district}, ${sale.shippingAddress.province}`}</p>
+                </div>
+                <div className="sale-actions" style={{ marginTop: '10px', textAlign: 'right' }}>
+                    <Link to={`/orders/${sale.orderId}`} className="btn secondary" style={{ textDecoration: 'none', display: 'inline-block' }}>
+                        Xem chi tiết & Xử lý đơn
+                    </Link>
                 </div>
               </div>
             </div>
