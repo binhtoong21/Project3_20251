@@ -22,10 +22,7 @@ export const addOrderItems = async (req, res, next) => {
     // A. Direct Purchase (Buy Now)
     if (orderItems && orderItems.length > 0) {
         finalOrderItems = orderItems;
-        itemsPrice = finalOrderItems.reduce(
-            (acc, item) => acc + item.price * item.quantity,
-            0
-        );
+        // Don't calculate itemsPrice yet, do it after validation for security
     } 
     // B. Purchase from Cart
     else {
@@ -44,11 +41,6 @@ export const addOrderItems = async (req, res, next) => {
             price: item.price,
             cover: item.cover
         }));
-
-        itemsPrice = finalOrderItems.reduce(
-            (acc, item) => acc + item.price * item.quantity,
-            0
-        );
     }
 
 
@@ -67,10 +59,10 @@ export const addOrderItems = async (req, res, next) => {
     const orderItemsWithSeller = finalOrderItems.map(item => {
       const book = bookMap[item.book.toString()];
       if (!book) {
-        throw new Error(`Sách "${item.title}" không tồn tại hoặc đã bị xóa.`);
+        throw new Error(`Sách "${item.title || 'Unknown'}" không tồn tại hoặc đã bị xóa.`);
       }
       if (book.stock < item.quantity) {
-        throw new Error(`Sách "${item.title}" không đủ tồn kho (Chỉ còn: ${book.stock}).`);
+        throw new Error(`Sách "${book.title}" không đủ tồn kho (Chỉ còn: ${book.stock}).`);
       }
       
       updateOps.push({
@@ -82,13 +74,19 @@ export const addOrderItems = async (req, res, next) => {
 
       return {
         book: item.book,
-        title: item.title,
+        title: book.title, // Use title from DB
         quantity: item.quantity,
-        price: item.price,
-        cover: item.cover,
-        seller: book.owner, // <-- Key change: Assign the book's owner as the seller
+        price: book.price, // Use price from DB (Security)
+        cover: Array.isArray(book.cover) ? (book.cover.length > 0 ? book.cover[0] : '') : (book.cover || ''), // Use cover from DB
+        seller: book.owner, 
       };
     });
+
+    // Recalculate itemsPrice securely using verified DB prices
+    itemsPrice = orderItemsWithSeller.reduce(
+        (acc, item) => acc + item.price * item.quantity,
+        0
+    );
 
     //  Calculate Shipping & Total With C2C Logic 
     const isC2C = orderItemsWithSeller.some(item => item.seller);

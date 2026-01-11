@@ -19,7 +19,7 @@ const bookSchema = new mongoose.Schema(
 
     // Tùy chọn: Thêm trending để làm mục "Sách bán chạy"
     trending: { type: Boolean, default: false },
-    
+
     stock: { type: Number, required: true, min: 0, default: 0 },
 
     // MỞ RỘNG CHO CHỨC NĂNG C2C

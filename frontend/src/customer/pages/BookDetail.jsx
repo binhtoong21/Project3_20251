@@ -78,7 +78,6 @@ export default function BookDetail() {
         });
         if (mounted) {
           const filteredBooks = items.filter((item) => item._id !== book._id);
-          // --------------------------------------------
           setRelatedBooks(filteredBooks.slice(0, 4));
         }
       } catch (err) {

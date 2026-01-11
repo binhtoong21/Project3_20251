@@ -180,9 +180,7 @@ export async function remove(req, res, next) {
   }
 }
 
-// =================================================================
 // USER C2C CONTROLLERS
-// =================================================================
 
 // [GET] /api/books/my-books (User only)
 export async function getMyBooks(req, res, next) {
