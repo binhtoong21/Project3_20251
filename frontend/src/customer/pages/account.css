@@ -1,83 +1,107 @@
 .account-page {
-  padding: 40px 0;
+  padding: var(--space-2xl) 0;
   min-height: 80vh;
-  background-color: #f8f9fa;
+  background-color: var(--color-bg);
 }
 
 .account-page .container {
   display: flex;
-  gap: 30px;
+  gap: var(--space-xl);
   align-items: flex-start;
 }
 
 .account-sidebar {
-  padding: 20px;
   width: 260px;
   flex-shrink: 0;
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   position: sticky;
   top: 90px;
 }
 
+.sidebar-header {
+  padding: var(--space-lg) var(--space-lg) var(--space-sm);
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
 .account-sidebar ul {
   list-style: none;
-  padding: 0;
+  padding: var(--space-sm);
   margin: 0;
+}
+
+.account-sidebar li {
+  margin-bottom: 2px;
 }
 
 .account-sidebar li a {
   display: flex;
   align-items: center;
-  padding: 15px 20px;
+  padding: 0.75rem 1rem;
   text-decoration: none;
-  color: #4b5563;
+  color: var(--color-text-secondary);
   font-weight: 500;
   transition: all 0.2s ease;
-  border-left: 3px solid transparent;
+  border-radius: var(--radius-md);
 }
 
 .account-sidebar li a svg {
-  margin-right: 12px;
+  margin-right: var(--space-md);
   font-size: 1.1rem;
-  color: #9ca3af;
+  color: var(--color-text-tertiary);
+  transition: color 0.2s ease;
 }
 
+/* Active State - simpler, pill style */
 .account-sidebar li.active a {
-  background-color: #f3f4f6;
-  color: #2563eb;
-  border-left-color: #2563eb;
+  background-color: #F3F4F6; /* Or var(--color-bg) but lighter */
+  color: var(--color-accent);
+  font-weight: 600;
 }
 
 .account-sidebar li.active a svg {
-  color: #2563eb;
+  color: var(--color-accent);
 }
 
 .account-sidebar li a:hover:not(.active a) {
-  background-color: #f9fafb;
-  color: #111827;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
 }
 
+.account-sidebar li a:hover svg {
+  color: var(--color-text-primary);
+}
+
+
 .account-sidebar li.logout {
-  border-top: 1px solid #e5e7eb;
+  margin-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 15px 20px;
-  color: #ef4444;
+  padding: 0.75rem 1rem;
+  color: var(--color-error);
   font-weight: 500;
   transition: background 0.2s;
+  border-radius: var(--radius-md);
 }
 
 .account-sidebar li.logout svg {
-  margin-right: 12px;
+  margin-right: var(--space-md);
   font-size: 1.1rem;
 }
 
 .account-sidebar li.logout:hover {
-  background-color: #fef2f2;
+  background-color: #FEF2F2;
 }
 
 .account-content {
@@ -85,7 +109,7 @@
   width: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .account-page .container {
     flex-direction: column;
   }
@@ -93,6 +117,7 @@
   .account-sidebar {
     width: 100%;
     position: static;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-lg);
   }
 }
+

@@ -1,56 +1,61 @@
 .hero-section-container {
-  background-color: #f8f9fa; /* Light background for the section */
+  background-color: var(--color-bg);
+  padding: var(--space-xl) 0;
 }
 
 .hero-layout {
   display: flex;
-  gap: 20px;
+  gap: var(--space-lg);
 }
 
 .hero-slider-wrapper {
-  flex: 7; /* 70% */
-  min-width: 0; /* Prevent flex item from overflowing */
+  flex: 7;
+  min-width: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .quick-links-wrapper {
-  flex: 3; /* 30% */
+  flex: 3;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: var(--space-md);
 }
 
 .quick-link-card {
-  background-color: #fff;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
-  padding: 20px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  padding: var(--space-lg);
   text-decoration: none;
-  color: #343a40;
+  color: var(--color-text-primary);
   display: flex;
   flex-direction: column;
   justify-content: center;
   flex-grow: 1;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
 }
 
 .quick-link-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-hover);
 }
 
 .quick-link-card h3 {
-  margin: 0 0 8px 0;
-  font-size: 1.2rem;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: var(--primary-color);
+  color: var(--color-text-primary);
+  line-height: 1.4;
 }
 
 .quick-link-card p {
   margin: 0;
   font-size: 0.9rem;
-  color: #6c757d;
+  color: var(--color-text-secondary);
+  font-weight: 500;
 }
 
 /* Responsive adjustments */
@@ -64,16 +69,21 @@
     justify-content: space-between;
   }
   .quick-link-card {
-    width: 32%;
+    width: 48%; /* Slightly less than 50% for gap */
   }
 }
 
 @media (max-width: 768px) {
+  .hero-section-container {
+      padding: var(--space-md) 0;
+  }
+
   .quick-links-wrapper {
     flex-direction: column;
   }
   .quick-link-card {
     width: 100%;
-    text-align: center;
+    text-align: left;
   }
 }
+

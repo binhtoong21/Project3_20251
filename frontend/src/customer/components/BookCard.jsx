@@ -17,7 +17,6 @@ export default function BookCard({ book }) {
 
   const cartActions = useCartActions();
   const [adding, setAdding] = useState(false);
-  const [feedback, setFeedback] = useState("");
 
   // Tính toán giảm giá
   const isSale = book.oldPrice && book.oldPrice > book.price;
@@ -30,12 +29,8 @@ export default function BookCard({ book }) {
     try {
       setAdding(true);
       await cartActions.addItem(book._id, 1);
-      setFeedback("Added!");
-      setTimeout(() => setFeedback(""), 2000);
     } catch (err) {
       console.error("Failed to add to cart", err);
-      setFeedback("Failed");
-      setTimeout(() => setFeedback(""), 2000);
     } finally {
       setAdding(false);
     }
@@ -88,15 +83,7 @@ export default function BookCard({ book }) {
           </button>
         </div>
 
-        {feedback && (
-          <p
-            className={`cart-feedback ${
-              feedback.includes("Failed") ? "error" : "success"
-            }`}
-          >
-            {feedback}
-          </p>
-        )}
+
       </div>
     </article>
   );

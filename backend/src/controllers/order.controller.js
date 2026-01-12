@@ -808,7 +808,7 @@ export const forceComplete = async (req, res, next) => {
                     fee: totalFee,
                     status: 'completed',
                     relatedEntity: { id: order._id, model: 'Order' },
-                    description: `Tiền bán sách từ đơn hàng ${order._id} (Admin FORCE COMPLETE - Trừ phí ${totalFee})`,
+                    description: `Tiền bán sách từ đơn hàng ${order._id} (Admin Forced Complete - Release - Trừ phí ${totalFee})`,
                 });
             }
             await User.bulkWrite(sellerUpdateOps, { session });
@@ -818,6 +818,75 @@ export const forceComplete = async (req, res, next) => {
         order.escrowStatus = 'Released';
         order.status = 'Completed';
         
+        const updatedOrder = await order.save({ session });
+        await session.commitTransaction();
+        res.json(updatedOrder);
+
+    } catch (error) {
+        await session.abortTransaction();
+        next(error);
+    } finally {
+        session.endSession();
+    }
+};
+
+// @desc    Buyer cancels pending COD order
+// @route   PUT /api/orders/:id/cancel
+// @access  Private (Buyer)
+export const cancelOrder = async (req, res, next) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const order = await Order.findById(req.params.id).session(session);
+
+        if (!order) {
+            res.status(404);
+            throw new Error("Order not found");
+        }
+
+        if (order.user.toString() !== req.user._id.toString()) {
+            res.status(401);
+            throw new Error("Not authorized");
+        }
+
+        if (order.status !== 'Pending') {
+            res.status(400);
+            throw new Error("Chỉ có thể hủy đơn hàng khi đang ở trạng thái Chờ xác nhận (Pending).");
+        }
+
+        if (order.paymentMethod === 'wallet' && order.isPaid) {
+             const buyerId = order.user;
+             const refundAmount = order.totalPrice;
+
+             await User.findByIdAndUpdate(buyerId, {
+                $inc: { walletBalance: refundAmount }
+             }).session(session);
+
+             await Transaction.create([{
+                user: buyerId,
+                type: 'refund',
+                amount: refundAmount,
+                status: 'completed',
+                relatedEntity: { id: order._id, model: 'Order' },
+                description: `Hoàn tiền hủy đơn hàng ${order._id} (Người mua tự hủy khi Pending)`,
+             }], { session });
+
+             order.escrowStatus = 'Refunded';
+        }
+
+        // Restore Stock
+        const stockUpdateOps = order.orderItems.map(item => ({
+            updateOne: {
+                filter: { _id: item.book },
+                update: { $inc: { stock: item.quantity } }
+            }
+        }));
+
+        if (stockUpdateOps.length > 0) {
+            await Book.bulkWrite(stockUpdateOps, { session });
+        }
+
+        order.status = 'Cancelled';
         const updatedOrder = await order.save({ session });
         await session.commitTransaction();
         res.json(updatedOrder);

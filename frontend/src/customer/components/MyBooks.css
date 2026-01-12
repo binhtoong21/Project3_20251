@@ -1,45 +1,66 @@
 .my-books-container {
-  padding: 2rem;
+  padding: 0;
 }
 
 .my-books-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-xl);
 }
 
 .my-books-header h2 {
-  font-size: 2rem;
+  font-size: 1.5rem;
   margin: 0;
+  color: var(--color-text-primary);
+  font-weight: 700;
 }
 
 .my-books-header .btn-primary {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.my-books-header .btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
 }
 
 .my-books-list {
     display: grid;
-    gap: 1.5rem;
+    gap: var(--space-lg);
 }
 
 .my-book-card {
     display: flex;
-    gap: 1.5rem;
-    background-color: #fff;
-    padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    gap: var(--space-lg);
+    background-color: var(--color-surface);
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    box-shadow: none;
     align-items: center;
+    transition: border-color 0.2s;
+}
+
+.my-book-card:hover {
+    border-color: var(--color-accent);
 }
 
 .my-book-card img {
     width: 80px;
     height: 100px;
     object-fit: cover;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
 }
 
 .my-book-card-info {
@@ -47,47 +68,53 @@
 }
 
 .my-book-card-info h4 {
-    margin: 0 0 0.5rem;
-    font-size: 1.2rem;
+    margin: 0 0 var(--space-xs);
+    font-size: 1.1rem;
+    color: var(--color-text-primary);
+    font-weight: 600;
 }
 
 .my-book-card-info p {
     margin: 0.25rem 0;
-    color: #666;
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
 }
 .my-book-card-info .price {
-    font-weight: bold;
-    color: #333;
+    font-weight: 700;
+    color: var(--color-accent);
+    font-size: 1.05rem;
+    margin-top: 0.5rem;
 }
 
 
 .my-book-card-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--space-nm);
 }
 
 .my-book-card-actions button {
-    background: #f0f0f0;
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #555;
-    transition: background-color 0.2s, color 0.2s;
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
 }
 
 .my-book-card-actions button:hover {
-    background-color: #e0e0e0;
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    border-color: var(--color-text-primary);
 }
 
-.my-book-card-actions .btn-delete {
-    color: #dc3545;
-}
 .my-book-card-actions .btn-delete:hover {
-    background-color: #dc3545;
-    color: #fff;
+    background-color: #FEF2F2;
+    color: var(--color-error);
+    border-color: var(--color-error);
 }
+

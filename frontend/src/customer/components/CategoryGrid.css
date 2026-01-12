@@ -1,54 +1,150 @@
 
+.category-grid-section {
+  padding: var(--space-xl) 0;
+}
+
+
+.category-scroll-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: white;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  color: var(--color-text-primary);
+  opacity: 0.9;
+  transition: all 0.2s ease;
+}
+
+.scroll-btn:hover {
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  color: var(--color-accent);
+}
+
+.scroll-btn.left {
+  left: -20px;
+}
+
+.scroll-btn.right {
+  right: -20px;
+}
+
+@media (max-width: 768px) {
+  .scroll-btn {
+    display: none; /* Hide on mobile, touch scroll is enough */
+  }
+}
+
+/* Reuse the section-title highlight style here if it's not global, or add it explicitly */
+.section-title {
+  margin: 0;
+  font-size: 1.8rem;
+  text-align: left;
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+}
+
+.section-title::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-border);
+  opacity: 0.4;
+  z-index: -1;
+  border-radius: 2px;
+}
 
 .category-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  padding-bottom: var(--space-md); /* Space for scrollbar */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin; /* Firefox */
+}
+
+/* Hide scrollbar for Chrome/Safari initially, or style it thin */
+.category-grid::-webkit-scrollbar {
+  height: 6px;
+}
+
+.category-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.category-grid::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 20px;
+}
+
+.category-grid::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-tertiary);
 }
 
 .category-card {
   position: relative;
-  height: 120px;
-  border-radius: 8px;
+  flex: 0 0 auto; /* Don't shrink, don't grow */
+  width: 140px;   /* Fixed width for scroll items */
+  height: 100px;  /* Fixed height */
+  border-radius: var(--radius-lg);
   overflow: hidden;
   text-decoration: none;
-  color: white;
+  color: var(--color-text-primary);
   display: flex;
-  align-items: flex-end;
-  padding: 1rem;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%), var(--category-color, #495057);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  transition: all 0.2s ease;
 }
 
+/* Remove gradient */
 .category-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
+  display: none;
 }
-
 
 .category-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-}
-
-.category-card:hover::before {
-    opacity: 1;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-accent);
 }
 
 .category-card-content {
   z-index: 2;
+  width: 100%;
 }
 
 .category-card h3 {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  /* Truncate if too long */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+

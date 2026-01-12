@@ -1,5 +1,5 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FaShoppingCart,
   FaUser,
@@ -15,7 +15,31 @@ const Header = () => {
   const { user, logout } = useAuth();
   const { totalQuantity } = useCartState();
   const [isAccountDropdownVisible, setAccountDropdownVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const controlNavbar = () => {
+      if (typeof window !== "undefined") {
+        if (window.scrollY > lastScrollY && window.scrollY > 100) {
+          // Scrolling DOWN
+          setIsVisible(false);
+        } else {
+          // Scrolling UP
+          setIsVisible(true);
+        }
+        lastScrollY = window.scrollY;
+      }
+    };
+
+    window.addEventListener("scroll", controlNavbar);
+
+    return () => {
+      window.removeEventListener("scroll", controlNavbar);
+    };
+  }, []);
 
   const handleSearch = (e) => {
     if (e.key === "Enter") {
@@ -33,7 +57,7 @@ const Header = () => {
   };
 
   return (
-    <header className="site-header">
+    <header className={`site-header ${!isVisible ? "hidden" : ""}`}>
       <div className="container">
         <div className="header-left">
           <Link to="/" className="site-logo">
@@ -82,7 +106,7 @@ const Header = () => {
                   >
                     <Link to="/account" className="icon-link">
                       <FaUser />
-                      <span>{user.name}</span>
+                      <span>{user?.name || "User"}</span>
                     </Link>
                     {isAccountDropdownVisible && (
                       <div className="account-dropdown">

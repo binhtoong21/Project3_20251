@@ -21,12 +21,17 @@ import WithdrawalsManager from "./admin/pages/WithdrawalsManager";
 
 import { AuthProvider } from "./shared/context/AuthContext";
 import { CartProvider } from "./shared/context/CartContext";
+import ScrollToTop from "./shared/components/ScrollToTop";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
     <AuthProvider>
       <CartProvider>
         <BrowserRouter>
+          <ScrollToTop />
+          <ToastContainer position="bottom-right" autoClose={3000} />
           <Routes>
             <Route path="/" element={<CustomerLayout />}>
               <Route index element={<Home />} />

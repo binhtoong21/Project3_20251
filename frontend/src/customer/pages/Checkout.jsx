@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useCartState, useCartActions } from "../../shared/context/CartContext";
 import { useAuth } from "../../shared/context/AuthContext";
 import apiClient from "../../shared/utils/apiClient";
@@ -163,10 +164,13 @@ const Checkout = () => {
       const createdOrder = await apiClient.post("/orders", orderData);
       await refetchCart();
       if(refetchUser) await refetchUser(); // update wallet balance after order
+      toast.success("Đặt hàng thành công!");
       navigate(`/orders/${createdOrder._id}`);
     } catch (error) {
       console.error(error);
-      setErrorMsg(error.message || "Đặt hàng thất bại");
+      const msg = error.message || "Đặt hàng thất bại";
+      setErrorMsg(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

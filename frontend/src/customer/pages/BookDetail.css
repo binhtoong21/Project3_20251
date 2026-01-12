@@ -1,185 +1,275 @@
 .book-detail {
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 40px;
-  margin-top: 30px;
-  margin-bottom: 30px;
+  grid-template-columns: 1fr 1.5fr;
+  gap: var(--space-2xl);
+  margin-top: var(--space-xl);
+  margin-bottom: var(--space-2xl);
+  align-items: stretch; /* Change from start to stretch */
 }
 
 .detail-cover-wrapper {
+  position: relative; /* Key change: Allow absolute child */
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
+  /* height: 100%;  Implicitly stretched by grid */
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 }
 
 .detail-cover {
+  position: absolute; /* Key change: Take out of flow */
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 350px;
-  height: auto;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  object-fit: contain; /* Ensure whole image is visible within the box */
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  background-color: #f8f9fa; /* Background for empty space if aspect ratio differs */
+}
+
+.detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  height: 100%;
+  justify-content: space-between;
+  align-items: flex-start;
+  text-align: left;
+}
+/* ... existing styles ... */
+.book-detail-actions {
+  width: 100%; /* Ensure container takes full width available */
+  display: flex;
+  gap: var(--space-md);
+  margin-top: auto; 
+  justify-content: flex-start; /* Align flex items to start */
 }
 
 .detail-body h2 {
-  font-size: 2.5rem;
-  margin-top: 0;
-  margin-bottom: 10px;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-text-primary);
+  line-height: 1.2;
 }
 
 .detail-body .author {
-  font-size: 1.2rem;
-  color: #555;
-  margin-top: 0;
+  font-size: 1.1rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+.detail-body .stock {
+    font-size: 0.9rem;
+    color: var(--color-text-tertiary);
+    margin: 0;
 }
 
 .detail-body .price {
   font-size: 2rem;
-  font-weight: bold;
-  color: var(--primary-color);
-  margin: 20px 0;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: var(--space-sm) 0 var(--space-lg);
 }
 
 .quantity-selector {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
+  max-width: 150px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-lg);
+}
+
+
+
+.book-detail-actions button {
+  flex: 0 0 auto;
+  min-width: unset;
+  display: flex !important; /* Force flex display */
+  flex-direction: row;
+  align-items: center; /* Fix: was 'left' which is invalid for align-items */
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  white-space: nowrap; /* Prevent text wrapping */
 }
 
 .quantity-selector button {
   width: 40px;
   height: 40px;
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
-  font-size: 1.5rem;
+  border: none;
+  background-color: transparent;
+  font-size: 1.2rem;
   cursor: pointer;
+  color: var(--color-text-primary);
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity-selector button:hover {
+  background-color: var(--color-bg);
 }
 
 .quantity-selector input {
-  width: 60px;
+  width: 100%;
   height: 40px;
   text-align: center;
-  border: 1px solid #ccc;
-  border-left: none;
-  border-right: none;
-  font-size: 1.2rem;
+  border: none;
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  /* Remove spinner on number input */
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.quantity-selector input::-webkit-outer-spin-button,
+.quantity-selector input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .cart-feedback {
-  margin-top: 15px;
-  color: green;
-  font-weight: bold;
+  margin-top: var(--space-sm);
+  color: var(--color-success);
+  font-weight: 600;
+  animation: fadeIn 0.3s ease;
 }
 
-/* New Styles */
 /* --- NEW LAYOUT STYLES --- */
 .book-info-container {
   display: grid;
-  grid-template-columns: 1.5fr 1fr; /* 60% - 40% ratio approx */
-  gap: 30px;
-  margin-top: 40px;
-  margin-bottom: 60px; /* Added spacing to separate from related books */
+  grid-template-columns: 1.5fr 1fr;
+  gap: var(--space-xl);
+  margin-top: var(--space-2xl);
+  margin-bottom: var(--space-2xl);
   align-items: start;
 }
 
 .book-description-card,
 .book-details-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 24px;
-  border: 1px solid #e0e0e0; /* Card border like image */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  border: 1px solid var(--color-border);
+  box-shadow: none;
 }
-
-
 
 .card-title {
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 600;
   margin-top: 0;
-  margin-bottom: 20px;
-  color: #333;
-  text-transform: capitalize;
+  margin-bottom: var(--space-lg);
+  color: var(--color-text-primary);
+  border-bottom: 2px solid var(--color-bg);
+  padding-bottom: var(--space-sm);
+  display: inline-block;
 }
 
 /* Description Content */
 .description-content {
-  color: #333;
-  line-height: 1.6;
-  font-size: 0.95rem;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  font-size: 1rem;
 }
 
 .description-content p {
-  margin-bottom: 1em;
-}
-
-.description-content.collapsed {
-  max-height: 200px; /* Limit height when collapsed */
-  mask-image: linear-gradient(180deg, #000 60%, transparent); /* Fade out effect */
-  -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent);
-}
-
-.description-content.expanded {
-  max-height: none;
-  mask-image: none;
-  -webkit-mask-image: none;
-}
-
-.btn-toggle-description {
-  display: block;
-  margin: 15px auto 0;
-  padding: 8px 24px;
-  background: #fff;
-  border: 1px solid #28a745;
-  color: #28a745;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  text-align: center;
-  transition: all 0.2s;
-}
-
-.btn-toggle-description:hover {
-  background: #28a745;
-  color: #fff;
+  margin-bottom: 1rem;
 }
 
 /* Details Table */
 .details-table {
   width: 100%;
+  border-collapse: collapse;
 }
 
 .details-table td {
-  padding: 0.5rem;
+  padding: 0.75rem 0;
   font-size: 0.95rem;
   vertical-align: top;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.details-table tr:last-child td {
+  border-bottom: none;
 }
 
 .detail-label {
-  color: #777;
+  color: var(--color-text-secondary);
   width: 140px;
   font-weight: 500;
 }
 
 .detail-value {
-  color: #333;
+  color: var(--color-text-primary);
   font-weight: 500;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .book-detail {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
-  .book-info-container {
-      grid-template-columns: 1fr; /* Stack on mobile */
-      gap: 20px;
-  }
-
-  .detail-body h2 {
-    font-size: 2rem;
-  }
+/* Toggle button styling update */
+.btn-toggle-description {
+  display: block;
+  margin: var(--space-lg) auto 0;
+  padding: 0.5rem 1.5rem;
+  background: white;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.2s;
 }
+
+.btn-toggle-description:hover {
+  border-color: var(--color-text-primary);
+  background: var(--color-bg);
+}
+
+.description-content.collapsed {
+  max-height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+/* Re-add fade if really needed, but simpler is better often. */
+.description-content.collapsed::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
+    pointer-events: none;
+}
+
+.description-content.expanded {
+  max-height: none;
+}
+
+
+/* Responsive */
+@media (max-width: 992px) {
+    .book-detail {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+    }
+    
+    .detail-cover-wrapper {
+        position: static;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .book-info-container {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+    }
+}
+

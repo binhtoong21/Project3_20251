@@ -1,72 +1,74 @@
 .my-sales-container h2 {
-  font-size: 1.8rem;
-  margin-bottom: 2rem;
-  color: #333;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 1rem;
+  font-size: 1.5rem;
+  margin-bottom: var(--space-xl);
+  color: var(--color-text-primary);
+  border-bottom: 2px solid var(--color-bg);
+  padding-bottom: var(--space-md);
+  font-weight: 700;
 }
 
 .sales-list {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-lg);
 }
 
 .sale-item-card {
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.3s ease;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+  transition: all 0.2s;
+  overflow: hidden;
 }
 
 .sale-item-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--color-accent);
 }
 
 .sale-item-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem 1.2rem;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 0.75rem 1.25rem;
+  background-color: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
   font-size: 0.9rem;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .sale-item-header span:first-child {
-  font-weight: 500;
-  color: #444;
+  font-weight: 600;
+  color: var(--color-text-primary);
 }
 
 .status-badge {
-  padding: 0.25rem 0.6rem;
-  border-radius: 12px;
-  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 600;
   font-size: 0.8rem;
   text-transform: capitalize;
-  color: #fff;
 }
 
-.status-pending { background-color: #ffc107; color: #000 }
-.status-processing { background-color: #17a2b8; }
-.status-shipped { background-color: #007bff; }
-.status-delivered { background-color: #28a745; }
-.status-cancelled { background-color: #dc3545; }
+.status-pending { background-color: #FFFBEB; color: #B45309; border: 1px solid #FEF3C7; }
+.status-processing { background-color: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD; }
+.status-shipped { background-color: #EFF6FF; color: #1E40AF; border: 1px solid #DBEAFE; }
+.status-delivered { background-color: #ECFDF5; color: #047857; border: 1px solid #D1FAE5; }
+.status-cancelled { background-color: #FEF2F2; color: #B91C1C; border: 1px solid #FEE2E2; }
+.status-confirmed, .status-paid { background-color: #ECFDF5; color: #047857; border: 1px solid #D1FAE5; }
 
 .sale-item-body {
   display: flex;
-  padding: 1.2rem;
-  gap: 1.5rem;
+  padding: var(--space-lg);
+  gap: var(--space-xl);
 }
 
 .sale-item-cover {
   width: 90px;
   height: 130px;
   object-fit: cover;
-  border-radius: 4px;
-  border: 1px solid #eee;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
 }
 
 .sale-item-details {
@@ -76,26 +78,50 @@
 .sale-item-details p {
   margin: 0 0 0.5rem 0;
   font-size: 0.95rem;
-  color: #333;
+  color: var(--color-text-secondary);
 }
 
 .sale-item-details .item-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #212529;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.sale-item-details p strong {
+    color: var(--color-accent);
+    font-size: 1.05rem;
 }
 
 .sale-item-footer {
-  padding: 0.8rem 1.2rem;
-  background-color: #f8f9fa;
-  border-top: 1px solid #e0e0e0;
+  padding: var(--space-lg);
+  background-color: #FAFAFA; /* Slightly different from bg-color */
+  border-top: 1px solid var(--color-border);
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: var(--space-lg);
   font-size: 0.9rem;
-  color: #555;
+  color: var(--color-text-secondary);
 }
 
 .buyer-info p, .shipping-info p {
-    margin: 0.2rem 0;
+    margin: 0.25rem 0;
 }
+.buyer-info p strong, .shipping-info p strong {
+    color: var(--color-text-primary);
+}
+
+.sale-actions .btn.secondary {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+}
+
+.sale-actions .btn.secondary:hover {
+    background: var(--color-bg);
+    border-color: var(--color-text-primary);
+}
+

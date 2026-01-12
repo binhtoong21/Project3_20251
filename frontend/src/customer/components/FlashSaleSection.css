@@ -1,20 +1,29 @@
 .flash-sale-section {
-  background-color: #ffe5e7; /* A light pink/red background for flash sales */
+  background-color: #FFF1F2; /* Very subtle pink/red tint */
+  padding: var(--space-xl) 0;
 }
 
 .flash-sale-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.title-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-error);
 }
 
 .countdown-timer {
   display: flex;
-  gap: 10px;
-  background-color: #ffffff;
-  padding: 8px 15px;
-  border-radius: 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  gap: var(--space-md);
+  background-color: var(--color-surface);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .timer-segment {
@@ -22,27 +31,31 @@
   flex-direction: column;
   align-items: center;
   line-height: 1;
+  min-width: 40px;
 }
 
 .timer-segment strong {
-  font-size: 1.5rem;
-  color: var(--primary-color);
+  font-size: 1.25rem;
+  color: var(--color-text-primary);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .timer-segment .timer-label {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     text-transform: uppercase;
-    color: #6c757d;
+    color: var(--color-text-secondary);
+    margin-top: 2px;
+    letter-spacing: 0.5px;
 }
 
 /* Reusing grid styles from booksection.css for consistency */
-/* The .grid class is assumed to be available globally or from an imported sheet */
 
 @media (max-width: 768px) {
     .flash-sale-title {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+        gap: var(--space-sm);
     }
 }
+

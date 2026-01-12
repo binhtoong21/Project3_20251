@@ -5,6 +5,7 @@ import {
   useMemo,
   useReducer,
 } from "react";
+import { toast } from "react-toastify";
 import PropTypes from "prop-types";
 import apiClient from "../utils/apiClient";
 import { useAuth } from "./AuthContext";
@@ -71,11 +72,13 @@ export function CartProvider({ children }) {
         try {
           const data = await apiClient.post("/cart/add", { bookId, quantity });
           dispatch({ type: "REQUEST_SUCCESS", payload: data });
+          toast.success("Added to cart successfully!");
         } catch (err) {
           dispatch({
             type: "REQUEST_ERROR",
             payload: err.message || "Failed to add item",
           });
+          toast.error(err.message || "Failed to add item");
           throw err;
         }
       },
@@ -84,11 +87,13 @@ export function CartProvider({ children }) {
         try {
           const data = await apiClient.put(`/cart/${itemId}`, { quantity });
           dispatch({ type: "REQUEST_SUCCESS", payload: data });
+          toast.success("Cart updated!");
         } catch (err) {
           dispatch({
             type: "REQUEST_ERROR",
             payload: err.message || "Failed to update item",
           });
+          toast.error(err.message || "Failed to update item");
           throw err;
         }
       },
@@ -97,11 +102,13 @@ export function CartProvider({ children }) {
         try {
           const data = await apiClient.delete(`/cart/${itemId}`);
           dispatch({ type: "REQUEST_SUCCESS", payload: data });
+          toast.success("Item removed from cart");
         } catch (err) {
           dispatch({
             type: "REQUEST_ERROR",
             payload: err.message || "Failed to remove item",
           });
+          toast.error(err.message || "Failed to remove item");
           throw err;
         }
       },
@@ -118,11 +125,13 @@ export function CartProvider({ children }) {
         try {
           const data = await apiClient.delete("/cart/clear");
           dispatch({ type: "REQUEST_SUCCESS", payload: data });
+          toast.success("Cart cleared");
         } catch (err) {
           dispatch({
             type: "REQUEST_ERROR",
             payload: err.message || "Failed to clear cart",
           });
+          toast.error(err.message || "Failed to clear cart");
           throw err;
         }
       },

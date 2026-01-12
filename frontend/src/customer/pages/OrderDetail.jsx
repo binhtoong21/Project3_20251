@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useAuth } from "../../shared/context/AuthContext";
 import apiClient from "../../shared/utils/apiClient";
 import { formatCurrency, formatDate } from "../../shared/utils/formatters";
@@ -34,15 +35,14 @@ const OrderDetail = () => {
         await apiClient.put(`/orders/${id}/confirm-receipt`);
         const updatedOrder = await apiClient.get(`/orders/${id}`);
         setOrder(updatedOrder);
-        alert("Đã xác nhận nhận hàng thành công!");
+        toast.success("Đã xác nhận nhận hàng thành công!");
       } catch (err) {
-        alert(err.message);
+        toast.error(err.message);
       } finally {
         setLoading(false);
       }
     }
   };
-
 
 
   const handleResolveDispute = async (decision) => {
@@ -57,9 +57,9 @@ const OrderDetail = () => {
           await apiClient.put(`/orders/${id}/resolve-dispute`, { decision });
           const updatedOrder = await apiClient.get(`/orders/${id}`);
           setOrder(updatedOrder);
-          alert(`Đã ${decision === 'release' ? 'giải ngân' : 'hoàn tiền'} thành công!`);
+          toast.success(`Đã ${decision === 'release' ? 'giải ngân' : 'hoàn tiền'} thành công!`);
       } catch (err) {
-          alert('Lỗi xử lý: ' + err.message);
+          toast.error('Lỗi xử lý: ' + err.message);
       } finally {
           setLoading(false);
       }
@@ -72,9 +72,9 @@ const OrderDetail = () => {
           await apiClient.put(`/orders/${id}/status`, { status: newStatus });
           const updatedOrder = await apiClient.get(`/orders/${id}`);
           setOrder(updatedOrder);
-          alert("Cập nhật trạng thái thành công!");
+          toast.success("Cập nhật trạng thái thành công!");
       } catch (err) {
-          alert(err.message);
+          toast.error(err.message);
       } finally {
           setLoading(false);
       }
@@ -88,9 +88,9 @@ const OrderDetail = () => {
           await apiClient.put(`/orders/${id}/refund-request`, { reason });
           const updatedOrder = await apiClient.get(`/orders/${id}`);
           setOrder(updatedOrder);
-          alert("Đã gửi yêu cầu hoàn tiền. Vui lòng chờ người bán xác nhận.");
+          toast.success("Đã gửi yêu cầu hoàn tiền. Vui lòng chờ người bán xác nhận.");
       } catch (err) {
-          alert(err.message);
+          toast.error(err.message);
       } finally {
           setLoading(false);
       }
@@ -103,9 +103,9 @@ const OrderDetail = () => {
           await apiClient.put(`/orders/${id}/refund-confirm`);
           const updatedOrder = await apiClient.get(`/orders/${id}`);
           setOrder(updatedOrder);
-          alert("Đã hoàn tiền thành công!");
+          toast.success("Đã hoàn tiền thành công!");
       } catch (err) {
-          alert(err.message);
+          toast.error(err.message);
       } finally {
           setLoading(false);
       }
@@ -120,22 +120,37 @@ const OrderDetail = () => {
           await apiClient.put(`/orders/${id}/refund-reject`, { reason });
           const updatedOrder = await apiClient.get(`/orders/${id}`);
           setOrder(updatedOrder);
-          alert("Đã từ chối hoàn tiền. Đơn hàng chuyển sang trạng thái Tranh chấp!");
+          toast.success("Đã từ chối hoàn tiền. Đơn hàng chuyển sang trạng thái Tranh chấp!");
       } catch (err) {
-          alert('Lỗi: ' + err.message);
+          toast.error('Lỗi: ' + err.message);
       } finally {
           setLoading(false);
       }
   };
 
-  if (loading) return <div className="container">Loading order details...</div>;
+  const handleCancelOrder = async () => {
+      if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?")) return;
+      try {
+          setLoading(true);
+          await apiClient.put(`/orders/${id}/cancel`);
+          const updatedOrder = await apiClient.get(`/orders/${id}`);
+          setOrder(updatedOrder);
+          toast.success("Đã hủy đơn hàng thành công!");
+      } catch (err) {
+          toast.error(err.message);
+      } finally {
+          setLoading(false);
+      }
+  };
+
+  if (loading) return <div className="container" style={{paddingTop: '2rem'}}>Loading order details...</div>;
   if (error)
     return (
-      <div className="container error-message">
+      <div className="container error-message" style={{marginTop: '2rem'}}>
         Error: {error} Please make sure you are logged in and the order exists.
       </div>
     );
-  if (!order) return <div className="container">Order not found.</div>;
+  if (!order) return <div className="container" style={{paddingTop: '2rem'}}>Order not found.</div>;
 
   return (
     <div className="page order-detail-page">
@@ -204,11 +219,32 @@ const OrderDetail = () => {
                             Đã nhận được hàng
                          </button>
                          {order.escrowStatus === 'Held' && ( 
-                            <button className="btn-dispute" onClick={handleRequestRefund} style={{backgroundColor: '#ffc107', color: '#000'}}>
+                            <button className="btn-dispute" onClick={handleRequestRefund} style={{backgroundColor: '#F59E0B', color: '#000', borderColor: '#F59E0B'}}>
                                 Yêu cầu Trả hàng/Hoàn tiền
                             </button>
                          )}
 
+                     </div>
+                 )}
+
+                 {/* Cancel Order Button for Pending COD Orders */}
+                 {order.status === 'Pending' && order.paymentMethod === 'COD' && user?._id === (order.user._id || order.user) && (
+                     <div className="escrow-actions" style={{marginTop: '10px'}}>
+                         <button 
+                            className="btn-cancel-order" 
+                            onClick={handleCancelOrder}
+                            style={{
+                                backgroundColor: '#EF4444', 
+                                color: '#fff', 
+                                border: 'none', 
+                                padding: '8px 16px', 
+                                borderRadius: '4px', 
+                                cursor: 'pointer',
+                                fontWeight: '500'
+                            }}
+                         >
+                             Hủy đơn hàng
+                         </button>
                      </div>
                  )}
 
@@ -217,7 +253,7 @@ const OrderDetail = () => {
                      <div className="admin-resolution-area" style={{marginTop: '1rem', borderTop: '1px solid #ddd', paddingTop: '1rem'}}>
                          <h4>Admin Resolution</h4>
                          {order.disputeReason && (
-                             <div style={{backgroundColor: '#fff3cd', padding: '10px', borderRadius: '4px', marginBottom: '10px', color: '#856404'}}>
+                             <div className="dispute-info" style={{backgroundColor: '#FEF3C7', color: '#92400E', width: '100%', boxSizing: 'border-box', marginBottom: '10px'}}>
                                  <strong>Lý do khiếu nại:</strong> {order.disputeReason}
                              </div>
                          )}
@@ -235,7 +271,7 @@ const OrderDetail = () => {
                      <p className="dispute-info">Đơn hàng đang được Admin xem xét.</p>
                  )}
                  {order.escrowStatus === 'ReturnRequested' && (
-                     <p className="dispute-info" style={{backgroundColor: '#e2e3e5', color: '#383d41'}}>
+                     <p className="dispute-info" style={{backgroundColor: '#E5E7EB', color: '#374151'}}>
                          Người mua đã yêu cầu trả hàng/hoàn tiền. Chờ người bán xác nhận.
                      </p>
                  )}
@@ -247,9 +283,9 @@ const OrderDetail = () => {
             order.orderItems.some(item => item.seller && item.seller._id === user._id) || 
             (user?.role === 'admin' && order.orderItems.some(item => !item.seller))
         ) && (
-            <div className="seller-actions-card" style={{ marginBottom: "20px", padding: "15px", border: "1px solid #ffc107", borderRadius: "8px", background: "#fff3cd" }}>
+            <div className="seller-actions-card">
                 <h3>{user?.role === 'admin' ? 'Tác vụ Admin (B2C Order)' : 'Tác vụ người bán'}</h3>
-                <div className="action-buttons" style={{ display: "flex", gap: "10px", marginTop: "10px", flexWrap: "wrap" }}>
+                <div className="action-buttons">
                     {order.status !== 'Shipped' && order.status !== 'Delivered' && order.status !== 'Completed' && (
                         <button className="btn primary" onClick={() => handleUpdateStatus('Shipped')}>
                             Đã gửi hàng (Shipped)
@@ -265,14 +301,14 @@ const OrderDetail = () => {
                     {order.escrowStatus === 'ReturnRequested' && (
                         <>
                              {order.disputeReason && (
-                                <div style={{width: '100%', backgroundColor: '#fff', padding: '10px', borderRadius: '4px', marginBottom: '10px', borderLeft: '4px solid #dc3545', fontSize: '0.95rem'}}>
+                                <div style={{width: '100%', backgroundColor: '#fff', padding: '10px', borderRadius: '4px', marginBottom: '10px', borderLeft: '4px solid #EF4444', fontSize: '0.95rem'}}>
                                     <strong>Lý do từ người mua:</strong> {order.disputeReason}
                                 </div>
                             )}
                             <button className="btn danger" onClick={handleConfirmRefund}>
                                 Xác nhận Hoàn tiền (Approve Refund)
                             </button>
-                            <button className="btn secondary" onClick={handleRejectRefund} style={{marginLeft: '10px', backgroundColor: '#6c757d', color: '#fff'}}>
+                            <button className="btn secondary" onClick={handleRejectRefund}>
                                 Từ chối (Reject)
                             </button>
                         </>
@@ -335,7 +371,7 @@ const OrderDetail = () => {
           <div className="order-detail-right">
              {/* New Section: Partner Contact Info for C2C */}
              {order.orderItems.some(item => item.seller) && (
-                 <div className="detail-card contact-info-card" style={{border: '1px solid #17a2b8', backgroundColor: '#f0faff'}}>
+                 <div className="detail-card contact-info-card">
                      <h3>Thông tin liên hệ giao dịch</h3>
                      
                      {/* View for Buyer: Show Sellers Info */}
@@ -343,7 +379,7 @@ const OrderDetail = () => {
                         <div>
                             <p style={{fontStyle: 'italic', marginBottom: '10px'}}>Dưới đây là thông tin người bán để bạn liên hệ nhận sách:</p>
                             {[...new Map(order.orderItems.filter(item => item.seller).map(item => [item.seller._id, item.seller])).values()].map(seller => (
-                                <div key={seller._id} style={{marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px dashed #ccc'}}>
+                                <div key={seller._id} style={{marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px dashed #E5E7EB'}}>
                                     <p><strong>Người bán: {seller.name}</strong></p>
                                     <p>SĐT: <a href={`tel:${seller.phone}`}>{seller.phone || "Chưa cập nhật"}</a></p>
                                     <p>Địa chỉ: {seller.address ? `${seller.address.street}, ${seller.address.ward}, ${seller.address.district}, ${seller.address.province}` : "Chưa cập nhật"}</p>

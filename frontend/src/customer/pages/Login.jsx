@@ -1,4 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useState } from "react"; // Bỏ useEffect
 import { useAuth } from "../../shared/context/AuthContext";
 import "./page.css";
@@ -20,6 +21,7 @@ export default function Login() {
     e.preventDefault();
     try {
       const user = await login(email, password);
+      toast.success("Login successful!");
 
       // Sau khi login thành công, kiểm tra role và chuyển hướng
       if (user.role === "admin") {
@@ -29,7 +31,10 @@ export default function Login() {
       }
     } catch (err) {
       console.error("Login failed:", err);
-      setError(err.message || "Login failed. Please try again.");
+      console.error("Login failed:", err);
+      const message = err.message || "Login failed. Please try again.";
+      setError(message);
+      toast.error(message);
     }
   };
 

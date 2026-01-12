@@ -1,101 +1,95 @@
 .dashboard-container {
-  padding-bottom: 20px;
+  padding-bottom: var(--space-xl);
 }
 
 .dashboard-title {
   font-size: 1.8rem;
-  color: #2d3748;
-  margin-bottom: 25px;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-xl);
   font-weight: 700;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
 }
 
 .stat-card {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: var(--color-surface);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: none;
   display: flex;
   align-items: center;
-  border-left: 5px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
 }
 
-.stat-card.blue {
-  border-left-color: #3182ce;
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
 }
-.stat-card.green {
-  border-left-color: #38a169;
-}
-.stat-card.orange {
-  border-left-color: #dd6b20;
-}
-.stat-card.purple {
-  border-left-color: #805ad5;
-}
+
+/* Specific colors for icon backgrounds only */
+.stat-card.blue .stat-icon { background: #E0F2FE; color: #0284C7; }
+.stat-card.green .stat-icon { background: #DCFCE7; color: #16A34A; }
+.stat-card.orange .stat-icon { background: #FEF3C7; color: #D97706; }
+.stat-card.purple .stat-icon { background: #F3E8FF; color: #9333EA; }
 
 .stat-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md); /* Squared circle looks more modern */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  margin-right: 15px;
+  font-size: 1.25rem;
+  margin-right: var(--space-lg);
   flex-shrink: 0;
-}
-
-.stat-card.blue .stat-icon {
-  background: #ebf8ff;
-  color: #3182ce;
-}
-.stat-card.green .stat-icon {
-  background: #f0fff4;
-  color: #38a169;
-}
-.stat-card.orange .stat-icon {
-  background: #fffaf0;
-  color: #dd6b20;
-}
-.stat-card.purple .stat-icon {
-  background: #faf5ff;
-  color: #805ad5;
 }
 
 .stat-info h3 {
   font-size: 0.9rem;
-  color: #718096;
-  margin-bottom: 5px;
-  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .stat-info .stat-number {
   font-size: 1.5rem;
-  font-weight: bold;
-  color: #2d3748;
+  font-weight: 700;
+  color: var(--color-text-primary);
 }
 
 .chart-section {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  margin-bottom: 30px;
+  background: var(--color-surface);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: none;
+  margin-bottom: var(--space-2xl);
+}
+
+.chart-section h3, .recent-orders-section h3 {
+  margin-top: 0;
+  margin-bottom: var(--space-lg);
+  font-size: 1.25rem;
+  color: var(--color-text-primary);
+  font-weight: 600;
 }
 
 .chart-bars {
   display: flex;
   align-items: flex-end;
   justify-content: space-around;
-  height: 200px;
-  padding-top: 20px;
-  gap: 10px;
+  height: 240px;
+  padding-top: var(--space-lg);
+  gap: var(--space-sm);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .bar-group {
@@ -103,15 +97,22 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
+  height: 100%;
+  justify-content: flex-end;
 }
 
 .bar {
-  width: 40px;
-  background-color: #3182ce;
+  width: 32px;
+  background-color: var(--color-accent);
   border-radius: 4px 4px 0 0;
-  transition: height 0.5s ease;
+  transition: height 0.5s ease, opacity 0.2s;
   min-height: 4px;
   position: relative;
+  opacity: 0.8;
+}
+
+.bar:hover {
+  opacity: 1;
 }
 
 .bar:hover::after {
@@ -120,49 +121,70 @@
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  background: #2d3748;
+  background: var(--color-text-primary);
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 0.75rem;
   white-space: nowrap;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   z-index: 10;
+  pointer-events: none;
 }
 
 .bar-date {
-  margin-top: 10px;
+  margin-top: var(--space-sm);
   font-size: 0.8rem;
-  color: #718096;
+  color: var(--color-text-tertiary);
 }
 
 .recent-orders-section {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: var(--color-surface);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: none;
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 15px;
+  margin-top: var(--space-md);
 }
 
 .admin-table th {
   text-align: left;
-  padding: 12px;
-  border-bottom: 2px solid #e2e8f0;
-  color: #4a5568;
-  font-size: 0.9rem;
+  padding: var(--space-md);
+  border-bottom: 2px solid var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .admin-table td {
-  padding: 12px;
-  border-bottom: 1px solid #e2e8f0;
-  color: #2d3748;
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
 }
 
 .admin-table tr:last-child td {
   border-bottom: none;
 }
+
+.admin-table .status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-pending { background-color: #FFFBEB; color: #B45309; }
+.status-confirmed, .status-paid { background-color: #ECFDF5; color: #047857; }
+.status-shipped { background-color: #EFF6FF; color: #1E40AF; }
+.status-delivered { background-color: #ECFDF5; color: #047857; }
+.status-cancelled { background-color: #FEF2F2; color: #B91C1C; }
+

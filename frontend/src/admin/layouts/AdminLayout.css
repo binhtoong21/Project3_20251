@@ -2,77 +2,92 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
+  background-color: var(--color-bg);
 }
 
 /* SIDEBAR */
 .admin-sidebar {
   width: 260px;
-  background-color: #1a1c23;
-  color: #fff;
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   flex-shrink: 0;
+  transition: all 0.3s;
 }
 
 .sidebar-header {
-  padding: 20px;
-  border-bottom: 1px solid #2d3748;
-  font-size: 1.2rem;
-  font-weight: bold;
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--color-border);
+  font-size: 1.25rem;
+  font-weight: 700;
   text-align: center;
+  color: var(--color-accent);
 }
 
 .sidebar-menu {
   flex-grow: 1;
-  padding: 20px 0;
+  padding: var(--space-lg) var(--space-md);
   list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
 }
 
 .sidebar-menu li a {
   display: flex;
   align-items: center;
-  padding: 15px 25px;
-  color: #a0aec0;
+  padding: 0.75rem 1rem;
+  color: var(--color-text-secondary);
   text-decoration: none;
-  transition: all 0.3s;
+  transition: all 0.2s;
+  border-radius: var(--radius-md);
+  font-weight: 500;
 }
 
-.sidebar-menu li a:hover,
+.sidebar-menu li a:hover {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
 .sidebar-menu li a.active {
-  background-color: #2d3748;
-  color: #fff;
-  border-left: 4px solid #3182ce;
+  background-color: #EFF6FF; /* Light blue accent bg */
+  color: var(--color-accent);
+  font-weight: 600;
 }
 
 .sidebar-footer {
-  padding: 20px;
-  border-top: 1px solid #2d3748;
+  padding: var(--space-lg);
+  border-top: 1px solid var(--color-border);
 }
 
 .logout-btn {
   width: 100%;
-  padding: 12px;
-  background-color: #e53e3e;
-  color: white;
-  border: none;
+  padding: 0.75rem;
+  background-color: #FEF2F2;
+  color: var(--color-error);
+  border: 1px solid #FECACA;
   cursor: pointer;
-  border-radius: 4px;
-  font-weight: bold;
+  border-radius: var(--radius-md);
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: var(--space-sm);
+  transition: all 0.2s;
 }
 
 .logout-btn:hover {
-  background-color: #c53030;
+  background-color: #FEE2E2;
+  border-color: #FCA5A5;
 }
 
 /* CONTENT */
 .admin-content {
   flex-grow: 1;
-  background-color: #f7fafc;
-  padding: 30px;
+  background-color: var(--color-bg);
+  padding: var(--space-2xl);
   overflow-y: auto;
 }
+

@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../shared/context/AuthContext";
 import apiClient from "../../shared/utils/apiClient";
@@ -24,8 +25,11 @@ export default function Register() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (password !== confirmPassword) {
+    if (password !== confirmPassword) {
       setError("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
+    }
     }
     setError("");
     try {
@@ -35,10 +39,14 @@ export default function Register() {
         password,
       });
       // Directly handle the successful registration response
+      // Directly handle the successful registration response
       handleAuthSuccess(data);
+      toast.success("Registration successful!");
       navigate("/");
     } catch (err) {
-      setError(err.message || "Registration failed. Please try again.");
+      const message = err.message || "Registration failed. Please try again.";
+      setError(message);
+      toast.error(message);
     }
   };
 

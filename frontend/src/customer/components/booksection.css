@@ -13,6 +13,22 @@
   margin: 0;
   font-size: 1.8rem;
   text-align: left;
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+}
+
+.books-section .section-title::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-border);
+  opacity: 0.4;
+  z-index: -1;
+  border-radius: 2px;
 }
 
 .books-section .see-all-link {

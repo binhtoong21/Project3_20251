@@ -12,7 +12,8 @@ import {
   requestRefund,
   confirmRefundRequest,
   rejectRefundRequest,
-  forceComplete
+  forceComplete,
+  cancelOrder
 } from "../controllers/order.controller.js";
 import { protect, admin } from "../middlewares/auth.middleware.js";
 
@@ -37,6 +38,9 @@ router.route("/:id/refund-reject").put(protect, rejectRefundRequest);
 
 // Force complete (Admin)
 router.route('/:id/force-complete').put(protect, admin, forceComplete);
+
+// Cancel Order (Buyer - Pending COD)
+router.route("/:id/cancel").put(protect, cancelOrder);
 
 //  Common Route
 router.route("/:id").get(protect, getOrderById);

@@ -1,5 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import { FaCartPlus, FaBolt } from "react-icons/fa";
 import { getBook, listBooks } from "../../shared/utils/booksService";
 import { formatCurrency, formatDate } from "../../shared/utils/formatters";
 import { useCartActions } from "../../shared/context/CartContext.jsx";
@@ -20,7 +22,6 @@ export default function BookDetail() {
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
-  const [feedback, setFeedback] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const cartActions = useCartActions();
   const { user } = useAuth();
@@ -118,20 +119,16 @@ export default function BookDetail() {
     checkProfile(async () => {
       // Check tồn kho sơ bộ ở frontend
       if (quantity > stock) {
-        setFeedback(`Chỉ còn ${stock} sản phẩm.`);
+        toast.warn(`Chỉ còn ${stock} sản phẩm.`);
         return;
       }
 
       try {
         setAdding(true);
         await cartActions.addItem(book._id, quantity);
-        setFeedback("Added to cart");
-        setTimeout(() => setFeedback(""), 2500);
       } catch (err) {
         // Hiển thị lỗi từ backend
         console.error("Failed to add to cart", err);
-        setFeedback(err.message || "Failed to add to cart");
-        setTimeout(() => setFeedback(""), 2500);
       } finally {
         setAdding(false);
       }
@@ -184,41 +181,49 @@ export default function BookDetail() {
             {!book.owner && <p className="stock">Tồn kho: {book.stock}</p>}
             <p className="price">{formatCurrency(book.price)}</p>
 
-            <div className="quantity-selector">
-              <button onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
-                -
-              </button>
-              <input type="number" value={quantity} readOnly />
-              <button onClick={() => setQuantity((q) => q + 1)}>+</button>
-            </div>
-
-            {book.owner ? (
-                <button
-                className="btn primary"
-                onClick={handleBuyNow}
-                disabled={isOwner || isOutOfStock}
-                style={{
-                    backgroundColor: isOwner ? '#ccc' : '#28a745', // Green for Buy Now
-                    cursor: isOwner ? 'not-allowed' : '',
-                    borderColor: '#28a745'
-                }}
-                >
-                {isOwner ? "Bạn là người bán" : "Mua ngay"}
+            {!book.owner && (
+              <div className="quantity-selector">
+                <button onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
+                  -
                 </button>
-            ) : (
+                <input type="number" value={quantity} readOnly />
+                <button onClick={() => setQuantity((q) => q + 1)}>+</button>
+              </div>
+            )}
+
+            <div className="book-detail-actions">
+              {book.owner ? (
                 <button
-                className="btn primary"
-                onClick={handleAddToCart}
-                disabled={adding || isOwner || isOutOfStock}
-                style={{
+                  className="btn primary"
+                  onClick={handleBuyNow}
+                  disabled={isOwner || isOutOfStock}
+                  style={{
                     backgroundColor: isOwner ? '#ccc' : '',
                     cursor: isOwner ? 'not-allowed' : ''
-                }}
+                  }}
                 >
-                {isOwner ? "Bạn là người bán" : adding ? "Adding..." : "Add to cart"}
+                  <FaBolt /> {isOwner ? "Bạn là người bán" : "Mua ngay"}
                 </button>
-            )}
-            {feedback && <p className="cart-feedback">{feedback}</p>}
+              ) : (
+                <>
+                  <button
+                    className="btn secondary"
+                    onClick={handleAddToCart}
+                    disabled={adding || isOutOfStock}
+                  >
+                    <FaCartPlus /> {adding ? "Đang thêm..." : "Thêm vào giỏ"}
+                  </button>
+                  <button
+                    className="btn primary"
+                    onClick={handleBuyNow}
+                    disabled={isOutOfStock}
+                  >
+                   <FaBolt /> Mua ngay
+                  </button>
+                </>
+              )}
+            </div>
+
           </div>
         </div>
 
@@ -226,7 +231,9 @@ export default function BookDetail() {
           {/* Cột trái: Mô tả sản phẩm */}
           <div className="book-description-card">
             <h3 className="card-title">Mô tả sản phẩm</h3>
-            <div className={`description-content ${isExpanded ? 'expanded' : 'collapsed'}`}>
+            <div className={`description-content ${
+              (book.description && book.description.length > 500 && !isExpanded) ? 'collapsed' : 'expanded'
+            }`}>
               {renderDescription()}
             </div>
             

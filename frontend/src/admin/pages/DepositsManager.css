@@ -1,78 +1,116 @@
 .deposits-manager-container {
-    padding: 2rem;
+    padding-bottom: var(--space-2xl);
 }
 
 .deposits-manager-container h1 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    margin-bottom: var(--space-md);
+    color: var(--color-text-primary);
+    font-weight: 700;
 }
 
 .deposits-manager-container p {
-    color: #666;
-    margin-bottom: 2rem;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-xl);
 }
 
+/* Duplicated clean table styles */
 .deposits-table {
     width: 100%;
     border-collapse: collapse;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: none;
     overflow: hidden;
-}
-
-.deposits-table th,
-.deposits-table td {
-    padding: 1rem 1.2rem;
-    text-align: left;
-    border-bottom: 1px solid #f0f0f0;
+    border: 1px solid var(--color-border);
 }
 
 .deposits-table th {
-    background-color: #f8f9fa;
+    background-color: var(--color-bg);
+    color: var(--color-text-secondary);
     font-weight: 600;
+    text-align: left;
+    padding: var(--space-md);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.deposits-table td {
+    padding: var(--space-md);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+.deposits-table tr:last-child td {
+    border-bottom: none;
 }
 
 .user-info span {
     display: block;
-    font-weight: 500;
+    font-weight: 600;
+    color: var(--color-text-primary);
 }
 
 .user-info small {
-    color: #888;
+    color: var(--color-text-tertiary);
+    display: block;
+    margin-top: 2px;
 }
 
 .amount {
-    font-weight: 600;
-    color: #28a745;
+    font-weight: 700;
+    color: var(--color-success);
 }
 
 .no-data {
     text-align: center;
-    padding: 2rem;
-    color: #888;
+    padding: var(--space-xl);
+    color: var(--color-text-secondary);
 }
 
 .btn-approve {
-    background-color: #28a745;
+    background-color: var(--color-success);
     color: white;
     border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
     transition: background-color 0.2s;
+    font-size: 0.85rem;
 }
 
 .btn-approve:hover:not(:disabled) {
-    background-color: #218838;
+    opacity: 0.9;
 }
 
 .btn-approve:disabled {
-    background-color: #a5d6a7;
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
-.error-message {
-    color: #dc3545;
+.btn-reject {
+    background-color: var(--color-error);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    font-size: 0.85rem;
 }
+.btn-reject:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+
+.error-message {
+    color: var(--color-error);
+    margin-bottom: var(--space-md);
+}
+

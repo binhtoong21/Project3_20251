@@ -2,84 +2,129 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-xl);
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-md);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .books-header h2 {
   margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.5rem;
 }
 
 .filter-controls {
   display: flex;
-  gap: 10px;
+  gap: var(--space-md);
+  flex-wrap: wrap;
 }
 
 .filter-controls select {
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #ddd;
+  padding: 0.6rem 2.5rem 0.6rem 1rem; /* Extra right padding for arrow */
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236B7280' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  transition: all 0.2s ease;
+}
+
+.filter-controls select:hover {
+  border-color: var(--color-border-hover);
+}
+
+.filter-controls select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.05); /* very subtle ring */
 }
 
 .filter-controls .clear-filter-btn {
-  padding: 8px 12px;
-  background: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
+  padding: 0.6rem 1rem;
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.filter-controls .clear-filter-btn:hover {
+  background: #FEF2F2;
+  color: var(--color-error);
+  border-color: #FECACA;
 }
 
 .no-books-message {
   text-align: center;
-  margin-top: 40px;
-  color: #666;
+  margin-top: var(--space-2xl);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
 }
 
 .no-books-message .back-to-all-books-btn {
-  margin-top: 10px;
-  color: blue;
-  text-decoration: underline;
+  margin-top: var(--space-md);
+  color: var(--color-accent);
+  text-decoration: none;
   background: none;
   border: none;
   cursor: pointer;
+  font-weight: 600;
+}
+.no-books-message .back-to-all-books-btn:hover {
+  text-decoration: underline;
 }
 
+
+/* Pagination */
 .pagination {
   display: flex;
   justify-content: center;
-  margin-top: 40px;
-  gap: 10px;
+  margin-top: var(--space-2xl);
+  gap: 0.5rem;
 }
 
 .pagination button {
-  padding: 8px 16px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: white;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); /* Consistent radius */
+  background: var(--color-surface);
   cursor: pointer;
-  color: #333;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .pagination button:disabled {
-  background: #f5f5f5;
+  background: var(--color-bg);
   cursor: not-allowed;
-  color: #aaa;
+  color: var(--color-text-tertiary);
+  border-color: var(--color-border);
 }
 
-.pagination .page-number-btn {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: white;
-  color: #333;
-  cursor: pointer;
-}
-
+/* Page Number Specifics (reuse base button styles but add active state) */
 .pagination .page-number-btn.active {
-  border: 1px solid #007bff;
-  background: #007bff;
+  border-color: var(--color-accent);
+  background: var(--color-accent);
   color: white;
-  font-weight: bold;
+  font-weight: 600;
 }
+

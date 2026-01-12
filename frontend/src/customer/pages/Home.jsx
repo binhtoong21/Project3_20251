@@ -1,4 +1,3 @@
-import NewsLetter from "../components/NewsLetter";
 import BookSection from "../components/BookSection";
 
 import HeroSection from "../components/HeroSection";
@@ -86,8 +85,6 @@ export default function Home() {
         books={usedBooks}
         link="/marketplace"
       />
-
-      <NewsLetter />
     </div>
   );
 }
