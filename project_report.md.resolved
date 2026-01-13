@@ -1,0 +1,175 @@
+# System Analysis & Operational Report
+**Project: BookStore C2C Marketplace**
+
+## 1. Executive Summary
+This extensive report details the architecture, operational flows, and advanced capabilities of the BookStore platform. The system is designed as a hybrid E-commerce platform that supports both **B2C** (Business-to-Consumer: Admin sells books) and **C2C** (Consumer-to-Consumer: Users sell used books).
+
+The core differentiator is the **Secure Payment & Escrow System**, ensuring trust between buyers and sellers by holding funds until order confirmation.
+
+---
+
+## 2. System Architecture
+The application follows a modern **MERN Stack** architecture (MongoDB, Express, React, Node.js), structured for scalability and maintainability.
+
+### Tech Stack
+-   **Frontend**: ReactJS (Vite), React Router v6, Context API (Auth, Cart), CSS Modules.
+-   **Backend**: Node.js, Express.js.
+-   **Database**: MongoDB (Mongoose ODM).
+-   **Security**: JWT Authentication, HttpOnly Cookies, Password Hashing (Bcrypt), Role-Based Access Control (RBAC).
+
+---
+
+## 3. Database Schema (Class Diagram)
+The following diagram illustrates the data models and their relationships.
+
+```mermaid
+classDiagram
+    class User {
+        +ObjectId _id
+        +String name
+        +String email
+        +String password
+        +Number walletBalance
+        +String role (admin/user)
+        +Boolean isBlocked
+    }
+
+    class Book {
+        +ObjectId _id
+        +String title
+        +Number stock
+        +Number price
+        +ObjectId owner (User Ref - if C2C)
+        +String condition
+    }
+
+    class Order {
+        +ObjectId _id
+        +ObjectId user (Buyer)
+        +Enum escrowStatus (Held, Released, Refunded, Disputed)
+        +OrderItem[] orderItems
+        +Boolean isPaid
+    }
+
+    class Transaction {
+        +ObjectId _id
+        +ObjectId user (Owner of money)
+        +String type (deposit, withdrawal, purchase, sale_income, refund)
+        +Number amount
+        +ObjectId relatedEntity (Order/User Ref)
+    }
+
+    User "1" -- "n" Book : Owns (Selling)
+    User "1" -- "n" Order : Places
+    User "1" -- "n" Transaction : Has
+    Order "1" -- "n" Book : Contains
+```
+
+---
+
+## 4. Operational Flows (Visualized)
+
+### A. C2C Order & Escrow Flow (The Core Engine)
+This flow ensures safety. Funds are deducted from Buyer but **HELD** by the system until the Buyer confirms receipt. Only then does the Seller get paid (minus 2% fee).
+
+```mermaid
+sequenceDiagram
+    participant Buyer
+    participant System (Descrow)
+    participant Seller
+    participant Database
+
+    Note over Buyer, System: Phase 1: Purchase
+    Buyer->>System: Places Order (Payment: Wallet)
+    System->>Database: VALIDATE: Buyer Balance >= Total?
+    System->>Database: VALIDATE: Book Stock > 0?
+    
+    rect rgb(200, 255, 200)
+        Note right of System: Atomic Transaction Start
+        System->>Database: DEDUCT Buyer Wallet (-Amount)
+        System->>Database: UPDATE Book Stock (-Qty)
+        System->>Database: CREATE Order (Status: Held)
+        System->>Database: LOG Transaction (Purchase)
+    end
+    
+    System-->>Buyer: Order Success! (Funds Held)
+
+    Note over System, Seller: Phase 2: Fulfillment
+    Seller->>System: Checks "My Sales"
+    System-->>Seller: Shows Order (Status: Packaging)
+    Seller->>Buyer: Ships Item (Offline)
+
+    Note over Buyer, System: Phase 3: Completion
+    Buyer->>System: Confirms Receipt
+    
+    rect rgb(200, 200, 255)
+        Note right of System: Fund Release
+        System->>Database: UPDATE Order Status -> Completed
+        System->>Database: UPDATE Escrow -> Released
+        System->>Database: ADD Seller Wallet (+Amount - 2% Fee)
+        System->>Database: LOG Transaction (Sale Income)
+    end
+    
+    System-->>Seller: Notification: Funds Available!
+```
+
+### B. Dispute Resolution Flow
+When things go wrong, the Admin acts as the judge via the Dispute Resolution Center.
+
+```mermaid
+sequenceDiagram
+    participant Buyer
+    participant Seller
+    participant Admin
+    participant System
+
+    Buyer->>System: Request Refund (Reason: "Damaged")
+    System->>System: Set Escrow -> "ReturnRequested"
+    
+    alt Seller Agrees
+        Seller->>System: Confirm Refund
+        System->>Buyer: Refund Money
+        System->>Seller: Return Stock
+    else Seller Rejects
+        Seller->>System: Reject Refund (Reason: "Was perfect")
+        System->>System: Set Escrow -> "Disputed"
+        System->>Admin: Alert in Dispute Center
+    end
+
+    Note over Admin, System: Admin Intervention
+    Admin->>System: Review Case
+    
+    alt Admin Sides with Buyer
+        Admin->>System: EXECUTE "Refund"
+        System->>Buyer: +Refund Amount
+        System->>Book: +Restore Stock
+    else Admin Sides with Seller
+        Admin->>System: EXECUTE "Release"
+        System->>Seller: +Income Amount
+    end
+```
+
+---
+
+## 5. Advanced Governance Capabilities
+
+### Deep Analytics (The "See" Layer)
+-   **Real-time Dashboard**:
+    -   **User Growth**: Track platform adoption over the last 6 months.
+    -   **Revenue Charts**: Daily income visualization.
+    -   **Top Products**: Identifies best-selling books.
+    -   **Inventory Alerts**: Auto-detects books with Stock < 10 for restocking.
+
+### User 360 & Control
+-   **Full Visibility**: Admin can view any user's complete Order History and Wallet Logs.
+-   **Wallet Control**: Admin has the super-admin capability to manually **Adjust Balances** (Credit/Debit) for correcting errors or issuing bonuses.
+
+---
+
+## 6. Security & Safety Mechanisms
+-   **Atomic Transactions**: Money never vanishes. If a database write fails during a transfer, the entire operation rolls back.
+-   **Input Validation**: Strict checks on Stock and Wallet Balances (cannot go negative).
+-   **Double-Entry Logging**: Every change in wallet balance corresponds to a `Transaction` record, ensuring full auditability.
+
+---
+*Generated by AI Assistant for Final Project Analysis*

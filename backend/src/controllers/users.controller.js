@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || "somethingsecret", {
@@ -233,4 +234,78 @@ export const removeBankAccount = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+// @desc    Get user full profile by ID (Admin)
+// @route   GET /api/users/:id/details
+// @access  Private/Admin
+export const getUserDetails = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.id).select("-password");
+        if (!user) {
+            res.status(404);
+            throw new Error("User not found");
+        }
+
+        // Parallel fetch for speed
+        const [orders, transactions] = await Promise.all([
+            import("../models/order.model.js").then(({ default: Order }) => 
+                Order.find({ user: req.params.id }).sort({ createdAt: -1 })
+            ),
+            import("../models/transaction.model.js").then(({ default: Transaction }) => 
+                Transaction.find({ user: req.params.id }).sort({ createdAt: -1 })
+            )
+        ]);
+
+        res.json({
+            user,
+            orders,
+            transactions
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Manually adjust user wallet (Admin)
+// @route   PUT /api/users/:id/wallet
+// @access  Private/Admin
+export const updateUserWallet = async (req, res, next) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const { amount, description } = req.body; // amount can be positive (credit) or negative (debit)
+        if (!amount || amount === 0) {
+             res.status(400);
+             throw new Error("Amount is required and cannot be zero.");
+        }
+
+        const user = await User.findById(req.params.id).session(session);
+        if (!user) {
+             res.status(404);
+             throw new Error("User not found");
+        }
+
+        user.walletBalance += amount;
+        await user.save({ session });
+        
+        // Log transaction
+        const Transaction = (await import("../models/transaction.model.js")).default;
+        await Transaction.create([{
+            user: user._id,
+            type: amount > 0 ? 'deposit' : 'withdrawal', // Simply using deposit/withdrawal for manual adjustments
+            amount: amount,
+            status: 'completed',
+            description: description || `Admin ${req.user.name} manually adjusted wallet`,
+        }], { session });
+
+        await session.commitTransaction();
+        res.json({ success: true, newBalance: user.walletBalance });
+
+    } catch (error) {
+        await session.abortTransaction();
+        next(error);
+    } finally {
+        session.endSession();
+    }
 };

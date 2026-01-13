@@ -8,6 +8,7 @@ import {
   FaUsers,
   FaSignOutAlt,
   FaMoneyCheckAlt,
+  FaGavel,
 } from "react-icons/fa";
 
 export default function AdminLayout() {
@@ -57,6 +58,15 @@ export default function AdminLayout() {
                 className={({ isActive }) => (isActive ? "active" : "")}
               >
                 <FaUsers style={{ marginRight: "10px" }} /> Quản lý Users
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/disputes"
+                className={({ isActive }) => (isActive ? "active" : "")}
+                style={({ isActive }) => isActive ? { color: '#ef4444', fontWeight: 'bold' } : {}}
+              >
+                <FaGavel style={{ marginRight: "10px" }} /> Giải quyết Khiếu nại
               </NavLink>
             </li>
             <li>

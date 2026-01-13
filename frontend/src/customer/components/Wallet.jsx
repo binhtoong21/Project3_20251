@@ -15,10 +15,12 @@ const Wallet = () => {
 
   // State for deposit form
   const [amount, setAmount] = useState("");
+  const [depositMethod, setDepositMethod] = useState("manual"); // 'manual' | 'linked'
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [depositSuccess, setDepositSuccess] = useState("");
   const [depositError, setDepositError] = useState("");
+  const [submittedDeposit, setSubmittedDeposit] = useState(null);
 
   // State for withdrawal form
   const [withdrawAmount, setWithdrawAmount] = useState("");
@@ -44,9 +46,23 @@ const Wallet = () => {
 
   useEffect(() => {
     fetchTransactions();
-    // refetch user data to get the latest wallet balance
     if(refetchUser) refetchUser();
   }, [refetchUser]);
+
+  // Reset states when switching tabs
+  useEffect(() => {
+      setDepositSuccess("");
+      setDepositError("");
+      setSubmittedDeposit(null);
+      setAmount("");
+      setDescription("");
+      setDepositMethod("manual");
+      
+      setWithdrawAmount("");
+      setWithdrawError("");
+      setWithdrawSuccess("");
+      setSelectedBank("");
+  }, [activeTab]);
 
   const handleDepositSubmit = async (e) => {
     e.preventDefault();
@@ -58,15 +74,28 @@ const Wallet = () => {
 
     try {
         const depositAmount = parseFloat(amount);
-        if (isNaN(depositAmount) || depositAmount <= 0) {
-            setDepositError("Số tiền phải là một số dương.");
+        if (isNaN(depositAmount) || depositAmount < 10000) {
+            setDepositError("Số tiền nạp tối thiểu là 10,000 VNĐ.");
             return;
         }
 
-        await walletService.createDepositRequest({ amount: depositAmount, description });
-        setDepositSuccess("Yêu cầu nạp tiền của bạn đã được gửi. Vui lòng kiểm tra thông tin chuyển khoản bên dưới.");
+        // Logic for auto-generated description based on method
+        let finalDescription = description;
+        if (depositMethod === 'linked') {
+             // If linked, we might auto-generate or append info, strictly controlled here
+             // Ensure user has selected a bank if in linked mode (though UI enforces it via select)
+             if(!description.startsWith("Auto-debit")) {
+                 // Fallback or enforcement if needed, but we trust the UI state for now or validate
+             }
+        }
+
+        await walletService.createDepositRequest({ amount: depositAmount, description: finalDescription });
+        
+        setSubmittedDeposit({ amount: depositAmount, description: finalDescription }); 
+        setDepositSuccess("Yêu cầu nạp tiền thành công.");
         setAmount("");
-        setDescription("");
+        // Don't clear description immediately if we want to show it, but for new form clears it
+        // Description state is cleared in reset/tab switch, keeping it here for now is fine as we hide form
         fetchTransactions(); 
     } catch (err) {
         setDepositError(err.message || "Đã xảy ra lỗi khi gửi yêu cầu.");
@@ -74,6 +103,15 @@ const Wallet = () => {
         setIsSubmitting(false);
     }
     }); 
+  };
+
+  const handleResetDeposit = () => {
+      setDepositSuccess("");
+      setSubmittedDeposit(null);
+      setAmount("");
+      setDescription("");
+      setDepositError("");
+      setDepositMethod("manual");
   };
 
   const handleWithdrawSubmit = async (e) => {
@@ -90,7 +128,7 @@ const Wallet = () => {
           setIsSubmitting(true);
           try {
               const val = parseFloat(withdrawAmount);
-              if (isNaN(val) || val <= 0) throw new Error("Số tiền không hợp lệ");
+              if (isNaN(val) || val < 50000) throw new Error("Số tiền rút tối thiểu là 50,000 VNĐ");
               if (val > user.walletBalance) throw new Error("Số dư không đủ");
 
               const bankInfo = user.bankAccounts.find(acc => acc._id === selectedBank);
@@ -115,12 +153,6 @@ const Wallet = () => {
       });
   }
 
-  const handleBankUpdate = (updatedAccounts) => {
-     // Ideally update user context, but for now we rely on refetchUser or just local update if needed
-     // Since user object in context is immutable directly, we call refetchUser
-     if(refetchUser) refetchUser();
-  }
-
 
   return (
     <div className="wallet-container">
@@ -140,82 +172,11 @@ const Wallet = () => {
       <div className="wallet-actions">
         {activeTab === 'deposit' && (
             <div className="deposit-section">
-            <h4>Nạp tiền vào ví</h4>
             
-            {/* Deposit Source Selection */}
-            <div className="deposit-source-selector" style={{marginBottom: '20px'}}>
-                <label style={{display: 'block', marginBottom: '10px', fontWeight: 'bold'}}>Nguồn tiền:</label>
-                <div style={{display: 'flex', gap: '15px'}}>
-                    <label className={`source-option ${!amount || amount <= 0 ? 'disabled' : ''}`} style={{cursor: 'pointer', border: '1px solid #ddd', padding: '10px', borderRadius: '6px', flex: 1, backgroundColor: '#fff'}}>
-                        <input 
-                            type="radio" 
-                            name="depositSource" 
-                            value="manual" 
-                            checked={!description.startsWith("Auto-debit")} 
-                            onChange={() => setDescription("")} 
-                        /> 
-                        Chuyển khoản (QR Code)
-                    </label>
-                    <label className={`source-option ${(!user.bankAccounts || user.bankAccounts.length === 0) ? 'disabled' : ''}`} style={{cursor: 'pointer', border: '1px solid #ddd', padding: '10px', borderRadius: '6px', flex: 1, backgroundColor: user.bankAccounts?.length ? '#f0faff' : '#f9f9f9'}}>
-                         <input 
-                            type="radio" 
-                            name="depositSource" 
-                            value="linked" 
-                            disabled={!user.bankAccounts || user.bankAccounts.length === 0}
-                            checked={description.startsWith("Auto-debit")} 
-                            onChange={() => setDescription(`Auto-debit from ${user.bankAccounts[0].bankName}`)} 
-                        /> 
-                        Từ tài khoản liên kết
-                        {(!user.bankAccounts || user.bankAccounts.length === 0) && <div style={{fontSize: '0.8em', color: 'red'}}>Chưa liên kết TK</div>}
-                    </label>
-                </div>
-            </div>
-
-            {/* If Linked Account is selected, show dropdown */}
-            {description.startsWith("Auto-debit") && user.bankAccounts && user.bankAccounts.length > 0 && (
-                <div className="form-group slide-down">
-                    <label>Chọn tài khoản nguồn:</label>
-                    <select 
-                        className="form-control" 
-                        onChange={(e) => setDescription(`Auto-debit from ${e.target.value}`)}
-                        style={{width: '100%', padding: '10px'}}
-                    >
-                        {user.bankAccounts.map(acc => (
-                            <option key={acc._id} value={`${acc.bankName} - ${acc.accountNumber}`}>
-                                {acc.bankName} ****{acc.accountNumber.slice(-4)} ({acc.accountName})
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            )}
-
-            <form onSubmit={handleDepositSubmit}>
-                <div className="form-group">
-                <label htmlFor="amount">Số tiền nạp (VNĐ)</label>
-                <input
-                    type="number"
-                    id="amount"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="Ví dụ: 500000"
-                    required
-                />
-                </div>
-                
-                {!description.startsWith("Auto-debit") && (
-                    <div className="form-group">
-                    <label htmlFor="description">Ghi chú (Tùy chọn)</label>
-                    <textarea
-                        id="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Ví dụ: Chuyển khoản từ Techcombank"
-                    />
-                    </div>
-                )}
-
-                {depositSuccess && (
-                     !description.startsWith("Auto-debit") ? (
+            {/* Show Success View Separation */}
+            {depositSuccess && submittedDeposit ? (
+                <div className="deposit-success-view">
+                     {depositMethod === 'manual' ? (
                         <div className="transfer-instruction">
                             <div className="success-message">{depositSuccess}</div>
                             <div className="qr-box">
@@ -223,28 +184,119 @@ const Wallet = () => {
                                 <p>Ngân hàng: <strong>MB Bank</strong></p>
                                 <p>Số tài khoản: <strong>9999999999</strong></p>
                                 <p>Chủ tài khoản: <strong>ADMIN BOOKSTORE</strong></p>
-                                <p>Nội dung: <strong>NAP {user.phone}</strong></p>
+                                <p>Nội dung: <strong>NAP {user.phone || user.email}</strong></p>
                                 <img 
-                                    src={`https://img.vietqr.io/image/MB-9999999999-compact2.jpg?amount=${amount}&addInfo=NAP ${user.phone}&accountName=ADMIN BOOKSTORE`} 
+                                    src={`https://img.vietqr.io/image/MB-9999999999-compact2.jpg?amount=${submittedDeposit.amount}&addInfo=NAP ${user.phone || user.email}&accountName=ADMIN BOOKSTORE`} 
                                     alt="VietQR" 
-                                    style={{maxWidth: '200px', margin: '10px auto', display: 'block'}}
+                                    style={{maxWidth: '200px', margin: '20px auto', display: 'block'}}
                                 />
+                                <p className="hint-text">Vui lòng chuyển khoản đúng nội dung và số tiền để hệ thống tự động xử lý.</p>
                             </div>
                         </div>
-                    ) : (
-                        <div className="success-message" style={{padding: '15px', backgroundColor: '#d4edda', borderRadius: '8px', border: '1px solid #c3e6cb'}}>
-                            <h4 style={{marginTop: 0, color: '#155724'}}>🎉 Yêu cầu nạp tiền đã được ghi nhận!</h4>
-                            <p>Hệ thống đang kết nối với ngân hàng để xử lý giao dịch nạp <strong>{formatCurrency(amount)}</strong>.</p>
+                     ) : (
+                        <div className="success-message-box">
+                            <h4>🎉 Yêu cầu nạp tiền đã được ghi nhận!</h4>
+                            <p>Hệ thống đang kết nối với ngân hàng để xử lý giao dịch nạp <strong>{formatCurrency(submittedDeposit.amount)}</strong>.</p>
                             <p>Vui lòng chờ Admin phê duyệt trong giây lát.</p>
                         </div>
-                    )
+                     )}
+                     
+                    <button className="btn-primary" style={{marginTop: '20px', width: '100%'}} onClick={handleResetDeposit}>
+                        {depositMethod === 'manual' ? "Hoàn tất / Nạp thêm" : "Quay lại"}
+                    </button>
+                </div>
+            ) : (
+                /* Show Form Inputs ONLY if NO Success State */
+                <>
+                <h4>Nạp tiền vào ví</h4>
+                
+                {/* Deposit Source Selection */}
+                <div className="deposit-source-selector">
+                    <label className="deposit-source-label">Nguồn tiền:</label>
+                    <div className="deposit-source-options">
+                        <label className={`source-option ${depositMethod === 'manual' ? 'active-account' : ''}`}>
+                            <input 
+                                type="radio" 
+                                name="depositSource" 
+                                value="manual" 
+                                checked={depositMethod === 'manual'} 
+                                onChange={() => {
+                                    setDepositMethod("manual");
+                                    setDescription(""); // Clear linked description
+                                }} 
+                            /> 
+                            Chuyển khoản (QR Code)
+                        </label>
+                        <label className={`source-option ${(!user.bankAccounts || user.bankAccounts.length === 0) ? 'disabled' : ''} ${depositMethod === 'linked' ? 'active-account' : ''}`}>
+                             <input 
+                                type="radio" 
+                                name="depositSource" 
+                                value="linked" 
+                                disabled={!user.bankAccounts || user.bankAccounts.length === 0}
+                                checked={depositMethod === 'linked'} 
+                                onChange={() => {
+                                    setDepositMethod("linked");
+                                    if(user.bankAccounts?.length > 0) {
+                                        setDescription(`Auto-debit from ${user.bankAccounts[0].bankName}`);
+                                    }
+                                }} 
+                            /> 
+                            Từ tài khoản liên kết
+                            {(!user.bankAccounts || user.bankAccounts.length === 0) && <div className="hint-text" style={{fontSize: '0.8em', color: 'red', marginLeft: 'auto'}}>Chưa liên kết TK</div>}
+                        </label>
+                    </div>
+                </div>
+    
+                {/* If Linked Account is selected, show dropdown */}
+                {depositMethod === 'linked' && user.bankAccounts && user.bankAccounts.length > 0 && (
+                    <div className="form-group slide-down">
+                        <label>Chọn tài khoản nguồn:</label>
+                        <select 
+                            className="form-control account-select" 
+                            onChange={(e) => setDescription(`Auto-debit from ${e.target.value}`)}
+                        >
+                            {user.bankAccounts.map(acc => (
+                                <option key={acc._id} value={`${acc.bankName} - ${acc.accountNumber}`}>
+                                    {acc.bankName} ****{acc.accountNumber.slice(-4)} ({acc.accountName})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 )}
-                {depositError && <p className="error-message">{depositError}</p>}
-
-                <button type="submit" className="btn-primary" disabled={isSubmitting}>
-                {isSubmitting ? "Đang xử lý..." : (description.startsWith("Auto-debit") ? "Xác nhận nạp tiền" : "Tạo yêu cầu nạp tiền")}
-                </button>
-            </form>
+    
+                <form onSubmit={handleDepositSubmit}>
+                    <div className="form-group">
+                    <label htmlFor="amount">Số tiền nạp (VNĐ)</label>
+                    <input
+                        type="number"
+                        id="amount"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="Tối thiểu 10,000 đ"
+                        required
+                    />
+                    </div>
+                    
+                    {depositMethod === 'manual' && (
+                        <div className="form-group">
+                        <label htmlFor="description">Ghi chú (Tùy chọn)</label>
+                        <textarea
+                            id="description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Ví dụ: Chuyển khoản từ Techcombank"
+                        />
+                        </div>
+                    )}
+    
+                    {depositError && <p className="error-message">{depositError}</p>}
+    
+                    <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                    {isSubmitting ? "Đang xử lý..." : (depositMethod === 'linked' ? "Xác nhận nạp tiền" : "Tạo yêu cầu nạp tiền")}
+                    </button>
+                </form>
+                </>
+            )}
             </div>
         )}
 
@@ -300,6 +352,7 @@ const Wallet = () => {
         ) : transactions.length === 0 ? (
           <p>Bạn chưa có giao dịch nào.</p>
         ) : (
+          <div className="table-responsive">
           <table className="transaction-table">
             <thead>
               <tr>
@@ -341,6 +394,7 @@ const Wallet = () => {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

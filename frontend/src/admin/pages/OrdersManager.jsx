@@ -179,7 +179,7 @@ export default function OrdersManager() {
                   {/* Link tới trang chi tiết đơn hàng  */}
                   <Link
                     to={`/admin/orders/${order._id}`}
-                    className="btn-edit"
+                    className="btn-view"
                     title="Xem chi tiết"
                   >
                     <FaEye /> Xem

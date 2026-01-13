@@ -110,6 +110,7 @@
   background-color: transparent;
   transition: all 0.2s;
   color: var(--color-text-secondary);
+  font-size: 1.1rem; /* Increase icon size */
 }
 
 .btn-edit:hover {

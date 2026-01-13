@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import apiClient from "../../shared/utils/apiClient";
-import { FaLock, FaUnlock, FaUserShield, FaUser } from "react-icons/fa";
+import { FaLock, FaUnlock, FaUserShield, FaUser, FaEye } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import "./UsersManager.css";
 
 export default function UsersManager() {
@@ -123,28 +124,25 @@ export default function UsersManager() {
                 </td>
                 <td>
                   {/* Không cho phép Admin tự block chính mình hoặc block admin khác  */}
-                  {user._id !== currentUser._id && user.role !== 'admin' ? (
-                    <button
-                      className={`btn-toggle-block ${
-                        user.isBlocked ? "unblock" : "block"
-                      }`}
-                      onClick={() => handleToggleBlock(user)}
-                    >
-                      {user.isBlocked ? (
-                        <>
-                          {" "}
-                          <FaUnlock /> Mở khóa{" "}
-                        </>
-                      ) : (
-                        <>
-                          {" "}
-                          <FaLock /> Khóa{" "}
-                        </>
-                      )}
-                    </button>
-                  ) : user.role === 'admin' && user._id !== currentUser._id ? (
-                    <span style={{ color: '#888', fontStyle: 'italic' }}>Không thể khóa Admin</span>
-                  ) : null}
+                  <div style={{display: 'flex', gap: '5px'}}>
+                      <Link to={`/admin/users/${user._id}`} className="btn-icon primary" title="Xem chi tiết">
+                          <FaEye />
+                      </Link>
+
+                      {user._id !== currentUser._id && user.role !== 'admin' ? (
+                        <button
+                          className={`btn-icon btn-toggle-block ${
+                            user.isBlocked ? "unblock" : "block"
+                          }`}
+                          onClick={() => handleToggleBlock(user)}
+                          title={user.isBlocked ? "Mở khóa" : "Khóa tài khoản"}
+                        >
+                           {user.isBlocked ? <FaUnlock /> : <FaLock />}
+                        </button>
+                      ) : user.role === 'admin' && user._id !== currentUser._id ? (
+                        <span style={{ color: '#888', fontStyle: 'italic', fontSize: '10px' }}>Admin</span>
+                      ) : null}
+                  </div>
                 </td>
               </tr>
             ))

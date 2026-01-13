@@ -16,6 +16,8 @@ import Dashboard from "./admin/pages/Dashboard";
 import BooksManager from "./admin/pages/BooksManager";
 import OrdersManager from "./admin/pages/OrdersManager";
 import UsersManager from "./admin/pages/UsersManager";
+import UserDetail from "./admin/pages/UserDetail";
+import DisputesManager from "./admin/pages/DisputesManager";
 import DepositsManager from "./admin/pages/DepositsManager";
 import WithdrawalsManager from "./admin/pages/WithdrawalsManager";
 
@@ -56,6 +58,8 @@ function App() {
                 <Route path="orders" element={<OrdersManager />} />
                 <Route path="orders/:id" element={<OrderDetail />} />
                 <Route path="users" element={<UsersManager />} />
+                <Route path="users/:id" element={<UserDetail />} />
+                <Route path="disputes" element={<DisputesManager />} />
                 <Route path="deposits" element={<DepositsManager />} />
                 <Route path="withdrawals" element={<WithdrawalsManager />} />
               </Route>
