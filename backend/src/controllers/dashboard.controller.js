@@ -5,13 +5,22 @@ import Book from "../models/book.model.js";
 export const getDashboardStats = async (req, res, next) => {
   try {
     // 1. Basic Counts
-    const totalOrders = await Order.countDocuments();
+    const totalOrders = await Order.countDocuments({ status: { $ne: "Cancelled" } });
     const totalBooks = await Book.countDocuments();
     const totalUsers = await User.countDocuments();
 
-    // 2. Total Revenue (Net - non-cancelled)
+    // Common Match Stage for "Real" Sales (Paid via Wallet OR Completed via COD)
+    // We exclude Cancelled explicitly, though logic below implies it.
+    const salesMatch = {
+        $match: {
+            status: { $ne: "Cancelled" },
+            $or: [{ isPaid: true }, { status: "Completed" }]
+        }
+    };
+
+    // 2. Total Revenue (Realized)
     const revenueData = await Order.aggregate([
-      { $match: { status: { $ne: "Cancelled" } } },
+      salesMatch,
       { $group: { _id: null, totalRevenue: { $sum: "$totalPrice" } } },
     ]);
     const totalRevenue =
@@ -21,10 +30,11 @@ export const getDashboardStats = async (req, res, next) => {
     const dailyRevenue = await Order.aggregate([
       {
         $match: {
-          createdAt: {
-            $gte: new Date(new Date().setDate(new Date().getDate() - 7)),
-          },
-          status: { $ne: "Cancelled" },
+            createdAt: {
+                $gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+            },
+            status: { $ne: "Cancelled" },
+            $or: [{ isPaid: true }, { status: "Completed" }]
         },
       },
       {
@@ -39,7 +49,7 @@ export const getDashboardStats = async (req, res, next) => {
 
     // 4. Top Selling Books (All time)
     const topSellingBooks = await Order.aggregate([
-      { $match: { status: { $ne: "Cancelled" } } },
+      salesMatch,
       { $unwind: "$orderItems" },
       {
         $group: {
@@ -88,8 +98,9 @@ export const getDashboardStats = async (req, res, next) => {
       { $sort: { _id: 1 } }
     ]);
 
-    // 6. Low Stock Alert
-    const lowStockBooks = await Book.find({ stock: { $lt: 10 } })
+    // 6. Low Stock Alert (Only for Store Books - B2C)
+    // Exclude C2C books (where owner is not null) because they are typically unique/single items.
+    const lowStockBooks = await Book.find({ stock: { $lt: 10 }, owner: null })
       .select('title stock cover')
       .limit(5);
 
@@ -101,7 +112,7 @@ export const getDashboardStats = async (req, res, next) => {
 
     // 8. Category Performance
     const categoryStats = await Order.aggregate([
-       { $match: { status: { $ne: "Cancelled" } } },
+       salesMatch,
        { $unwind: "$orderItems" },
        {
          $lookup: {

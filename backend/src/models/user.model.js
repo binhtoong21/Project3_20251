@@ -10,6 +10,15 @@ const userSchema = new Schema(
 
     isBlocked: { type: Boolean, default: false }, // dùng cho block user ở admin
     
+    // EMAIL VERIFICATION
+    isEmailVerified: { type: Boolean, default: false },
+    emailVerificationToken: { type: String, default: null },
+    emailVerificationTokenExpiry: { type: Date, default: null },
+    
+    // PASSWORD RESET
+    resetPasswordToken: { type: String, default: null },
+    resetPasswordTokenExpiry: { type: Date, default: null },
+    
     avatar: { type: String, default: "" },
 
     // VALIDATE SỐ ĐIỆN THOẠI

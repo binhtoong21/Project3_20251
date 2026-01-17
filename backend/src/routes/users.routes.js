@@ -1,11 +1,32 @@
 import { Router } from "express";
-import { register, login, getProfile, updateProfile, updateAddress, getUsers, toggleBlockUser, addBankAccount, removeBankAccount, getUserDetails, updateUserWallet } from "../controllers/users.controller.js";
+import { 
+  register, 
+  login, 
+  getProfile, 
+  updateProfile, 
+  updateAddress, 
+  getUsers, 
+  toggleBlockUser, 
+  addBankAccount, 
+  removeBankAccount, 
+  getUserDetails, 
+  updateUserWallet, 
+  getUserNotificationCounts,
+  verifyEmail,
+  resendVerificationEmail,
+  forgotPassword,
+  resetPassword
+} from "../controllers/users.controller.js";
 import { protect, admin } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
 router.post("/register", register);
 router.post("/login", login);
+router.post("/verify-email", verifyEmail);
+router.post("/resend-verification-email", resendVerificationEmail);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 router
   .route("/profile")
   .get(protect, getProfile)
@@ -13,6 +34,7 @@ router
 router.put("/profile/address", protect, updateAddress);
 router.post("/bank-accounts", protect, addBankAccount);
 router.delete("/bank-accounts/:id", protect, removeBankAccount);
+router.get("/notifications/counts", protect, getUserNotificationCounts);
 
 //  Admin routes
 router.get("/", protect, admin, getUsers);

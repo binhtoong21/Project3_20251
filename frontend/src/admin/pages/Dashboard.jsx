@@ -88,20 +88,26 @@ export default function Dashboard() {
         <div className="section-card">
           <div className="section-title">Doanh thu 7 ngày gần nhất</div>
           <div className="chart-bars">
-            {stats.dailyRevenue?.map((day) => {
-              const heightPercent = Math.round((day.revenue / maxRevenue) * 100);
-              const shortDate = day._id.split("-").slice(1).join("/");
-              return (
-                <div className="bar-group" key={day._id}>
-                  <div
-                    className="bar"
-                    style={{ height: `${heightPercent}%` }}
-                    data-tooltip={`${formatCurrency(day.revenue)} (${day.count} đơn)`}
-                  ></div>
-                  <div className="bar-date">{shortDate}</div>
+            {stats.dailyRevenue && stats.dailyRevenue.length > 0 ? (
+                stats.dailyRevenue.map((day) => {
+                const heightPercent = Math.round((day.revenue / maxRevenue) * 100);
+                const shortDate = day._id.split("-").slice(1).join("/");
+                return (
+                    <div className="bar-group" key={day._id}>
+                    <div
+                        className="bar"
+                        style={{ height: `${heightPercent}%` }}
+                        data-tooltip={`${formatCurrency(day.revenue)} (${day.count} đơn)`}
+                    ></div>
+                    <div className="bar-date">{shortDate}</div>
+                    </div>
+                );
+                })
+            ) : (
+                <div className="no-data-chart">
+                    <p>Chưa có doanh thu (đã thanh toán/hoàn tất) trong 7 ngày qua.</p>
                 </div>
-              );
-            })}
+            )}
           </div>
         </div>
 
@@ -112,20 +118,25 @@ export default function Dashboard() {
              Tăng trưởng thành viên
           </div>
           <div className="chart-bars">
-             {stats.userGrowth?.map((item) => {
-                const heightPercent = Math.round((item.count / maxGrowth) * 100);
-                return (
-                    <div className="bar-group" key={item._id}>
-                        <div
-                            className="bar"
-                            style={{ height: `${heightPercent}%`, background: '#8b5cf6' }}
-                            data-tooltip={`${item.count} thành viên mới`}
-                        ></div>
-                        <div className="bar-date">{item._id}</div>
-                    </div>
-                );
-             })}
-             {(!stats.userGrowth || stats.userGrowth.length === 0) && <p>Chưa có dữ liệu tăng trưởng.</p>}
+             {stats.userGrowth && stats.userGrowth.length > 0 ? (
+                 stats.userGrowth.map((item) => {
+                    const heightPercent = Math.round((item.count / maxGrowth) * 100);
+                    return (
+                        <div className="bar-group" key={item._id}>
+                            <div
+                                className="bar"
+                                style={{ height: `${heightPercent}%`, background: '#8b5cf6' }}
+                                data-tooltip={`${item.count} thành viên mới`}
+                            ></div>
+                            <div className="bar-date">{item._id}</div>
+                        </div>
+                    );
+                 })
+             ) : (
+                 <div className="no-data-chart">
+                     <p>Chưa có thành viên mới trong 6 tháng qua.</p>
+                 </div>
+             )}
           </div>
         </div>
       </div>
@@ -216,7 +227,9 @@ export default function Dashboard() {
                                     </td>
                                     <td style={{ fontWeight: 'bold', color: '#dc2626' }}>{book.stock}</td>
                                     <td>
-                                        <span className="stock-badge stock-danger">Restock Now</span>
+                                        <a href={`/admin/books?edit=${book._id}`} className="stock-badge stock-danger" style={{textDecoration: 'none'}}>
+                                            Restock Now
+                                        </a>
                                     </td>
                                 </tr>
                             ))}

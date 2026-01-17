@@ -14,7 +14,6 @@ export default function OrdersManager() {
   // Danh sách các trạng thái có thể chọn
   const STATUS_OPTIONS = [
     "Pending",
-    "Processing",
     "Shipped",
     "Delivered",
     "Cancelled",
@@ -157,7 +156,6 @@ export default function OrdersManager() {
                     }
                     disabled={
                       order.status === "Cancelled" ||
-                      order.status === "Delivered" ||
                       order.status === "Completed"
                     }
                   >

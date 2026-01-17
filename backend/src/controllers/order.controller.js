@@ -272,6 +272,7 @@ export const updateOrderStatus = async (req, res, next) => {
 
        // Checks if transitioning TO Cancelled FROM a non-cancelled state
        if (status === 'Cancelled' && order.status !== 'Cancelled') {
+           // 1. Restore Stock
            const stockUpdateOps = order.orderItems.map(item => ({
                updateOne: {
                    filter: { _id: item.book },
@@ -283,14 +284,26 @@ export const updateOrderStatus = async (req, res, next) => {
                await Book.bulkWrite(stockUpdateOps, { session });
            }
            
-           // If it was a C2C Wallet order that is NOT yet released/refunded (Held/Disputed), we might need to handle the money.
-           // However, usually cancellation implies refunding. 
-           // If Admin manually cancels a B2C order that was PAID via Wallet but not delivered?
-           // Currently manual cancellation assumes MONEY is handled separately (or COD).
-           // If manual cancel on a PAID Wallet order -> We should probably auto-refund or warn?
-           // For MVP: We assume manual cancellation is operational. Refund logic is separate via 'resolveDispute' or 'confirmRefundRequest'.
-           // BUT: If Admin just sets status='Cancelled' on a Paid B2C order, the money sits in Admin Wallet? 
-           // Let's keep it simple: Just restore stock for now as requested.
+           // 2. Auto Refund if Wallet & Paid & Not yet Refunded
+           if (order.paymentMethod === 'wallet' && order.isPaid && order.escrowStatus !== 'Refunded') {
+               const buyerId = order.user;
+               const refundAmount = order.totalPrice;
+
+               await User.findByIdAndUpdate(buyerId, {
+                   $inc: { walletBalance: refundAmount }
+               }).session(session);
+
+               await Transaction.create([{
+                   user: buyerId,
+                   type: 'refund',
+                   amount: refundAmount,
+                   status: 'completed',
+                   relatedEntity: { id: order._id, model: 'Order' },
+                   description: `Hoàn tiền đơn hàng ${order._id} (Đơn bị hủy/Giao thất bại)`,
+               }], { session });
+
+               order.escrowStatus = 'Refunded';
+           }
        }
 
       order.status = status;
@@ -299,6 +312,53 @@ export const updateOrderStatus = async (req, res, next) => {
        if (status === 'Delivered') { 
             order.isDelivered = true;
             order.deliveredAt = Date.now();
+       }
+
+       // 3. Auto Release Funds if Completed (Admin Force Complete via Status Change)
+       if (status === 'Completed' && order.paymentMethod === 'wallet' && order.escrowStatus === 'Held') {
+            const sellerPayouts = new Map();
+            const sellerFees = new Map();
+
+            for (const item of order.orderItems) {
+                if (item.seller) {
+                    const sellerId = item.seller.toString();
+                    const earnings = item.price * item.quantity;
+                    const fee = earnings * 0.02;
+
+                    sellerPayouts.set(sellerId, (sellerPayouts.get(sellerId) || 0) + earnings);
+                    sellerFees.set(sellerId, (sellerFees.get(sellerId) || 0) + fee);
+                }
+            }
+
+            if (sellerPayouts.size > 0) {
+                const sellerUpdateOps = [];
+                const transactionCreateOps = [];
+                
+                for (const [sellerId, totalEarnings] of sellerPayouts.entries()) {
+                    const totalFee = sellerFees.get(sellerId) || 0;
+                    const netEarnings = totalEarnings - totalFee;
+
+                    sellerUpdateOps.push({
+                        updateOne: {
+                            filter: { _id: sellerId },
+                            update: { $inc: { walletBalance: netEarnings } },
+                        },
+                    });
+                    transactionCreateOps.push({
+                        user: sellerId,
+                        type: 'sale_income',
+                        amount: netEarnings,
+                        fee: totalFee,
+                        status: 'completed',
+                        relatedEntity: { id: order._id, model: 'Order' },
+                        description: `Tiền bán sách từ đơn hàng ${order._id} (Admin đã hoàn tất đơn - Trừ phí ${totalFee})`,
+                    });
+                }
+                
+                await User.bulkWrite(sellerUpdateOps, { session });
+                await Transaction.create(transactionCreateOps, { session });
+            }
+            order.escrowStatus = 'Released';
        }
 
       const updatedOrder = await order.save({ session });
@@ -830,9 +890,9 @@ export const forceComplete = async (req, res, next) => {
     }
 };
 
-// @desc    Buyer cancels pending COD order
+// @desc    Buyer or Seller cancels pending order
 // @route   PUT /api/orders/:id/cancel
-// @access  Private (Buyer)
+// @access  Private (Buyer/Seller)
 export const cancelOrder = async (req, res, next) => {
     const session = await mongoose.startSession();
     session.startTransaction();

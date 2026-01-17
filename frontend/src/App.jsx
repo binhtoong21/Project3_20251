@@ -8,6 +8,10 @@ import Cart from "./customer/pages/Cart";
 import Checkout from "./customer/pages/Checkout";
 import Login from "./customer/pages/Login";
 import Register from "./customer/pages/Register";
+import VerifyEmail from "./customer/pages/VerifyEmail";
+import ResendVerificationEmail from "./customer/pages/ResendVerificationEmail";
+import ForgotPassword from "./customer/pages/ForgotPassword";
+import ResetPassword from "./customer/pages/ResetPassword";
 import Account from "./customer/pages/Account";
 import OrderDetail from "./customer/pages/OrderDetail";
 import Marketplace from "./customer/pages/Marketplace";
@@ -44,6 +48,10 @@ function App() {
               <Route path="checkout" element={<Checkout />} />
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
+              <Route path="verify-email" element={<VerifyEmail />} />
+              <Route path="resend-verification" element={<ResendVerificationEmail />} />
+              <Route path="forgot-password" element={<ForgotPassword />} />
+              <Route path="reset-password" element={<ResetPassword />} />
               <Route
                 path="account"
                 element={<Navigate to="/account/profile" replace />}

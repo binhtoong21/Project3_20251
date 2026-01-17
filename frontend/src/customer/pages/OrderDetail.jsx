@@ -96,6 +96,22 @@ const OrderDetail = () => {
       }
   };
 
+  const handleNotReceived = async () => {
+    if (!window.confirm("Bạn xác nhận chưa nhận được hàng? Hành động này sẽ gửi yêu cầu khiếu nại tới người bán/Admin.")) return;
+    try {
+        setLoading(true);
+        // Uses the same Request Refund endpoint but with specific reason
+        await apiClient.put(`/orders/${id}/refund-request`, { reason: "Khách báo chưa nhận được hàng (Item Not Received)" });
+        const updatedOrder = await apiClient.get(`/orders/${id}`);
+        setOrder(updatedOrder);
+        toast.success("Đã báo cáo chưa nhận được hàng. Vui lòng chờ phản hồi.");
+    } catch (err) {
+        toast.error(err.message);
+    } finally {
+        setLoading(false);
+    }
+  };
+
   const handleConfirmRefund = async () => {
       if (!window.confirm("Bạn có chắc chắn muốn xác nhận hoàn tiền cho người mua? Tiền sẽ được hoàn lại ví của họ.")) return;
       try {
@@ -165,26 +181,21 @@ const OrderDetail = () => {
 
         {/* Order Status Timeline (Shopee Style) */}
         <div className="order-tracker">
-            <div className={`step ${['Pending', 'Processing', 'Shipped', 'Delivered', 'Completed'].includes(order.status) ? 'active' : ''}`}>
+            <div className={`step ${['Pending', 'Shipped', 'Delivered', 'Completed'].includes(order.status) ? 'active' : ''}`}>
                 <div className="step-icon">1</div>
                 <div className="step-text">Đơn hàng đã đặt</div>
                  <div className="step-date">{formatDate(order.createdAt)}</div>
             </div>
              <div className="step-line"></div>
-            <div className={`step ${['Processing', 'Shipped', 'Delivered', 'Completed'].includes(order.status) ? 'active' : ''}`}>
-                 <div className="step-icon">2</div>
-                <div className="step-text">Đã xác nhận</div>
-                 <div className="step-date">{order.paidAt ? formatDate(order.paidAt) : ''}</div>
-            </div>
-             <div className="step-line"></div>
             <div className={`step ${['Shipped', 'Delivered', 'Completed'].includes(order.status) ? 'active' : ''}`}>
-                 <div className="step-icon">3</div>
-                <div className="step-text">Đang giao hàng</div>
+                 <div className="step-icon">2</div>
+                <div className="step-text">Đã gửi hàng</div>
+                 <div className="step-date">{['Shipped', 'Delivered', 'Completed'].includes(order.status) ? (order.updatedAt ? formatDate(order.updatedAt) : '...') : ''}</div>
             </div>
              <div className="step-line"></div>
             <div className={`step ${['Delivered', 'Completed'].includes(order.status) ? 'active' : ''}`}>
-                 <div className="step-icon">4</div>
-                <div className="step-text">Đã nhận hàng</div>
+                 <div className="step-icon">3</div>
+                <div className="step-text">Đã giao hàng</div>
                  <div className="step-date">{order.deliveredAt ? formatDate(order.deliveredAt) : ''}</div>
             </div>
         </div>
@@ -227,8 +238,8 @@ const OrderDetail = () => {
                      </div>
                  )}
 
-                 {/* Cancel Order Button for Pending COD Orders */}
-                 {order.status === 'Pending' && order.paymentMethod === 'COD' && user?._id === (order.user._id || order.user) && (
+                 {/* Cancel Order Button for Pending Orders (Buyer OR Seller) */}
+                 {order.status === 'Pending' && (user?._id === (order.user._id || order.user) || order.orderItems.some(item => item.seller && item.seller._id === user._id)) && (
                      <div className="escrow-actions" style={{marginTop: '10px'}}>
                          <button 
                             className="btn-cancel-order" 
@@ -286,15 +297,20 @@ const OrderDetail = () => {
             <div className="seller-actions-card">
                 <h3>{user?.role === 'admin' ? 'Tác vụ Admin (B2C Order)' : 'Tác vụ người bán'}</h3>
                 <div className="action-buttons">
-                    {order.status !== 'Shipped' && order.status !== 'Delivered' && order.status !== 'Completed' && (
+                    {order.status === 'Pending' && (
                         <button className="btn primary" onClick={() => handleUpdateStatus('Shipped')}>
-                            Đã gửi hàng (Shipped)
+                            Xác nhận & Gửi hàng (Ship)
                         </button>
                     )}
                     {order.status === 'Shipped' && (
-                        <button className="btn success" onClick={() => handleUpdateStatus('Delivered')}>
-                            Đã giao hàng (Delivered)
-                        </button>
+                        <>
+                            <button className="btn success" onClick={() => handleUpdateStatus('Delivered')}>
+                                Đã giao hàng (Delivered)
+                            </button>
+                            <button className="btn danger" style={{marginLeft: '10px'}} onClick={() => handleUpdateStatus('Cancelled')}>
+                                Giao thất bại / Hoàn về (Failed)
+                            </button>
+                        </>
                     )}
                     
                     {/* Refund Confirmation */}

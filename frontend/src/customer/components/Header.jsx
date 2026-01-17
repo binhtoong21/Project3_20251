@@ -9,14 +9,18 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "../../shared/context/AuthContext";
 import { useCartState } from "../../shared/context/CartContext";
+import { useNotificationCounts } from "../../shared/hooks/useNotificationCounts";
 import "./header.css";
 
 const Header = () => {
   const { user, logout } = useAuth();
   const { totalQuantity } = useCartState();
+  const { counts } = useNotificationCounts(); 
   const [isAccountDropdownVisible, setAccountDropdownVisible] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
+
+  const totalNotifications = (counts?.buyer?.total || 0) + (counts?.seller?.total || 0) + (counts?.admin?.total || 0);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -105,12 +109,20 @@ const Header = () => {
                     onMouseLeave={() => setAccountDropdownVisible(false)}
                   >
                     <Link to="/account" className="icon-link">
-                      <FaUser />
+                      <div style={{position: 'relative'}}>
+                        <FaUser />
+                        {totalNotifications > 0 && (
+                             <span className="notification-dot"></span>
+                        )}
+                      </div>
                       <span>{user?.name || "User"}</span>
                     </Link>
                     {isAccountDropdownVisible && (
                       <div className="account-dropdown">
-                        <Link to="/account">Hồ sơ</Link>
+                        <Link to="/account">
+                            Hồ sơ
+                            {totalNotifications > 0 && <span className="badge-inline">{totalNotifications}</span>}
+                        </Link>
                         <button
                           onClick={handleLogout}
                           className="logout-button"

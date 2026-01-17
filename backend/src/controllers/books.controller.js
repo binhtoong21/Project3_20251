@@ -30,7 +30,10 @@ export async function list(req, res, next) {
     }
 
     // Hide out-of-stock items (Standard Store Rule + C2C Rule)
-    filter.stock = { $gt: 0 };
+    // EXCEPTION: Allow Admin/Manager to see out-of-stock items via query param
+    if (req.query.includeOutOfStock !== 'true') {
+        filter.stock = { $gt: 0 };
+    }
 
     // Tìm kiếm
     if (search) {

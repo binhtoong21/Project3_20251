@@ -103,6 +103,8 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
+  height: 100%; /* Fix: Allow bars to calculate percentage height */
+  justify-content: flex-end; /* Fix: Align bars to bottom */
 }
 
 .bar {
@@ -268,4 +270,18 @@
 
 @media (max-width: 768px) {
   .stats-grid { grid-template-columns: 1fr; }
+}
+
+.no-data-chart {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    color: #94a3b8;
+    font-style: italic;
+    text-align: center;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border: 1px dashed #e2e8f0;
 }

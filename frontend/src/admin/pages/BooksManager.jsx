@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import apiClient from "../../shared/utils/apiClient";
 import { formatCurrency } from "../../shared/utils/formatters";
 import { FaPlus, FaEdit, FaTrash, FaTimes } from "react-icons/fa";
@@ -11,6 +12,8 @@ export default function BooksManager() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // State quản lý Modal
   const [showModal, setShowModal] = useState(false);
@@ -39,7 +42,7 @@ export default function BooksManager() {
       setLoading(true);
       // Gọi API listBooks 
       const res = await apiClient.get(
-        `/books?page=${page}&limit=10&sort=newest`
+        `/books?page=${page}&limit=10&sort=newest&includeOutOfStock=true`
       );
       setBooks(res.items || []);
       setTotalPages(res.pagination?.totalPages || 1);
@@ -53,6 +56,22 @@ export default function BooksManager() {
   useEffect(() => {
     fetchBooks();
   }, [page]);
+
+  // Handle URL "edit" query param
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const editId = params.get("edit");
+    if (editId) {
+      // Fetch specific book to edit
+      apiClient.get(`/books/${editId}`)
+        .then(book => {
+             handleOpenEdit(book);
+             // Optional: Clear param so modal doesn't reopen if closed
+             navigate('/admin/books', { replace: true });
+        })
+        .catch(err => console.error("Could not load book to edit:", err));
+    }
+  }, [location.search]);
 
   // 2. XỬ LÝ FORM
   const resetForm = () => {

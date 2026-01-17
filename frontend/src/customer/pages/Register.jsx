@@ -12,8 +12,11 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registrationEmail, setRegistrationEmail] = useState("");
   const navigate = useNavigate();
-  const { handleAuthSuccess, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     // If user is already logged in, redirect them.
@@ -25,30 +28,69 @@ export default function Register() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (password !== confirmPassword) {
-    if (password !== confirmPassword) {
       setError("Passwords do not match");
       toast.error("Passwords do not match");
       return;
     }
-    }
+    
     setError("");
+    setLoading(true);
+    
     try {
-      const data = await apiClient.post("/users/register", {
+      await apiClient.post("/users/register", {
         name,
         email,
         password,
       });
-      // Directly handle the successful registration response
-      // Directly handle the successful registration response
-      handleAuthSuccess(data);
-      toast.success("Registration successful!");
-      navigate("/");
+      
+      setRegistrationSuccess(true);
+      setRegistrationEmail(email);
+      toast.success("Registration successful! Please verify your email.");
+      
+      // Reset form
+      setName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
     } catch (err) {
       const message = err.message || "Registration failed. Please try again.";
       setError(message);
       toast.error(message);
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Nếu registration thành công, hiển thị message
+  if (registrationSuccess) {
+    return (
+      <div className="page register-page">
+        <div className="container">
+          <div className="register-form-container">
+            <div className="success-message">
+              <h2>✓ Registration Successful!</h2>
+              <p>We've sent a verification email to:</p>
+              <p style={{ fontWeight: "bold", color: "#007bff" }}>{registrationEmail}</p>
+              <p>Please click the verification link in the email to activate your account.</p>
+              <p style={{ fontSize: "14px", color: "#666" }}>
+                Didn't receive the email? Check your spam folder or 
+                <Link to="/resend-verification" style={{ marginLeft: "5px" }}>
+                  request a new verification link
+                </Link>
+              </p>
+              <button 
+                onClick={() => navigate("/login")}
+                className="btn"
+                style={{ marginTop: "20px" }}
+              >
+                Go to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page register-page">
@@ -65,6 +107,7 @@ export default function Register() {
                 placeholder="Your Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={loading}
               />
             </div>
             <div className="form-group">
@@ -76,6 +119,7 @@ export default function Register() {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
               />
             </div>
             <div className="form-group">
@@ -87,6 +131,7 @@ export default function Register() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
               />
             </div>
             <div className="form-group">
@@ -98,15 +143,22 @@ export default function Register() {
                 placeholder="Confirm Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={loading}
               />
             </div>
             {error && <p className="error-message">{error}</p>}
             <div className="checkbox">
-              <input type="checkbox" id="terms" name="terms" required />
+              <input 
+                type="checkbox" 
+                id="terms" 
+                name="terms" 
+                required 
+                disabled={loading}
+              />
               <label htmlFor="terms">I agree to the terms and conditions</label>
             </div>
-            <button type="submit" className="btn">
-              Register
+            <button type="submit" className="btn" disabled={loading}>
+              {loading ? "Registering..." : "Register"}
             </button>
           </form>
           <p className="register-link">

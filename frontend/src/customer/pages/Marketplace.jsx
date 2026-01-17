@@ -34,7 +34,7 @@ const Marketplace = () => {
         <div className="marketplace-header">
           <h1>Chợ sách cũ</h1>
           <p>Khám phá sách được đăng bán từ cộng đồng đọc giả trên khắp cả nước.</p>
-          <Link to="/account/my-books" className="btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>
+          <Link to="/account/books" className="btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>
             <FaPlus /> Đăng bán sách ngay
           </Link>
         </div>

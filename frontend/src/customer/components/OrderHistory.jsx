@@ -30,7 +30,7 @@ const OrderHistory = () => {
 
   const filteredOrders = orders.filter(order => {
       if (activeTab === "ALL") return true;
-      if (activeTab === "PENDING") return order.status === "Pending" || order.status === "Processing"; // Group Pending & Processing
+      if (activeTab === "PENDING") return order.status === "Pending";
       if (activeTab === "SHIPPING") return order.status === "Shipped";
       if (activeTab === "COMPLETED") return order.status === "Delivered" || order.status === "Completed";
       if (activeTab === "CANCELLED") return order.status === "Cancelled";

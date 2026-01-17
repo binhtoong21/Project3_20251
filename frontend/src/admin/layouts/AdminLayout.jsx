@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../shared/context/AuthContext";
+import { useNotificationCounts } from "../../shared/hooks/useNotificationCounts";
 import "./AdminLayout.css";
 import {
   FaHome,
@@ -13,6 +14,7 @@ import {
 
 export default function AdminLayout() {
   const { logout } = useAuth(); //
+  const { counts } = useNotificationCounts();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -48,8 +50,10 @@ export default function AdminLayout() {
                 to="/admin/orders"
                 className={({ isActive }) => (isActive ? "active" : "")}
               >
-                <FaShoppingCart style={{ marginRight: "10px" }} /> Quản lý Đơn
-                hàng
+                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
+                    <span style={{display: 'flex', alignItems: 'center'}}><FaShoppingCart style={{ marginRight: "10px" }} /> Quản lý Đơn hàng</span>
+                    {(counts?.seller?.toShip > 0) && <span className="badge-inline" style={{marginLeft: 'auto', backgroundColor: '#3b82f6'}}>{counts.seller.toShip}</span>}
+                </div>
               </NavLink>
             </li>
             <li>
@@ -66,7 +70,10 @@ export default function AdminLayout() {
                 className={({ isActive }) => (isActive ? "active" : "")}
                 style={({ isActive }) => isActive ? { color: '#ef4444', fontWeight: 'bold' } : {}}
               >
-                <FaGavel style={{ marginRight: "10px" }} /> Giải quyết Khiếu nại
+                 <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
+                    <span style={{display: 'flex', alignItems: 'center'}}><FaGavel style={{ marginRight: "10px" }} /> Giải quyết Khiếu nại</span>
+                    {(counts?.admin?.disputedOrders > 0) && <span className="badge-inline" style={{marginLeft: 'auto'}}>{counts.admin.disputedOrders}</span>}
+                 </div>
               </NavLink>
             </li>
             <li>
@@ -74,7 +81,10 @@ export default function AdminLayout() {
                 to="/admin/deposits"
                 className={({ isActive }) => (isActive ? "active" : "")}
               >
-                <FaMoneyCheckAlt style={{ marginRight: "10px" }} /> Quản lý Nạp tiền
+                 <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
+                    <span style={{display: 'flex', alignItems: 'center'}}><FaMoneyCheckAlt style={{ marginRight: "10px" }} /> Quản lý Nạp tiền</span>
+                    {(counts?.admin?.pendingDeposits > 0) && <span className="badge-inline" style={{marginLeft: 'auto'}}>{counts.admin.pendingDeposits}</span>}
+                 </div>
               </NavLink>
             </li>
              <li>
@@ -82,7 +92,10 @@ export default function AdminLayout() {
                 to="/admin/withdrawals"
                 className={({ isActive }) => (isActive ? "active" : "")}
               >
-                <FaMoneyCheckAlt style={{ marginRight: "10px" }} /> Quản lý Rút tiền
+                 <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
+                    <span style={{display: 'flex', alignItems: 'center'}}><FaMoneyCheckAlt style={{ marginRight: "10px" }} /> Quản lý Rút tiền</span>
+                    {(counts?.admin?.pendingWithdrawals > 0) && <span className="badge-inline" style={{marginLeft: 'auto'}}>{counts.admin.pendingWithdrawals}</span>}
+                </div>
               </NavLink>
             </li>
           </ul>
