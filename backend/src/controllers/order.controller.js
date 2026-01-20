@@ -67,7 +67,10 @@ export const addOrderItems = async (req, res, next) => {
       
       updateOps.push({
         updateOne: {
-          filter: { _id: item.book },
+          filter: { 
+            _id: item.book,
+            stock: { $gte: item.quantity }  // Atomic protection: Only update if stock >= quantity
+          },
           update: { $inc: { stock: -item.quantity } },
         },
       });
@@ -138,7 +141,13 @@ export const addOrderItems = async (req, res, next) => {
     }
 
     if (updateOps.length > 0) {
-      await Book.bulkWrite(updateOps, { session });
+      const bulkResult = await Book.bulkWrite(updateOps, { session });
+      
+      // Verify all updates succeeded (atomic race condition protection)
+      if (bulkResult.modifiedCount !== updateOps.length) {
+        res.status(400);
+        throw new Error("Một số sách đã hết hàng trong quá trình xử lý. Vui lòng thử lại.");
+      }
     }
     
     //  Order Creation 
