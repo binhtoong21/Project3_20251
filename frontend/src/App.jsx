@@ -27,6 +27,8 @@ import WithdrawalsManager from "./admin/pages/WithdrawalsManager";
 import SettingsManager from "./admin/pages/SettingsManager";
 
 import ScrollToTop from "./shared/components/ScrollToTop";
+import ProtectedRoute from "./shared/components/ProtectedRoute";
+import PublicRoute from "./shared/components/PublicRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -37,25 +39,29 @@ function App() {
       <ToastContainer position="bottom-right" autoClose={3000} />
       <Routes>
         <Route path="/" element={<CustomerLayout />}>
+          {/* Public routes - Ai cũng truy cập được */}
           <Route index element={<Home />} />
           <Route path="books" element={<Books />} />
           <Route path="marketplace" element={<Marketplace />} />
           <Route path="books/:id" element={<BookDetail />} />
-          <Route path="cart" element={<Cart />} />
-          <Route path="checkout" element={<Checkout />} />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
           <Route path="verify-email" element={<VerifyEmail />} />
           <Route path="resend-verification" element={<ResendVerificationEmail />} />
-          <Route path="forgot-password" element={<ForgotPassword />} />
-          <Route path="reset-password" element={<ResetPassword />} />
-          <Route
-            path="account"
-            element={<Navigate to="/account/profile" replace />}
-          />
-          <Route path="account/:tab" element={<Account />} />
-          <Route path="orders/:id" element={<OrderDetail />} />
+          
+          {/* Public Only routes - Chỉ Guest (chưa login) mới vào được */}
+          <Route path="login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="register" element={<PublicRoute><Register /></PublicRoute>} />
+          <Route path="forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+          <Route path="reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+          
+          {/* Protected routes - Phải login mới vào được */}
+          <Route path="cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+          <Route path="checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+          <Route path="account" element={<Navigate to="/account/profile" replace />} />
+          <Route path="account/:tab" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+          <Route path="orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
         </Route>
+        
+        {/* Admin routes - Phải là Admin mới vào được */}
         <Route path="/admin" element={<AdminRoute />}>
           <Route element={<AdminLayout />}>
             <Route path="dashboard" element={<Dashboard />} />
@@ -76,4 +82,3 @@ function App() {
 }
 
 export default App;
-

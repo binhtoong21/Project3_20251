@@ -5,7 +5,7 @@ import "./HeroSection.css";
 export default function HeroSection({ banners }) {
   const quickLinks = [
     { title: "Ví Điện Tử Mua Bán Nhanh Chóng Và An Toàn", to: "/account/wallet" }, 
-    { title: "Sách Cũ Không Dùng Đến, Đăng Bán Ngay Tại Đây", to: "/account/my-books" },
+    { title: "Sách Cũ Không Dùng Đến, Đăng Bán Ngay Tại Đây", to: "/account/books" },
   ];
 
   return (
