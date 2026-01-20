@@ -3,6 +3,7 @@ import { protect, admin } from '../middlewares/auth.middleware.js';
 import {
   createDepositRequest,
   approveDeposit,
+  rejectDeposit,
   getTransactions,
   getPendingDeposits,
   createWithdrawalRequest,
@@ -17,6 +18,7 @@ router.post('/deposit', protect, createDepositRequest);
 router.get('/transactions', protect, getTransactions);
 router.get('/pending-deposits', protect, admin, getPendingDeposits);
 router.put('/approve/:id', protect, admin, approveDeposit);
+router.put('/reject/:id', protect, admin, rejectDeposit);
 
 // Withdrawal Routes
 router.post('/withdraw', protect, createWithdrawalRequest);

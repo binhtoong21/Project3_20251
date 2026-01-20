@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import router from "./routes/index.js";
-import reviewRoutes from "./routes/review.routes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -17,13 +16,14 @@ app.use(morgan("dev"));
 
 //  Serve static files từ thư mục uploads
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+//  Serve static files for Logistics Simulator
+app.use("/logistics-portal", express.static(path.join(__dirname, "../public")));
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", uptime: process.uptime() });
 });
 
 app.use("/api", router);
-app.use("/api/reviews", reviewRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Not found" });

@@ -97,11 +97,38 @@
     }
   });
 
+  // @desc    Admin từ chối yêu cầu nạp tiền
+  // @route   PUT /api/wallet/reject/:id
+  // @access  Private/Admin
+  const rejectDeposit = asyncHandler(async (req, res) => {
+    const transactionId = req.params.id;
+
+    const transaction = await Transaction.findById(transactionId);
+
+    if (!transaction) {
+      res.status(404);
+      throw new Error("Không tìm thấy giao dịch.");
+    }
+
+    if (transaction.status !== "pending" || transaction.type !== "deposit") {
+      res.status(400);
+      throw new Error("Giao dịch không hợp lệ hoặc đã được xử lý.");
+    }
+
+    // Cập nhật trạng thái giao dịch thành failed
+    transaction.status = "failed";
+    transaction.description = (transaction.description || "") + " (Bị từ chối bởi Admin)";
+    await transaction.save();
+
+    res.json({ message: "Yêu cầu nạp tiền đã bị từ chối." });
+  });
+
   export {
     createDepositRequest,
     getTransactions,
     getPendingDeposits,
     approveDeposit,
+    rejectDeposit,
   };
   // @desc    Create a withdrawal request
   // @route   POST /api/wallet/withdraw

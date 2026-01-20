@@ -15,6 +15,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [registrationEmail, setRegistrationEmail] = useState("");
+  const [emailSent, setEmailSent] = useState(true); // Default true, update from API
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
@@ -37,7 +38,7 @@ export default function Register() {
     setLoading(true);
     
     try {
-      await apiClient.post("/users/register", {
+      const response = await apiClient.post("/users/register", {
         name,
         email,
         password,
@@ -45,7 +46,15 @@ export default function Register() {
       
       setRegistrationSuccess(true);
       setRegistrationEmail(email);
-      toast.success("Registration successful! Please verify your email.");
+      // Backend returns emailSent property (true/false)
+      const isEmailSent = response.emailSent !== false; 
+      setEmailSent(isEmailSent);
+
+      if (isEmailSent) {
+          toast.success("Registration successful! Please verify your email.");
+      } else {
+          toast.warning("Registration successful, but verification email failed to send.");
+      }
       
       // Reset form
       setName("");
@@ -55,7 +64,7 @@ export default function Register() {
     } catch (err) {
       const message = err.message || "Registration failed. Please try again.";
       setError(message);
-      toast.error(message);
+      // Removed toast.error to avoid double notification
     } finally {
       setLoading(false);
     }
@@ -68,10 +77,21 @@ export default function Register() {
         <div className="container">
           <div className="register-form-container">
             <div className="success-message">
-              <h2>✓ Registration Successful!</h2>
-              <p>We've sent a verification email to:</p>
-              <p style={{ fontWeight: "bold", color: "#007bff" }}>{registrationEmail}</p>
-              <p>Please click the verification link in the email to activate your account.</p>
+              {emailSent ? (
+                <>
+                  <h2>✓ Registration Successful!</h2>
+                  <p>We've sent a verification email to:</p>
+                  <p style={{ fontWeight: "bold", color: "#007bff" }}>{registrationEmail}</p>
+                  <p>Please click the verification link in the email to activate your account.</p>
+                </>
+              ) : (
+                <>
+                  <h2 style={{color: '#ffc107'}}>⚠ Registration Warning</h2>
+                  <p>Your account has been created, but we failed to send the verification email.</p>
+                  <p>Please try to login and use the "Resend Verification Email" feature if needed.</p>
+                </>
+              )}
+              
               <p style={{ fontSize: "14px", color: "#666" }}>
                 Didn't receive the email? Check your spam folder or 
                 <Link to="/resend-verification" style={{ marginLeft: "5px" }}>

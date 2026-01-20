@@ -82,15 +82,40 @@ export const addOrderItems = async (req, res, next) => {
       };
     });
 
+    // Verify Mixed Order (Block if multiple sellers)
+    const sellers = new Set();
+    orderItemsWithSeller.forEach(item => {
+        // Store items have seller: null. Treat 'null' as a distinct seller identity.
+        sellers.add(item.seller ? item.seller.toString() : 'STORE');
+    });
+
+    if (sellers.size > 1) {
+        res.status(400);
+        throw new Error("Không thể đặt hàng từ nhiều người bán cùng lúc. Vui lòng tách đơn hàng.");
+    }
+
     // Recalculate itemsPrice securely using verified DB prices
     itemsPrice = orderItemsWithSeller.reduce(
         (acc, item) => acc + item.price * item.quantity,
         0
     );
 
+    // Calculate Total Weight for Logistics
+    const totalWeight = orderItemsWithSeller.reduce((acc, item) => {
+        // Assuming bookMap has dimensions now (from fetch)
+        const book = bookMap[item.book.toString()];
+        const weight = book.dimensions ? book.dimensions.weight : 200; 
+        return acc + (weight * item.quantity);
+    }, 0);
+
+
     //  Calculate Shipping & Total With C2C Logic 
     const isC2C = orderItemsWithSeller.some(item => item.seller);
-    const shippingPrice = isC2C ? 0 : (itemsPrice > 100000 ? 0 : 30000);
+    // Note: shippingPrice should be passed from FE or calculated via API. 
+    // For now, valid logic is to trust FE limit or have a basic check.
+    // Ideally, we re-calculate via GHN API here, but for "Phase 3 Step 1" let's respect the FE input if reasonable or fallback.
+    // If FE provides shippingPrice, use it. Else default logic.
+    const finalShippingPrice = req.body.shippingPrice !== undefined ? req.body.shippingPrice : (isC2C ? 0 : (itemsPrice > 100000 ? 0 : 30000));
     
     // Fee Logic: 2% for C2C orders (Deducted from Seller, NOT charged to Buyer)
     let transactionFee = 0;
@@ -99,7 +124,7 @@ export const addOrderItems = async (req, res, next) => {
     }
 
     // Buyer pays: Items + Shipping. (Fee is hidden from buyer)
-    const totalPrice = itemsPrice + shippingPrice;
+    const totalPrice = itemsPrice + finalShippingPrice;
 
     //  Wallet Payment Logic 
     if (paymentMethod === "wallet") {
@@ -120,10 +145,16 @@ export const addOrderItems = async (req, res, next) => {
     const order = new Order({
       user: req.user._id,
       orderItems: orderItemsWithSeller, // Use the new array with seller info
-      shippingAddress,
+      shippingAddress, // IDs should be in here now
       paymentMethod,
       itemsPrice,
-      shippingPrice,
+      shippingPrice: finalShippingPrice,
+      shipping: {
+          carrier: 'GHN',
+          service_type_id: 2, // Standard
+          shipping_fee: finalShippingPrice,
+          status: 'ReadyToPick' // Initial internal status for Logistics
+      },
       transactionFee,
       totalPrice,
       isPaid: paymentMethod === "wallet",
@@ -167,6 +198,135 @@ export const addOrderItems = async (req, res, next) => {
     session.endSession();
   }
 };
+
+// @desc    Create Shipping Order (Logistics Simulator)
+// @route   POST /api/orders/:id/create-shipping
+// @access  Private (Admin or Seller)
+export const createShippingOrder = async (req, res, next) => {
+    try {
+        const order = await Order.findById(req.params.id)
+            .populate('user', 'name phone')
+            .populate('orderItems.seller', 'name phone address pickupAddress');
+
+        if (!order) {
+            res.status(404);
+            throw new Error('Order not found');
+        }
+
+        // Access Control: Admin or Seller
+        const isAdmin = req.user.role === 'admin';
+        const isSeller = order.orderItems.some(item => 
+            item.seller && item.seller._id.toString() === req.user._id.toString()
+        );
+
+        if (!isAdmin && !isSeller) {
+            res.status(401);
+            throw new Error('Not authorized to create shipping order');
+        }
+
+        if (order.shipping && order.shipping.tracking_code) {
+             res.status(400);
+             throw new Error('Shipping order already created (Tracking Code exists).');
+        }
+
+        // Determine Sender Info (From Seller or Store)
+        const firstItem = order.orderItems[0];
+        let fromName, fromPhone, fromAddress, fromDistrict, fromProvince;
+
+        if (firstItem.seller) {
+            const seller = firstItem.seller;
+            const pickup = seller.pickupAddress && seller.pickupAddress.province_id 
+                ? seller.pickupAddress 
+                : seller.address;
+            
+            if (!pickup || !pickup.province_id) {
+                res.status(400);
+                throw new Error('Người bán chưa cấu hình địa chỉ lấy hàng (Pickup Address).');
+            }
+
+            fromName = seller.name;
+            fromPhone = seller.phone;
+            fromAddress = pickup.street;
+            fromDistrict = pickup.district;
+            fromProvince = pickup.province;
+        } else {
+            // Store Items: Read from Settings DB
+            const Setting = (await import('../models/setting.model.js')).default;
+            const settings = await Setting.findOne({ key: 'general' });
+            
+            if (!settings || !settings.storeAddress || !settings.storeAddress.district_id) {
+                res.status(400);
+                throw new Error('Chưa cấu hình địa chỉ cửa hàng. Vui lòng vào Admin > Cài đặt.');
+            }
+
+            const store = settings.storeAddress;
+            fromName = settings.storeName || "BookStore Official";
+            fromPhone = settings.storePhone || "0900000000";
+            fromAddress = store.street;
+            fromDistrict = store.district;
+            fromProvince = store.province;
+        }
+
+        // Calculate Weight
+        const bookIds = order.orderItems.map(i => i.book);
+        const books = await Book.find({ _id: { $in: bookIds } }).select('dimensions weight');
+        const bookMap = books.reduce((map, b) => { map[b._id.toString()] = b; return map; }, {});
+
+        let totalWeight = 0;
+        order.orderItems.forEach(item => {
+             const book = bookMap[item.book.toString()];
+             const weight = book?.dimensions?.weight || 200;
+             totalWeight += weight * item.quantity;
+        });
+
+        // Create Shipment using Logistics Service
+        const logisticsService = await import('../services/logisticsService.js');
+        
+        const shipmentResult = await logisticsService.createShipment({
+            orderId: order._id,
+            
+            fromName,
+            fromPhone,
+            fromAddress,
+            fromDistrict,
+            fromProvince,
+            
+            toName: order.shippingAddress.name,
+            toPhone: order.shippingAddress.phone,
+            toAddress: order.shippingAddress.street,
+            toDistrict: order.shippingAddress.district,
+            toProvince: order.shippingAddress.province,
+            
+            weight: totalWeight,
+            codAmount: order.paymentMethod === 'COD' ? order.totalPrice : 0,
+            shippingFee: order.shippingPrice
+        });
+
+        // Update Order with tracking info
+        order.shipping = order.shipping || {};
+        order.shipping.tracking_code = shipmentResult.trackingCode;
+        order.shipping.expected_delivery_time = shipmentResult.estimatedDelivery;
+        order.shipping.status = 'Pending'; // Logistics status
+        order.status = 'Shipped'; // Order status (Valid enum: Pending, Shipped, Delivered...)
+
+        await order.save();
+        
+        console.log(`[ORDER] Shipment Created: ${shipmentResult.trackingCode} for Order ${order._id}`);
+        
+        res.json(order);
+
+
+    } catch (error) {
+        console.error("CREATE SHIPPING ERROR:", error);
+        res.status(500).json({ 
+            message: error.message, 
+            stack: error.stack,
+            where: "createShippingOrder controller"
+        });
+    }
+};
+
+
 
 // @desc    Get logged in user orders
 // @route   GET /api/orders/myorders
@@ -396,6 +556,12 @@ export const confirmReceipt = async (req, res, next) => {
     if (order.user.toString() !== req.user._id.toString()) {
       res.status(401);
       throw new Error("Not authorized");
+    }
+
+    // Validate: Must be at least Shipped to confirm receipt
+    if (order.status === 'Pending') {
+        res.status(400);
+        throw new Error("Không thể xác nhận nhận hàng khi đơn hàng chưa được gửi đi.");
     }
 
     // Validate status based on Payment Method
@@ -904,9 +1070,16 @@ export const cancelOrder = async (req, res, next) => {
             throw new Error("Order not found");
         }
 
-        if (order.user.toString() !== req.user._id.toString()) {
+        // Check authorization: Buyer OR Seller can cancel
+        const isBuyer = order.user.toString() === req.user._id.toString();
+        const isSeller = order.orderItems.some(item => 
+            item.seller && item.seller.toString() === req.user._id.toString()
+        );
+        const isAdmin = req.user.role === 'admin';
+
+        if (!isBuyer && !isSeller && !isAdmin) {
             res.status(401);
-            throw new Error("Not authorized");
+            throw new Error("Not authorized (Only buyer or seller can cancel)");
         }
 
         if (order.status !== 'Pending') {

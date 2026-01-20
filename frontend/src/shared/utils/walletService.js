@@ -46,6 +46,15 @@ const walletService = {
   },
 
   /**
+   * Từ chối một yêu cầu nạp tiền (Admin)
+   * @param {string} transactionId
+   * @returns {Promise<any>}
+   */
+  rejectDeposit: (transactionId) => {
+    return apiClient.put(`/wallet/reject/${transactionId}`);
+  },
+
+  /**
    * Lấy danh sách yêu cầu rút tiền đang chờ xử lý (Admin)
    */
   getPendingWithdrawals: () => {

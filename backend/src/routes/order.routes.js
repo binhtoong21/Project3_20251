@@ -13,7 +13,8 @@ import {
   confirmRefundRequest,
   rejectRefundRequest,
   forceComplete,
-  cancelOrder
+  cancelOrder,
+  createShippingOrder
 } from "../controllers/order.controller.js";
 import { protect, admin } from "../middlewares/auth.middleware.js";
 
@@ -41,6 +42,9 @@ router.route('/:id/force-complete').put(protect, admin, forceComplete);
 
 // Cancel Order (Buyer - Pending COD)
 router.route("/:id/cancel").put(protect, cancelOrder);
+
+// Logistics
+router.route("/:id/create-shipping").post(protect, createShippingOrder); // Permissions handled in controller
 
 //  Common Route
 router.route("/:id").get(protect, getOrderById);

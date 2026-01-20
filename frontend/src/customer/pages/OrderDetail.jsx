@@ -66,6 +66,7 @@ const OrderDetail = () => {
   };
 
   const handleUpdateStatus = async (newStatus) => {
+      // Only for Delivered/Cancelled manual updates
       if (!window.confirm(`Cập nhật trạng thái đơn hàng thành "${newStatus}"?`)) return;
       try {
           setLoading(true);
@@ -75,6 +76,23 @@ const OrderDetail = () => {
           toast.success("Cập nhật trạng thái thành công!");
       } catch (err) {
           toast.error(err.message);
+      } finally {
+          setLoading(false);
+      }
+  };
+
+  const handleCreateShipping = async () => {
+      if (!window.confirm("Tạo vận đơn và gửi hàng qua Logistics Tool?")) return;
+      try {
+          setLoading(true);
+          // Call the specialized Logistics Endpoint
+          await apiClient.post(`/orders/${id}/create-shipping`);
+          
+          const updatedOrder = await apiClient.get(`/orders/${id}`);
+          setOrder(updatedOrder);
+          toast.success("Đã tạo vận đơn thành công! Đơn hàng đang được xử lý bởi Logistics.");
+      } catch (err) {
+          toast.error("Lỗi tạo vận đơn: " + (err.response?.data?.message || err.message));
       } finally {
           setLoading(false);
       }
@@ -159,6 +177,8 @@ const OrderDetail = () => {
       }
   };
 
+
+
   if (loading) return <div className="container" style={{paddingTop: '2rem'}}>Loading order details...</div>;
   if (error)
     return (
@@ -223,8 +243,8 @@ const OrderDetail = () => {
                     : ''}
                  </p>
                  
-                 {/* Confirm Button for Held (Wallet) OR Pending/Shipped/Delivered (COD) */}
-                 {((order.escrowStatus === 'Held') || (order.paymentMethod === 'COD' && order.status !== 'Completed' && order.status !== 'Cancelled')) && user?.role !== 'admin' && user?._id === (order.user._id || order.user) && (
+                 {/* Confirm Button for Held (Wallet) OR Shipped/Delivered (COD) - NOT when Pending */}
+                 {((order.escrowStatus === 'Held') || (order.paymentMethod === 'COD' && order.status !== 'Completed' && order.status !== 'Cancelled')) && order.status !== 'Pending' && user?.role !== 'admin' && user?._id === (order.user._id || order.user) && (
                      <div className="escrow-actions">
                          <button className="btn-confirm-receipt" onClick={handleConfirmReceipt}>
                             Đã nhận được hàng
@@ -297,9 +317,9 @@ const OrderDetail = () => {
             <div className="seller-actions-card">
                 <h3>{user?.role === 'admin' ? 'Tác vụ Admin (B2C Order)' : 'Tác vụ người bán'}</h3>
                 <div className="action-buttons">
-                    {order.status === 'Pending' && (
-                        <button className="btn primary" onClick={() => handleUpdateStatus('Shipped')}>
-                            Xác nhận & Gửi hàng (Ship)
+                    {order.status === 'Pending' && !order.shipping?.tracking_code && (
+                        <button className="btn primary" onClick={handleCreateShipping}>
+                            Tạo Vận Đơn & Gửi (Logistics)
                         </button>
                     )}
                     {order.status === 'Shipped' && (
@@ -347,6 +367,18 @@ const OrderDetail = () => {
                 {order.shippingAddress.postalCode}
               </p>
               <p>{order.shippingAddress.country}</p>
+              
+              {/* GHN Tracking Link */}
+              {order.shipping?.tracking_code && (
+                <div style={{marginTop: '15px', padding: '10px', backgroundColor: '#EFF6FF', borderRadius: '8px', border: '1px solid #BFDBFE'}}>
+                  <p style={{margin: 0, fontWeight: '600', color: '#1E40AF'}}>
+                    📦 Mã vận đơn: {order.shipping.tracking_code}
+                  </p>
+                  <p style={{fontSize: '0.9rem', color: '#6B7280', marginTop: '5px'}}>
+                    (Hệ thống Logistics Simulator nội bộ)
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Payment Info */}
@@ -382,6 +414,7 @@ const OrderDetail = () => {
                 <div className="status-badge not-delivered">Not Delivered</div>
               )}
             </div>
+
           </div>
 
           <div className="order-detail-right">

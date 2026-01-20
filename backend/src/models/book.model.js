@@ -21,6 +21,14 @@ const bookSchema = new mongoose.Schema(
     trending: { type: Boolean, default: false },
 
     stock: { type: Number, required: true, min: 0, default: 0 },
+    
+    // PHYSICAL PROPERTIES (Required for Logistics)
+    dimensions: {
+        weight: { type: Number, required: true, default: 200 }, // Gram
+        length: { type: Number, default: 10 }, // cm
+        width: { type: Number, default: 10 },  // cm
+        height: { type: Number, default: 2 },  // cm
+    },
 
     // MỞ RỘNG CHO CHỨC NĂNG C2C
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // ID người bán. Nếu là null -> sách của cửa hàng

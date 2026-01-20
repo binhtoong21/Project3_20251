@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
+import AddressSelector from "../../shared/components/AddressSelector"; // Import
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useCartState, useCartActions } from "../../shared/context/CartContext";
@@ -18,10 +19,10 @@ const Checkout = () => {
   // Detect Direct Purchase Mode
   const directPurchaseItem = location.state?.directPurchaseItem;
   
-  // Decide which items to use (Direct Item or Cart Items)
+  // Decide which items to use
   const checkoutItems = directPurchaseItem ? [directPurchaseItem] : items;
   
-  // Calculate Subtotal based on chosen items
+  // Calculate Subtotal
   const currentSubtotal = directPurchaseItem 
     ? directPurchaseItem.price * directPurchaseItem.quantity
     : subtotal;
@@ -30,33 +31,58 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [calculatedShippingFee, setCalculatedShippingFee] = useState(0); // State for dynamic fee
 
   const hasValidPhone = user && user.phone && isValidPhone(user.phone);
 
   const [addressForm, setAddressForm] = useState({
     street: "",
-    ward: "",
-    district: "",
-    province: "",
+    ward: "", ward_code: null,
+    district: "", district_id: null,
+    province: "", province_id: null,
     country: "Việt Nam",
   });
 
-  const shippingPrice = useMemo(() => {
-    // If it's a direct purchase from a seller (C2C), shipping is 0 (Self-arranged)
-    if (directPurchaseItem && directPurchaseItem.seller) {
-        return 0;
-    }
-    return currentSubtotal > 100000 ? 0 : 30000;
-  }, [currentSubtotal, directPurchaseItem]);
+  // Calculate Weights (Approximate)
+  const totalWeight = useMemo(() => {
+     return checkoutItems.reduce((acc, item) => acc + (item.quantity * 200), 0);
+  }, [checkoutItems]);
 
-  // Platform Fee Logic Update: 
-  // Fees are now deducted from the Seller's earnings, NOT charged to the Buyer.
-  // So transactionFee for Buyer is always 0.
+  const fetchShippingFee = useCallback(async (addr) => {
+      if (!addr?.district_id || !addr?.ward_code) {
+          setCalculatedShippingFee(0); // Default or invalid
+          return;
+      }
+      try {
+          const res = await apiClient.post("/location/calculate-fee", {
+              to_district_id: addr.district_id,
+              to_ward_code: addr.ward_code,
+              weight: totalWeight,
+              insurance_value: currentSubtotal
+          });
+          if (res && res.total) {
+              setCalculatedShippingFee(res.total);
+          }
+      } catch (err) {
+          console.error("Fee Calc Error", err);
+          // Fallback static fee if API fails
+           setCalculatedShippingFee(currentSubtotal > 100000 ? 0 : 30000);
+      }
+  }, [totalWeight, currentSubtotal]);
+
+  // Update Fee when addressForm changes (and is valid)
+  useEffect(() => {
+      if (!isEditingAddress && addressForm.district_id && addressForm.ward_code) {
+          fetchShippingFee(addressForm);
+      }
+  }, [isEditingAddress, addressForm, fetchShippingFee]);
+
+
   const transactionFee = 0;
 
   const totalPrice = useMemo(
-    () => currentSubtotal + shippingPrice + transactionFee,
-    [currentSubtotal, shippingPrice, transactionFee]
+    () => currentSubtotal + calculatedShippingFee + transactionFee,
+    [currentSubtotal, calculatedShippingFee, transactionFee]
   );
 
   // Fetch user data on mount to get latest wallet balance
@@ -82,20 +108,24 @@ const Checkout = () => {
       setAddressForm({
         street: user.address.street || "",
         ward: user.address.ward || "",
+        ward_code: user.address.ward_code,
         district: user.address.district || "",
+        district_id: user.address.district_id,
         province: user.address.province || "",
+        province_id: user.address.province_id,
         country: user.address.country || "Việt Nam",
       });
       setIsEditingAddress(false);
+      // Trigger fee calc immediately if we have data
+      if(user.address.district_id && user.address.ward_code) {
+          // This will be handled by the effect on addressForm
+      }
     } else {
       setIsEditingAddress(true);
     }
   }, [user, items, navigate, directPurchaseItem]);
 
-  const handleAddressChange = (e) => {
-    setAddressForm({ ...addressForm, [e.target.name]: e.target.value });
-    setErrorMsg("");
-  };
+  // Removed handleAddressChange as AddressSelector handles it via object replacement
 
   const handleSaveAddress = async () => {
     if (!isValidAddress(addressForm)) {
@@ -116,6 +146,7 @@ const Checkout = () => {
       );
 
       setIsEditingAddress(false);
+      // Fee will be recalculated by effect
     } catch (error) {
       console.error(error);
       setErrorMsg("Lỗi khi lưu địa chỉ: " + error.message);
@@ -147,13 +178,17 @@ const Checkout = () => {
       const orderData = {
         shippingAddress: {
           province: addressForm.province,
+          province_id: addressForm.province_id,
           district: addressForm.district,
+          district_id: addressForm.district_id,
           ward: addressForm.ward,
+          ward_code: addressForm.ward_code,
           street: addressForm.street,
-          name: user.name, // Use name from auth context
-          phone: user.phone, // Use phone from auth context
+          name: user.name, 
+          phone: user.phone, 
         },
         paymentMethod: paymentMethod,
+        shippingPrice: calculatedShippingFee, // Send the calc fee
       };
 
       // If direct purchase, include orderItems
@@ -168,7 +203,7 @@ const Checkout = () => {
       navigate(`/orders/${createdOrder._id}`);
     } catch (error) {
       console.error(error);
-      const msg = error.message || "Đặt hàng thất bại";
+      const msg = error.response?.data?.message || error.message || "Đặt hàng thất bại"; // Better error parsing
       setErrorMsg(msg);
       toast.error(msg);
     } finally {
@@ -221,56 +256,23 @@ const Checkout = () => {
                 <div className="address-form-container">
                   {errorMsg && <div className="form-error">{errorMsg}</div>}
 
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Tỉnh / Thành phố</label>
-                      <input
-                        type="text"
-                        name="province"
-                        value={addressForm.province}
-                        onChange={handleAddressChange}
-                        placeholder="Vd: Hà Nội"
+                  <div className="address-selector-wrapper">
+                      <AddressSelector 
+                        value={addressForm} 
+                        onChange={(newAddress) => setAddressForm(newAddress)} 
                       />
-                    </div>
-                    <div className="form-group">
-                      <label>Quận / Huyện</label>
-                      <input
-                        type="text"
-                        name="district"
-                        value={addressForm.district}
-                        onChange={handleAddressChange}
-                        placeholder="Vd: Cầu Giấy"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Phường / Xã</label>
-                      <input
-                        type="text"
-                        name="ward"
-                        value={addressForm.ward}
-                        onChange={handleAddressChange}
-                        placeholder="Vd: Dịch Vọng"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Số nhà, Tên đường</label>
-                      <input
-                        type="text"
-                        name="street"
-                        value={addressForm.street}
-                        onChange={handleAddressChange}
-                        placeholder="Vd: 123 Xuân Thủy"
-                      />
-                    </div>
                   </div>
 
                   <div className="form-actions">
                     <button
                       className="btn secondary"
-                      onClick={() => setIsEditingAddress(false)}
+                      onClick={() => {
+                          // Reset to user's saved address on cancel
+                           if (user.address && isValidAddress(user.address)) {
+                                setAddressForm(user.address);
+                           }
+                           setIsEditingAddress(false);
+                      }}
                     >
                       Hủy
                     </button>
@@ -279,7 +281,7 @@ const Checkout = () => {
                       onClick={handleSaveAddress}
                       disabled={loading}
                     >
-                      Lưu địa chỉ
+                      Lưu và Tính phí ship
                     </button>
                   </div>
                 </div>
@@ -336,6 +338,26 @@ const Checkout = () => {
                   </div>
                 </label>
               </div>
+              
+              {/* COD Disclaimer */}
+              {paymentMethod === "COD" && (
+                <div style={{
+                  marginTop: '15px', 
+                  padding: '12px', 
+                  backgroundColor: '#FEF3C7', 
+                  borderRadius: '8px', 
+                  border: '1px solid #F59E0B',
+                  fontSize: '0.9rem'
+                }}>
+                  <p style={{margin: 0, fontWeight: '600', color: '#92400E'}}>
+                    ⚠️ Lưu ý về thanh toán COD
+                  </p>
+                  <p style={{margin: '8px 0 0 0', color: '#78350F', lineHeight: '1.5'}}>
+                    Tiền thanh toán COD sẽ do đơn vị vận chuyển (GHN) thu hộ và chuyển trực tiếp cho người bán. 
+                    Trong trường hợp cần hoàn tiền, vui lòng liên hệ trực tiếp với cửa hàng/người bán để được hỗ trợ.
+                  </p>
+                </div>
+              )}
             </section>
           </div>
 
@@ -368,9 +390,9 @@ const Checkout = () => {
               <div className="summary-row">
                 <span>Phí vận chuyển</span>
                 <span>
-                  {shippingPrice === 0
+                  {calculatedShippingFee === 0
                     ? "Miễn phí"
-                    : formatCurrency(shippingPrice)}
+                    : formatCurrency(calculatedShippingFee)}
                 </span>
               </div>
 

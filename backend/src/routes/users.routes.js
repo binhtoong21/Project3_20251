@@ -18,15 +18,16 @@ import {
   resetPassword
 } from "../controllers/users.controller.js";
 import { protect, admin } from "../middlewares/auth.middleware.js";
+import { authLimiter, emailLimiter } from "../middlewares/rateLimit.middleware.js";
 
 const router = Router();
 
-router.post("/register", register);
-router.post("/login", login);
-router.post("/verify-email", verifyEmail);
-router.post("/resend-verification-email", resendVerificationEmail);
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password", resetPassword);
+router.post("/register", authLimiter, register);
+router.post("/login", authLimiter, login);
+router.post("/verify-email", verifyEmail); // Token check, logic handles validity
+router.post("/resend-verification-email", emailLimiter, resendVerificationEmail);
+router.post("/forgot-password", emailLimiter, forgotPassword);
+router.post("/reset-password", authLimiter, resetPassword);
 router
   .route("/profile")
   .get(protect, getProfile)

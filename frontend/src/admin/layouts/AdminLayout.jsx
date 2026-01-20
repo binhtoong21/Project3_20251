@@ -10,6 +10,8 @@ import {
   FaSignOutAlt,
   FaMoneyCheckAlt,
   FaGavel,
+  FaCog,
+  FaTruck, // New Layout
 } from "react-icons/fa";
 
 export default function AdminLayout() {
@@ -87,7 +89,7 @@ export default function AdminLayout() {
                  </div>
               </NavLink>
             </li>
-             <li>
+          <li>
               <NavLink
                 to="/admin/withdrawals"
                 className={({ isActive }) => (isActive ? "active" : "")}
@@ -97,6 +99,25 @@ export default function AdminLayout() {
                     {(counts?.admin?.pendingWithdrawals > 0) && <span className="badge-inline" style={{marginLeft: 'auto'}}>{counts.admin.pendingWithdrawals}</span>}
                 </div>
               </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/settings"
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                <FaCog style={{ marginRight: "10px" }} /> Cài đặt Cửa hàng
+              </NavLink>
+            </li>
+            <li>
+              <a 
+                href="http://localhost:3000/logistics-portal/logistics.html" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className=""
+                style={{color: '#10b981'}}
+              >
+                <FaTruck style={{ marginRight: "10px" }} /> <strong>Logistics Simulator</strong>
+              </a>
             </li>
           </ul>
         </div>

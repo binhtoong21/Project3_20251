@@ -34,7 +34,7 @@ export default function Login() {
       console.error("Login failed:", err);
       const message = err.message || "Login failed. Please try again.";
       setError(message);
-      toast.error(message);
+      // Removed toast.error to avoid double notification (inline + toast)
     }
   };
 
@@ -66,11 +66,41 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            {error && <p className="error-message">{error}</p>}
-            <a href="#" className="forgot-password">
-              Forgot Password?
-            </a>
-            <button type="submit" className="btn">
+            {error && <p className="error-message" style={{color: 'red', textAlign: 'center'}}>{error}</p>}
+            
+            {/* Show Resend Verification link if error is about verification */}
+            {error && error.toLowerCase().includes("verify your email") && (
+                <div style={{ textAlign: "center", marginBottom: "15px", marginTop: "10px" }}>
+                  <Link to="/resend-verification" className="btn secondary" style={{
+                      display: 'block', 
+                      width: '100%', 
+                      padding: '10px',
+                      backgroundColor: '#f3f4f6',
+                      color: '#374151',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      textDecoration: 'none',
+                      textAlign: 'center',
+                      fontWeight: '500'
+                  }}>
+                    Resend Verification Email
+                  </Link>
+                </div>
+            )}
+
+            <div style={{textAlign: 'right', marginBottom: '15px'}}>
+                 <Link to="/forgot-password" className="forgot-password" style={{
+                     color: '#2563eb', 
+                     textDecoration: 'none', 
+                     fontSize: '0.9rem',
+                     display: 'inline-block',
+                     padding: '5px'
+                 }}>
+                    Forgot Password?
+                 </Link>
+            </div>
+
+            <button type="submit" className="btn" style={{width: '100%'}}>
               Login
             </button>
           </form>

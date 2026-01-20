@@ -16,23 +16,23 @@ const storage = multer.diskStorage({
   },
 });
 
-// Kiểm tra loại file (chỉ cho phép ảnh)
+// Kiểm tra loại file (cho phép ảnh và video)
 function checkFileType(file, cb) {
-  const filetypes = /jpeg|jpg|png|gif/;
+  const filetypes = /jpeg|jpg|png|gif|mp4|mov|avi|mkv/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
+  const mimetype = /jpeg|jpg|png|gif|video\//.test(file.mimetype);
 
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb(new Error("Chỉ được upload file ảnh! (jpeg, jpg, png, gif)"));
+    cb(new Error("Chỉ được upload file ảnh hoặc video! (jpeg, jpg, png, gif, mp4, mov...)"));
   }
 }
 
 // Khởi tạo middleware upload
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 1024 * 1024 * 5 }, // Giới hạn 5MB
+  limits: { fileSize: 1024 * 1024 * 50 }, // Giới hạn 50MB
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
   },

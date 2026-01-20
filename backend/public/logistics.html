@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Vận Chuyển (Simulator)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; }
+        .card { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .status-badge { font-size: 0.9em; padding: 0.5em 0.8em; }
+        .bg-pending { background-color: #ffc107; color: #000; }
+        .bg-picked-up { background-color: #17a2b8; color: #fff; }
+        .bg-in-transit { background-color: #0d6efd; color: #fff; }
+        .bg-delivered { background-color: #198754; color: #fff; }
+        .bg-failed { background-color: #dc3545; color: #fff; }
+        .bg-returning { background-color: #fd7e14; color: #fff; }
+        .bg-returned { background-color: #6c757d; color: #fff; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">LOGISTICS SIMULATOR</span>
+            <div class="d-flex">
+                <button class="btn btn-outline-light btn-sm" onclick="loadShipments()">Refresh</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Stats Row -->
+        <div class="row mb-4" id="stats-row">
+            <!-- Stats inserted via JS -->
+        </div>
+
+        <!-- Filters -->
+        <div class="card p-3">
+            <div class="row g-3">
+                <div class="col-auto">
+                    <select class="form-select" id="statusFilter" onchange="loadShipments()">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="Pending">Chờ lấy hàng</option>
+                        <option value="PickedUp">Đã lấy hàng</option>
+                        <option value="InTransit">Đang giao</option>
+                        <option value="Delivered">Giao thành công</option>
+                        <option value="DeliveryFailed">Giao thất bại</option>
+                        <option value="Returning">Đang hoàn hàng</option>
+                        <option value="Returned">Đã hoàn hàng</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipments Table -->
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã Vận Đơn</th>
+                            <th>Ngày Tạo</th>
+                            <th>Người Gửi</th>
+                            <th>Người Nhận</th>
+                            <th>Trạng Thái</th>
+                            <th>COD (Thu hộ)</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shipment-list">
+                        <tr><td colspan="7" class="text-center p-3">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Modal -->
+    <div class="modal fade" id="updateModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cập nhật trạng thái</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="modalTrackingCode">
+                    <div class="mb-3">
+                        <label class="form-label">Chọn trạng thái mới:</label>
+                        <select class="form-select" id="modalStatus">
+                            <option value="PickedUp">Đã lấy hàng (Picked Up)</option>
+                            <option value="InTransit">Đang giao (In Transit)</option>
+                            <option value="Delivered">Giao thành công (Delivered)</option>
+                            <option value="DeliveryFailed">Giao thất bại (Delivery Failed)</option>
+                            <option value="Returning">Đang hoàn hàng (Returning)</option>
+                            <option value="Returned">Đã hoàn hàng (Returned)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chú (tùy chọn):</label>
+                        <textarea class="form-control" id="modalNote" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="submitStatusUpdate()">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = '/api/logistics';
+        let updateModal;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
+            loadStats();
+            loadShipments();
+        });
+
+        // 1. Load Stats
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_URL}/stats`);
+                const data = await res.json();
+                
+                const statsHtml = `
+                    <div class="col"><div class="card p-2 text-center border-warning border-start border-4"><h6>Pending</h6><h3>${data.Pending || 0}</h3></div></div>
+                    <div class="col"><div class="card p-2 text-center border-info border-start border-4"><h6>Picked Up</h6><h3>${data.PickedUp || 0}</h3></div></div>
+                    <div class="col"><div class="card p-2 text-center border-primary border-start border-4"><h6>In Transit</h6><h3>${data.InTransit || 0}</h3></div></div>
+                    <div class="col"><div class="card p-2 text-center border-success border-start border-4"><h6>Delivered</h6><h3>${data.Delivered || 0}</h3></div></div>
+                    <div class="col"><div class="card p-2 text-center border-danger border-start border-4"><h6>Failed/Return</h6><h3>${(data.DeliveryFailed||0) + (data.Returning||0) + (data.Returned||0)}</h3></div></div>
+                `;
+                document.getElementById('stats-row').innerHTML = statsHtml;
+            } catch (e) { console.error(e); }
+        }
+
+        // 2. Load Shipments
+        async function loadShipments() {
+            const status = document.getElementById('statusFilter').value;
+            const url = status ? `${API_URL}/shipments?status=${status}` : `${API_URL}/shipments`;
+            
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                renderTable(data);
+            } catch (e) {
+                document.getElementById('shipment-list').innerHTML = `<tr><td colspan="7" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>`;
+            }
+        }
+
+        function renderTable(shipments) {
+            const tbody = document.getElementById('shipment-list');
+            if(shipments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center">Không có đơn hàng nào</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = shipments.map(s => `
+                <tr>
+                    <td><strong>${s.trackingCode}</strong><br><small class="text-muted">Order: ...${s.order?._id?.slice(-6) || 'N/A'}</small></td>
+                    <td>${new Date(s.createdAt).toLocaleString('vi-VN')}</td>
+                    <td>${s.fromName}<br><small>${s.fromDistrict}, ${s.fromProvince}</small></td>
+                    <td>${s.toName}<br><small>${s.toDistrict}, ${s.toProvince}</small></td>
+                    <td><span class="badge ${getStatusClass(s.status)} status-badge">${s.status}</span></td>
+                    <td>${s.codAmount.toLocaleString()} đ</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="openUpdateModal('${s.trackingCode}')">Cập nhật</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'Pending': return 'bg-pending';
+                case 'PickedUp': return 'bg-picked-up';
+                case 'InTransit': return 'bg-in-transit';
+                case 'Delivered': return 'bg-delivered';
+                case 'DeliveryFailed': return 'bg-failed';
+                case 'Returning': return 'bg-returning';
+                case 'Returned': return 'bg-returned';
+                default: return 'bg-secondary';
+            }
+        }
+
+        // 3. Update Logic
+        function openUpdateModal(trackingCode) {
+            document.getElementById('modalTrackingCode').value = trackingCode;
+            document.getElementById('modalNote').value = '';
+            updateModal.show();
+        }
+
+        async function submitStatusUpdate() {
+            const trackingCode = document.getElementById('modalTrackingCode').value;
+            const status = document.getElementById('modalStatus').value;
+            const note = document.getElementById('modalNote').value;
+
+            try {
+                const res = await fetch(`${API_URL}/shipments/${trackingCode}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status, note })
+                });
+
+                if (res.ok) {
+                    alert('Cập nhật thành công!');
+                    updateModal.hide();
+                    loadShipments();
+                    loadStats();
+                } else {
+                    const err = await res.json();
+                    alert('Lỗi: ' + err.message);
+                }
+            } catch (e) {
+                alert('Lỗi kết nối');
+            }
+        }
+    </script>
+</body>
+</html>

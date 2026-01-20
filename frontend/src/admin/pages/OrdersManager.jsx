@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import apiClient from "../../shared/utils/apiClient";
 import { formatCurrency, formatDate } from "../../shared/utils/formatters";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaTruck } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import "./OrdersManager.css";
 
@@ -14,6 +14,7 @@ export default function OrdersManager() {
   // Danh sách các trạng thái có thể chọn
   const STATUS_OPTIONS = [
     "Pending",
+    "Confirmed",
     "Shipped",
     "Delivered",
     "Cancelled",
@@ -48,6 +49,18 @@ export default function OrdersManager() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCreateShipping = async (orderId) => {
+      if (!window.confirm("Tạo đơn vận chuyển bên GHN cho đơn hàng này?")) return;
+
+      try {
+          const res = await apiClient.post(`/orders/${orderId}/create-shipping`);
+          alert(`Tạo đơn vận chuyển thành công! Mã: ${res.shipping.tracking_code}`);
+          fetchOrders(); // Reload to update UI
+      } catch (error) {
+          alert("Lỗi tạo đơn vận chuyển: " + (error.response?.data?.message || error.message));
+      }
   };
 
   const handleStatusChange = async (orderId, newStatus) => {
@@ -179,9 +192,29 @@ export default function OrdersManager() {
                     to={`/admin/orders/${order._id}`}
                     className="btn-view"
                     title="Xem chi tiết"
+                    style={{marginRight: '8px'}}
                   >
-                    <FaEye /> Xem
+                    <FaEye />
                   </Link>
+
+                  {/* Create Shipping Button (Only for Pending/Processing & No Tracking) */}
+                  {(!order.shipping?.tracking_code && (order.status === 'Pending' || order.status === 'Confirmed')) && (
+                       <button 
+                            className="btn-view" 
+                            style={{backgroundColor: '#FF6600', color: 'white'}}
+                            title="Đẩy qua GHN"
+                            onClick={() => handleCreateShipping(order._id)}
+                       >
+                           <FaTruck />
+                       </button>
+                  )}
+
+                  {/* Display Tracking Code if exists */}
+                  {order.shipping?.tracking_code && (
+                      <div className="tracking-info" style={{fontSize: '0.8rem', color: '#0066cc', marginTop: '4px'}}>
+                         <FaTruck /> {order.shipping.tracking_code}
+                      </div>
+                  )}
                 </td>
               </tr>
             ))

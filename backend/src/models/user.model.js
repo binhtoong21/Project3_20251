@@ -35,12 +35,28 @@ const userSchema = new Schema(
       },
     },
 
-    // CẤU TRÚC ĐỊA CHỈ CHUẨN VIỆT NAM
+    // CẤU TRÚC ĐỊA CHỈ CHUẨN VIỆT NAM (Updated for GHN)
     address: {
-      province: { type: String, default: "" }, // Tỉnh/Thành phố
-      district: { type: String, default: "" }, // Quận/Huyện
-      ward: { type: String, default: "" }, // Phường/Xã
-      street: { type: String, default: "" }, // Số nhà, tên đường
+      province: { type: String, default: "" }, 
+      province_id: { type: Number, default: null }, // GHN Province ID
+      district: { type: String, default: "" }, 
+      district_id: { type: Number, default: null }, // GHN District ID
+      ward: { type: String, default: "" }, 
+      ward_code: { type: String, default: null },   // GHN Ward Code
+      street: { type: String, default: "" },
+    },
+    
+    // ĐỊA CHỈ KHO HÀNG (Dành cho Seller - Để Shipper đến lấy)
+    pickupAddress: {
+      province: { type: String, default: "" }, 
+      province_id: { type: Number, default: null },
+      district: { type: String, default: "" }, 
+      district_id: { type: Number, default: null },
+      ward: { type: String, default: "" }, 
+      ward_code: { type: String, default: null },
+      street: { type: String, default: "" },
+      name: { type: String, default: "" }, // Tên người liên hệ tại kho
+      phone: { type: String, default: "" } // Số điện thoại tại kho
     },
     walletBalance: { type: Number, default: 0 },
     bankAccounts: [

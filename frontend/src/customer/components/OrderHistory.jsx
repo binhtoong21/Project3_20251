@@ -32,7 +32,8 @@ const OrderHistory = () => {
       if (activeTab === "ALL") return true;
       if (activeTab === "PENDING") return order.status === "Pending";
       if (activeTab === "SHIPPING") return order.status === "Shipped";
-      if (activeTab === "COMPLETED") return order.status === "Delivered" || order.status === "Completed";
+      if (activeTab === "DELIVERED") return order.status === "Delivered"; // Đã giao, chờ xác nhận
+      if (activeTab === "COMPLETED") return order.status === "Completed"; // Đã xác nhận nhận hàng
       if (activeTab === "CANCELLED") return order.status === "Cancelled";
       return true;
   });
@@ -41,6 +42,7 @@ const OrderHistory = () => {
       { id: "ALL", label: "Tất cả" },
       { id: "PENDING", label: "Chờ xác nhận" },
       { id: "SHIPPING", label: "Đang giao" },
+      { id: "DELIVERED", label: "Đã giao" },
       { id: "COMPLETED", label: "Hoàn thành" },
       { id: "CANCELLED", label: "Đã hủy" },
   ];

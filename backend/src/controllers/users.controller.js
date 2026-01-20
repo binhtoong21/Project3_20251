@@ -41,9 +41,11 @@ export const register = async (req, res, next) => {
     });
 
     if (user) {
+      let emailSent = false;
       // Gửi email xác thực
       try {
         await sendVerificationEmail(email, verificationToken);
+        emailSent = true;
       } catch (emailError) {
         console.error("Email sending failed:", emailError);
         // Không throw error, user có thể request resend email sau
@@ -55,7 +57,10 @@ export const register = async (req, res, next) => {
         email: user.email,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
-        message: "Registration successful. Please check your email to verify your account.",
+        emailSent: emailSent,
+        message: emailSent 
+          ? "Registration successful. Please check your email to verify your account." 
+          : "Registration successful, but we failed to send the verification email. Please login and request a new one.",
       });
     } else {
       res.status(400);
@@ -132,6 +137,9 @@ export const updateProfile = async (req, res, next) => {
       user.name = req.body.name || user.name;
       user.phone = req.body.phone || user.phone;
       user.avatar = req.body.avatar || user.avatar;
+
+
+      user.pickupAddress = req.body.pickupAddress || user.pickupAddress;
 
       // Nếu có gửi password mới thì cập nhật
       if (req.body.password) {

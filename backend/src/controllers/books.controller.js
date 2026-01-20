@@ -215,7 +215,6 @@ export async function createUserBook(req, res, next) {
       description,
       category,
       price,
-      price,
       condition,
       stock: 1, // Enforce stock = 1 for used books
       owner: req.user._id, // Set the owner

@@ -15,6 +15,9 @@ export default function BooksManager() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // State filter theo mode (B2C / C2C)
+  const [bookMode, setBookMode] = useState("new"); // "new" = B2C, "used" = C2C
+
   // State quản lý Modal
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -36,13 +39,19 @@ export default function BooksManager() {
   // State file ảnh (khi người dùng chọn file mới)
   const [selectedFile, setSelectedFile] = useState(null);
 
+  // Tabs configuration
+  const bookModeTabs = [
+    { id: "new", label: "Sách của Shop (B2C)" },
+    { id: "used", label: "Sách cũ của User (C2C)" },
+  ];
+
   // 1. FETCH BOOKS
   const fetchBooks = async () => {
     try {
       setLoading(true);
-      // Gọi API listBooks 
+      // Gọi API listBooks với mode filter
       const res = await apiClient.get(
-        `/books?page=${page}&limit=10&sort=newest&includeOutOfStock=true`
+        `/books?page=${page}&limit=10&sort=newest&includeOutOfStock=true&mode=${bookMode}`
       );
       setBooks(res.items || []);
       setTotalPages(res.pagination?.totalPages || 1);
@@ -54,8 +63,12 @@ export default function BooksManager() {
   };
 
   useEffect(() => {
+    setPage(1); // Reset to page 1 when mode changes
+  }, [bookMode]);
+
+  useEffect(() => {
     fetchBooks();
-  }, [page]);
+  }, [page, bookMode]);
 
   // Handle URL "edit" query param
   useEffect(() => {
@@ -112,6 +125,70 @@ export default function BooksManager() {
     setIsEditing(true);
     setSelectedFile(null); // Reset file mới
     setShowModal(true);
+  };
+
+  // 2.5: GOOGLE BOOKS API AUTO-FILL
+  const fetchGoogleBookInfo = async () => {
+    if (!formData.title) {
+        alert("Vui lòng nhập tên sách để tìm kiếm!");
+        return;
+    }
+
+    try {
+        setLoading(true); 
+        // Fetch 10 results to have a good pool for filtering
+        const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(formData.title)}&maxResults=10`);
+        const data = await response.json();
+
+        if (data.totalItems > 0 && data.items && data.items.length > 0) {
+            // SMART SELECTION LOGIC:
+            // 1. Filter for items that actually have a title
+            const candidates = data.items.map(item => item.volumeInfo).filter(info => info.title);
+            
+            // 2. Score each candidate to find the best match
+            // Score components:
+            // - Language 'vi': +10 points
+            // - Has Authors: +5 points
+            // - Has Description: +3 points
+            // - Has Image: +2 points
+            // - Exact Title Match: +20 points
+            
+            const scoredCandidates = candidates.map(info => {
+                let score = 0;
+                if (info.language === 'vi') score += 10;
+                if (info.authors && info.authors.length > 0) score += 5;
+                if (info.description) score += 3;
+                if (info.imageLinks) score += 2;
+                if (info.title.toLowerCase().trim() === formData.title.toLowerCase().trim()) score += 20;
+                return { info, score };
+            });
+
+            // Sort by score descending
+            scoredCandidates.sort((a, b) => b.score - a.score);
+            
+            const bestBook = scoredCandidates[0].info;
+
+            // Map Google data to our form
+            setFormData(prev => ({
+                ...prev,
+                title: bestBook.title || prev.title, // Auto correct title casing
+                author: bestBook.authors ? bestBook.authors.join(', ') : prev.author,
+                publisher: bestBook.publisher || prev.publisher,
+                description: bestBook.description || prev.description,
+                category: bestBook.categories ? bestBook.categories[0] : prev.category, // Bonus
+                cover: bestBook.imageLinks?.thumbnail || bestBook.imageLinks?.smallThumbnail || prev.cover,
+            }));
+            
+            alert(`Đã tìm thấy: ${bestBook.title}\n(Tác giả: ${bestBook.authors ? bestBook.authors.join(', ') : 'N/A'})`);
+        } else {
+            alert("Không tìm thấy thông tin sách này trên Google Books.");
+        }
+    } catch (error) {
+        console.error("Google Books API Error:", error);
+        alert("Lỗi khi tìm kiếm sách.");
+    } finally {
+        setLoading(false);
+    }
   };
 
   // 3. XỬ LÝ UPLOAD ẢNH RIÊNG
@@ -189,9 +266,35 @@ export default function BooksManager() {
     <div className="books-manager-container">
       <div className="page-header">
         <h2 className="page-title">Quản lý Sách</h2>
-        <button className="btn-add-new" onClick={handleOpenAdd}>
-          <FaPlus /> Thêm mới
-        </button>
+        {/* Only show Add button for Store books (B2C) */}
+        {bookMode === "new" && (
+          <button className="btn-add-new" onClick={handleOpenAdd}>
+            <FaPlus /> Thêm mới
+          </button>
+        )}
+      </div>
+
+      {/* Tabs B2C / C2C */}
+      <div className="order-tabs" style={{marginBottom: '20px'}}>
+        {bookModeTabs.map(tab => (
+          <button 
+            key={tab.id} 
+            className={`tab-item ${bookMode === tab.id ? 'active' : ''}`}
+            onClick={() => setBookMode(tab.id)}
+            style={{
+              padding: '10px 20px',
+              border: 'none',
+              background: bookMode === tab.id ? '#4F46E5' : '#E5E7EB',
+              color: bookMode === tab.id ? '#fff' : '#374151',
+              cursor: 'pointer',
+              borderRadius: '6px',
+              marginRight: '10px',
+              fontWeight: '500'
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* DANH SÁCH SÁCH */}
@@ -204,13 +307,14 @@ export default function BooksManager() {
             <th>Giá</th>
             <th>Kho</th>
             <th>Thể loại</th>
+            {bookMode === "used" && <th>Người bán</th>}
             <th>Hành động</th>
           </tr>
         </thead>
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan="7">Đang tải...</td>
+              <td colSpan={bookMode === "used" ? 8 : 7}>Đang tải...</td>
             </tr>
           ) : (
             books.map((book) => (
@@ -234,6 +338,7 @@ export default function BooksManager() {
                 <td>{formatCurrency(book.price)}</td>
                 <td>{book.stock !== undefined ? book.stock : 0}</td>
                 <td>{book.category}</td>
+                {bookMode === "used" && <td>{book.owner?.name || "N/A"}</td>}
                 <td className="action-cell">
                   <div className="action-buttons">
                     <button
@@ -277,8 +382,8 @@ export default function BooksManager() {
 
       {/* MODAL FORM */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="books-manager-modal-overlay">
+          <div className="books-manager-modal-content">
             <div className="modal-header">
               <h3>{isEditing ? "Chỉnh sửa sách" : "Thêm sách mới"}</h3>
               <button className="close-btn" onClick={() => setShowModal(false)}>
@@ -289,16 +394,40 @@ export default function BooksManager() {
             <form onSubmit={handleSubmit}>
               <div className="modal-body">
                 <div className="form-grid">
-                  <div className="form-group">
+                  <div className="form-group full-width">
                     <label>Tên sách</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.title}
-                      onChange={(e) =>
-                        setFormData({ ...formData, title: e.target.value })
-                      }
-                    />
+                    <div style={{display: 'flex', gap: '10px'}}>
+                        <input
+                        type="text"
+                        required
+                        value={formData.title}
+                        onChange={(e) =>
+                            setFormData({ ...formData, title: e.target.value })
+                        }
+                        style={{flex: 1}}
+                        placeholder="Nhập tên sách..."
+                        />
+                        <button 
+                            type="button" 
+                            onClick={fetchGoogleBookInfo}
+                            className="btn-secondary"
+                            style={{
+                                padding: '8px 12px', 
+                                backgroundColor: '#4F46E5', 
+                                color: 'white', 
+                                border: 'none', 
+                                borderRadius: '4px', 
+                                cursor: 'pointer',
+                                fontSize: '0.9rem',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            🔍 Tìm trên Google
+                        </button>
+                    </div>
+                    <p style={{fontSize: '0.8rem', color: '#6B7280', marginTop: '5px', fontStyle: 'italic'}}>
+                        * Mẹo: Dữ liệu Google Books chuẩn nhất với <strong>sách Tiếng Anh</strong>. Nếu tìm sách Việt không ra, hãy thử nhập kèm tên Tác giả (VD: "Mắt biếc Nguyễn Nhật Ánh").
+                    </p>
                   </div>
 
                   <div className="form-group">

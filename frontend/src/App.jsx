@@ -24,58 +24,54 @@ import UserDetail from "./admin/pages/UserDetail";
 import DisputesManager from "./admin/pages/DisputesManager";
 import DepositsManager from "./admin/pages/DepositsManager";
 import WithdrawalsManager from "./admin/pages/WithdrawalsManager";
+import SettingsManager from "./admin/pages/SettingsManager";
 
-import { AuthProvider } from "./shared/context/AuthContext";
-import { CartProvider } from "./shared/context/CartContext";
 import ScrollToTop from "./shared/components/ScrollToTop";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <BrowserRouter>
-          <ScrollToTop />
-          <ToastContainer position="bottom-right" autoClose={3000} />
-          <Routes>
-            <Route path="/" element={<CustomerLayout />}>
-              <Route index element={<Home />} />
-              <Route path="books" element={<Books />} />
-              <Route path="marketplace" element={<Marketplace />} />
-              <Route path="books/:id" element={<BookDetail />} />
-              <Route path="cart" element={<Cart />} />
-              <Route path="checkout" element={<Checkout />} />
-              <Route path="login" element={<Login />} />
-              <Route path="register" element={<Register />} />
-              <Route path="verify-email" element={<VerifyEmail />} />
-              <Route path="resend-verification" element={<ResendVerificationEmail />} />
-              <Route path="forgot-password" element={<ForgotPassword />} />
-              <Route path="reset-password" element={<ResetPassword />} />
-              <Route
-                path="account"
-                element={<Navigate to="/account/profile" replace />}
-              />
-              <Route path="account/:tab" element={<Account />} />
-              <Route path="orders/:id" element={<OrderDetail />} />
-            </Route>
-            <Route path="/admin" element={<AdminRoute />}>
-              <Route element={<AdminLayout />}>
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="books" element={<BooksManager />} />
-                <Route path="orders" element={<OrdersManager />} />
-                <Route path="orders/:id" element={<OrderDetail />} />
-                <Route path="users" element={<UsersManager />} />
-                <Route path="users/:id" element={<UserDetail />} />
-                <Route path="disputes" element={<DisputesManager />} />
-                <Route path="deposits" element={<DepositsManager />} />
-                <Route path="withdrawals" element={<WithdrawalsManager />} />
-              </Route>
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </CartProvider>
-    </AuthProvider>
+    <BrowserRouter>
+      <ScrollToTop />
+      <ToastContainer position="bottom-right" autoClose={3000} />
+      <Routes>
+        <Route path="/" element={<CustomerLayout />}>
+          <Route index element={<Home />} />
+          <Route path="books" element={<Books />} />
+          <Route path="marketplace" element={<Marketplace />} />
+          <Route path="books/:id" element={<BookDetail />} />
+          <Route path="cart" element={<Cart />} />
+          <Route path="checkout" element={<Checkout />} />
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+          <Route path="verify-email" element={<VerifyEmail />} />
+          <Route path="resend-verification" element={<ResendVerificationEmail />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
+          <Route
+            path="account"
+            element={<Navigate to="/account/profile" replace />}
+          />
+          <Route path="account/:tab" element={<Account />} />
+          <Route path="orders/:id" element={<OrderDetail />} />
+        </Route>
+        <Route path="/admin" element={<AdminRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="books" element={<BooksManager />} />
+            <Route path="orders" element={<OrdersManager />} />
+            <Route path="orders/:id" element={<OrderDetail />} />
+            <Route path="users" element={<UsersManager />} />
+            <Route path="users/:id" element={<UserDetail />} />
+            <Route path="disputes" element={<DisputesManager />} />
+            <Route path="deposits" element={<DepositsManager />} />
+            <Route path="withdrawals" element={<WithdrawalsManager />} />
+            <Route path="settings" element={<SettingsManager />} />
+          </Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 

@@ -126,7 +126,7 @@
 }
 
 /* --- MODAL STYLES --- */
-.modal-overlay {
+.books-manager-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -140,10 +140,10 @@
   z-index: 1000;
 }
 
-.modal-content {
+.books-manager-modal-content {
   background: var(--color-surface);
-  width: 90%;
-  max-width: 800px;
+  width: 95%; /* Wider on small screens */
+  max-width: 1200px; /* Much wider on large screens */
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
   display: flex;
@@ -181,9 +181,18 @@
 }
 .close-btn:hover { color: var(--color-text-primary); }
 
+/* Form inside modal needs to take available space */
+.books-manager-modal-content > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0; /* Critical for nested flex scrolling */
+}
+
 .modal-body {
   padding: var(--space-xl);
   overflow-y: auto;
+  flex: 1; /* Take remaining space */
 }
 
 /* FORM GRID LAYOUT */

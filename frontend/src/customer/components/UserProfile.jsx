@@ -4,6 +4,7 @@ import apiClient from "../../shared/utils/apiClient";
 import { isValidPhone, isValidAddress } from "../../shared/utils/validators";
 import "./UserProfile.css";
 import { FaPen, FaCheckCircle, FaTimesCircle, FaMapMarkerAlt, FaUser } from "react-icons/fa";
+import AddressSelector from "../../shared/components/AddressSelector";
 
 const UserProfile = () => {
   const { user, setUser } = useContext(AuthContext);
@@ -14,11 +15,21 @@ const UserProfile = () => {
     name: "",
     email: "",
     phone: "",
-    street: "",
-    ward: "",
-    district: "",
-    province: "",
+    address: { 
+        province: "", province_id: null,
+        district: "", district_id: null, 
+        ward: "", ward_code: null,
+        street: ""
+    },
+    pickupAddress: { 
+        province: "", province_id: null,
+        district: "", district_id: null, 
+        ward: "", ward_code: null,
+        street: ""
+    }
   });
+
+  const [useSameAddress, setUseSameAddress] = useState(false);
 
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otp, setOtp] = useState("");
@@ -32,10 +43,8 @@ const UserProfile = () => {
         name: user.name || "",
         email: user.email || "",
         phone: user.phone || "",
-        street: user.address?.street || "",
-        ward: user.address?.ward || "",
-        district: user.address?.district || "",
-        province: user.address?.province || "",
+        address: user.address || {},
+        pickupAddress: user.pickupAddress || {}
       });
     }
   }, [user]);
@@ -56,20 +65,14 @@ const UserProfile = () => {
       };
       let updatedUser = await apiClient.put(`/users/profile`, profileData);
 
-      // 2. Update Address (if address fields are present)
-      const addressData = {
-        street: dataToSave.street,
-        ward: dataToSave.ward,
-        district: dataToSave.district,
-        province: dataToSave.province,
+      // 2. Prepare Address Data (Both Shipping & Pickup)
+      const payload = {
+            address: dataToSave.address,
+            pickupAddress: useSameAddress ? dataToSave.address : dataToSave.pickupAddress
       };
       
-      if (isValidAddress(addressData)) {
-         updatedUser = await apiClient.put("/users/profile/address", { address: addressData });
-      } else if (dataToSave.street || dataToSave.ward || dataToSave.district || dataToSave.province) {
-          // If the user tried to enter address but it is incomplete
-           throw new Error("Vui lòng điền đầy đủ thông tin địa chỉ (Tỉnh, Huyện, Xã, Đường).");
-      }
+      // Send both addresses to backend (Backend should handle validation/saving)
+      updatedUser = await apiClient.put("/users/profile/address", payload);
 
       setUser(updatedUser);
       setFeedback({ type: "success", msg: "Cập nhật thông tin thành công!" });
@@ -229,7 +232,7 @@ const UserProfile = () => {
             {/* Address Section - Only show inputs when editing */}
             <div className="form-section">
                 <div className="section-header-row">
-                    <h4><FaMapMarkerAlt style={{marginRight: '8px', color: '#666'}}/> Địa chỉ giao hàng</h4>
+                    <h4><FaMapMarkerAlt style={{marginRight: '8px', color: '#666'}}/> Địa chỉ giao hàng (Mặc định)</h4>
                 </div>
                 
                 {!isEditing ? (
@@ -243,47 +246,56 @@ const UserProfile = () => {
                          )}
                      </div>
                 ) : (
-                    <div className="form-grid address-grid">
-                        <div className="form-group">
-                            <label>Tỉnh / Thành phố</label>
-                            <input
-                            type="text"
-                            name="province"
-                            value={formData.province}
-                            onChange={handleChange}
-                            placeholder="Vd: Hà Nội"
-                            />
+                    <div className="address-selector-wrapper">
+                        <AddressSelector 
+                            value={formData.address}
+                            onChange={(newAddress) => setFormData({...formData, address: newAddress})}
+                        />
+                    </div>
+                )}
+            </div>
+
+            {/* Pickup Address Section - For Sellers or Potential Sellers */}
+            <div className="form-section">
+                <div className="section-header-row">
+                    <h4><FaMapMarkerAlt style={{marginRight: '8px', color: '#666'}}/> Địa chỉ kho / Lấy hàng (Dành cho Người bán)</h4>
+                </div>
+                 {!isEditing ? (
+                     <div className="address-display-only">
+                         {user?.pickupAddress && isValidAddress(user.pickupAddress) ? (
+                             <p>
+                                 {user.pickupAddress.street}, {user.pickupAddress.ward}, {user.pickupAddress.district}, {user.pickupAddress.province}
+                                 <br/>
+                                 <small className="text-muted">(SĐT Kho: {user.pickupAddress.phone || user.phone})</small>
+                             </p>
+                         ) : (
+                             <p className="text-muted" style={{fontStyle: 'italic'}}>Dùng chung địa chỉ giao hàng hoặc chưa cấu hình.</p>
+                         )}
+                     </div>
+                ) : (
+                    <div>
+                         <div className="form-group" style={{marginBottom: '10px'}}>
+                            <label style={{display:'flex', alignItems:'center', gap: '8px', cursor: 'pointer'}}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={useSameAddress} 
+                                    onChange={(e) => {
+                                        setUseSameAddress(e.target.checked);
+                                        if (e.target.checked) setFormData({...formData, pickupAddress: {...formData.address}});
+                                    }}
+                                /> 
+                                Sử dụng địa chỉ giao hàng làm địa chỉ kho
+                            </label>
                         </div>
-                        <div className="form-group">
-                            <label>Quận / Huyện</label>
-                            <input
-                            type="text"
-                            name="district"
-                            value={formData.district}
-                            onChange={handleChange}
-                            placeholder="Vd: Cầu Giấy"
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Phường / Xã</label>
-                            <input
-                            type="text"
-                            name="ward"
-                            value={formData.ward}
-                            onChange={handleChange}
-                            placeholder="Vd: Dịch Vọng"
-                            />
-                        </div>
-                        <div className="form-group full-width">
-                            <label>Số nhà, Tên đường</label>
-                            <input
-                            type="text"
-                            name="street"
-                            value={formData.street}
-                            onChange={handleChange}
-                            placeholder="Vd: 123 Xuân Thủy"
-                            />
-                        </div>
+
+                        {!useSameAddress && (
+                             <div className="address-selector-wrapper">
+                                <AddressSelector 
+                                    value={formData.pickupAddress}
+                                    onChange={(newAddress) => setFormData({...formData, pickupAddress: newAddress})}
+                                />
+                             </div>
+                        )}
                     </div>
                 )}
             </div>

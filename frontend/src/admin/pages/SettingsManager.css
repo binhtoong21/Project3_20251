@@ -1,0 +1,73 @@
+.settings-manager {
+    padding-bottom: 30px;
+}
+
+.settings-manager .page-header {
+    margin-bottom: 25px;
+}
+
+.settings-manager .page-header h2 {
+    font-size: 1.8rem;
+    color: #1e293b;
+    margin-bottom: 5px;
+}
+
+.settings-manager .page-header p {
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.settings-manager .admin-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    max-width: 800px;
+}
+
+.settings-form .form-group {
+    margin-bottom: 20px;
+}
+
+.settings-form .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #334155;
+    font-size: 0.95rem;
+}
+
+.settings-form .form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.settings-form .form-control:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.settings-form .btn-primary {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.settings-form .btn-primary:hover {
+    background-color: #2563eb;
+}
+
+.settings-form .btn-primary:disabled {
+    background-color: #94a3b8;
+    cursor: not-allowed;
+}

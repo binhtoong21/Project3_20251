@@ -23,11 +23,23 @@ const orderSchema = new mongoose.Schema(
     ],
     shippingAddress: {
       province: { type: String, required: true },
+      province_id: { type: Number, default: null },
       district: { type: String, required: true },
+      district_id: { type: Number, default: null },
       ward: { type: String, required: true },
+      ward_code: { type: String, default: null },
       street: { type: String, required: true },
       name: { type: String, required: true },
       phone: { type: String, required: true },
+    },
+    shipping: {
+        carrier: { type: String, default: 'GHN' },
+        service_type_id: { type: Number, default: 2 },
+        shipping_fee: { type: Number },
+        tracking_code: { type: String },
+        ghn_order_code: { type: String },
+        expected_delivery_time: { type: Date },
+        status: { type: String }
     },
     paymentMethod: {
       type: String,
@@ -62,6 +74,7 @@ const orderSchema = new mongoose.Schema(
     disputeReason: {
       type: String, // Reason provided by buyer when disputing
     },
+    disputeEvidence: [{ type: String }], // Array of URLs (images/videos)
     autoConfirmAt: {
       type: Date,
     },

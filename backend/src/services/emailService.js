@@ -2,10 +2,13 @@ import nodemailer from "nodemailer";
 
 // Cấu hình transporter email
 const transporter = nodemailer.createTransport({
-  service: process.env.EMAIL_SERVICE || "gmail",
+  host: process.env.EMAIL_HOST || "smtp.gmail.com",
+  port: process.env.EMAIL_PORT || 587,
+  secure: false, // true for 465, false for other ports
+  service: process.env.EMAIL_SERVICE, // Optional if host/port provided
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
+    pass: process.env.EMAIL_PASS, // Corrected from EMAIL_PASSWORD
   },
 });
 
@@ -16,7 +19,7 @@ export const sendVerificationEmail = async (email, verificationToken) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: "📚 Xác thực Email - BookStore",
+    subject: " Xác thực Email - BookStore",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Chào mừng bạn đến với BookStore!</h2>

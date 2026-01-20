@@ -42,6 +42,23 @@ const DepositsManager = () => {
     }
   };
 
+  const handleReject = async (transactionId) => {
+    if (window.confirm("Bạn có chắc chắn muốn TỪ CHỐI giao dịch này?")) {
+      setApprovingId(transactionId);
+      try {
+        await walletService.rejectDeposit(transactionId);
+        // Remove the rejected deposit from the list
+        setPendingDeposits((prev) =>
+          prev.filter((d) => d._id !== transactionId)
+        );
+      } catch (err) {
+        alert("Từ chối giao dịch thất bại: " + err.message);
+      } finally {
+        setApprovingId(null);
+      }
+    }
+  };
+
   return (
     <div className="deposits-manager-container">
       <h1>Duyệt yêu cầu nạp tiền</h1>
@@ -77,13 +94,30 @@ const DepositsManager = () => {
                   <td className="amount">{formatCurrency(deposit.amount)}</td>
                   <td>{deposit.description}</td>
                   <td>
-                    <button
-                      className="btn-approve"
-                      onClick={() => handleApprove(deposit._id)}
-                      disabled={approvingId === deposit._id}
-                    >
-                      {approvingId === deposit._id ? "Đang duyệt..." : "Duyệt"}
-                    </button>
+                    <div style={{display: 'flex', gap: '8px'}}>
+                      <button
+                        className="btn-approve"
+                        onClick={() => handleApprove(deposit._id)}
+                        disabled={approvingId === deposit._id}
+                      >
+                        {approvingId === deposit._id ? "Đang xử lý..." : "Duyệt"}
+                      </button>
+                      <button
+                        className="btn-reject"
+                        onClick={() => handleReject(deposit._id)}
+                        disabled={approvingId === deposit._id}
+                        style={{
+                          backgroundColor: '#EF4444',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '6px 12px',
+                          borderRadius: '4px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Từ chối
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
