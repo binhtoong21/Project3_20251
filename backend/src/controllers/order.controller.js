@@ -543,103 +543,22 @@ export const updateOrderStatus = async (req, res, next) => {
 // @route   PUT /api/orders/:id/confirm-receipt
 // @access  Private (Buyer only)
 export const confirmReceipt = async (req, res, next) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
   try {
-    const order = await Order.findById(req.params.id).session(session);
-
-    if (!order) {
-      res.status(404);
-      throw new Error("Order not found");
-    }
-
-    if (order.user.toString() !== req.user._id.toString()) {
-      res.status(401);
-      throw new Error("Not authorized");
-    }
-
-    // Validate: Must be at least Shipped to confirm receipt
-    if (order.status === 'Pending') {
-        res.status(400);
-        throw new Error("Không thể xác nhận nhận hàng khi đơn hàng chưa được gửi đi.");
-    }
-
-    // Validate status based on Payment Method
-    if (order.paymentMethod === 'wallet') {
-        if (order.escrowStatus !== 'Held') {
-            res.status(400);
-            throw new Error("Order funds are not currently held (Already released or refunded).");
-        }
-    } else {
-        // For COD, user can confirm receipt if status is not already Completed
-         if (order.status === 'Completed' || order.status === 'Cancelled') {
-            res.status(400);
-            throw new Error("Order is already completed or cancelled.");
-         }
-    }
-
-    // Release Funds Logic (Only for Wallet/Escrow)
-    if (order.paymentMethod === 'wallet') {
-        const sellerPayouts = new Map();
-        const sellerFees = new Map(); // Track fees
-
-        for (const item of order.orderItems) {
-            if (item.seller) {
-                const sellerId = item.seller.toString();
-                const earnings = item.price * item.quantity;
-                
-                // Calculate Fee per item (or accumulate)
-                const fee = earnings * 0.02; // 2%
-                
-                sellerPayouts.set(sellerId, (sellerPayouts.get(sellerId) || 0) + earnings);
-                sellerFees.set(sellerId, (sellerFees.get(sellerId) || 0) + fee);
-            }
-        }
-
-        if (sellerPayouts.size > 0) {
-            const sellerUpdateOps = [];
-            const transactionCreateOps = [];
-            
-            for (const [sellerId, totalEarnings] of sellerPayouts.entries()) {
-                const totalFee = sellerFees.get(sellerId) || 0;
-                const netEarnings = totalEarnings - totalFee;
-
-                sellerUpdateOps.push({
-                    updateOne: {
-                        filter: { _id: sellerId },
-                        update: { $inc: { walletBalance: netEarnings } },
-                    },
-                });
-                transactionCreateOps.push({
-                    user: sellerId,
-                    type: 'sale_income',
-                    amount: netEarnings,
-                    fee: totalFee, // Log the fee
-                    status: 'completed',
-                    relatedEntity: { id: order._id, model: 'Order' },
-                    description: `Tiền bán sách từ đơn hàng ${order._id} (Đã trừ phí ${totalFee})`,
-                });
-            }
-            
-        await User.bulkWrite(sellerUpdateOps, { session });
-        await Transaction.create(transactionCreateOps, { session });
-        }
-        order.escrowStatus = 'Released';
-    }
-    order.status = 'Completed'; // Optional: Auto-complete order
-    
-    // Auto confirm logic (if any) could be cleared here
-    await order.save({ session });
-    await session.commitTransaction();
-
-    res.json(order);
+    const { executeConfirmReceipt } = await import('../services/orderService.js');
+    const updatedOrder = await executeConfirmReceipt(req.params.id, req.user._id);
+    res.json(updatedOrder);
   } catch (error) {
-    await session.abortTransaction();
+    if (error.message === 'Order not found') {
+        res.status(404);
+    } else if (error.message === 'Not authorized') {
+        res.status(401);
+    } else {
+        res.status(400); 
+    }
     next(error);
-  } finally {
-    session.endSession();
   }
 };
+
 
 // @desc    Buyer raises a dispute
 // @route   PUT /api/orders/:id/dispute

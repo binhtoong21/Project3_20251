@@ -2,10 +2,15 @@ import app from "./app.js";
 import connectDB from "./config/db.js";
 import mongoose from "mongoose";
 
+import startCronJobs from "./services/cronService.js";
+
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   await connectDB();
+  
+  // Start Cron Jobs
+  startCronJobs();
 
   const server = app.listen(PORT, () => {
     console.log(`API listening on http://localhost:${PORT}`);
