@@ -812,14 +812,15 @@ export const confirmRefundRequest = async (req, res, next) => {
             throw new Error("Order not found");
         }
 
-        // Check if user is a seller in this order
+        // Check if user is a seller in this order OR is Admin
         const isSeller = order.orderItems.some(item => 
              item.seller && item.seller.toString() === req.user._id.toString()
         );
+        const isAdmin = req.user.role === 'admin';
 
-        if (!isSeller) {
+        if (!isSeller && !isAdmin) {
             res.status(401);
-            throw new Error("Not authorized (Must be a seller in this order)");
+            throw new Error("Not authorized (Must be a seller in this order or Admin)");
         }
 
         if (order.escrowStatus !== 'ReturnRequested') {

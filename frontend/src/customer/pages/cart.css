@@ -85,6 +85,8 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   overflow: hidden;
+  width: fit-content;
+  flex-shrink: 0;
 }
 
 .cart-quantity-controls button {

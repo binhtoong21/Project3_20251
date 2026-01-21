@@ -360,16 +360,15 @@ export const getUserNotificationCounts = async (req, res, next) => {
 
         const promises = [
             // 1. Buyer: Orders delivered waiting for confirmation (Money Held)
-            Order.countDocuments({ user: userId, escrowStatus: 'Held' }),
+            Order.countDocuments({ user: userId, escrowStatus: 'Held', status: 'Delivered' }),
             
-            // 2. Seller: Actionable Orders (Pending Shipment OR Shipped waiting for delivery confirm)
-            // If Admin, also include orders where seller is null (B2C)
+            // 2. Seller: Actionable Orders (Pending - needs to create shipping)
             Order.countDocuments({
                 $and: [
                     isAdmin 
                         ? { $or: [{ "orderItems.seller": userId }, { "orderItems.seller": null }, { "orderItems.seller": { $exists: false } }] }
                         : { "orderItems.seller": userId },
-                    { status: { $in: ['Pending', 'Shipped'] } }
+                    { status: 'Pending' }
                 ]
             }),
 
@@ -390,8 +389,8 @@ export const getUserNotificationCounts = async (req, res, next) => {
                 Transaction.countDocuments({ type: 'deposit', status: 'pending' }),
                 // 5. Admin: Pending Withdrawals
                 Transaction.countDocuments({ type: 'withdrawal', status: 'pending' }),
-                // 6. Admin: Disputed Orders
-                Order.countDocuments({ escrowStatus: 'Disputed' })
+                // 6. Admin: Disputed Orders + Return Requested
+                Order.countDocuments({ escrowStatus: { $in: ['Disputed', 'ReturnRequested'] } })
              );
         }
 

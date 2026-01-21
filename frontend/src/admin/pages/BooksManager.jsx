@@ -33,8 +33,19 @@ export default function BooksManager() {
     stock: "", 
     publisher: "",
     description: "",
+    price: "",
+    oldPrice: "",
+    stock: "", 
+    publisher: "",
+    description: "",
     cover: "", // Đường dẫn ảnh (string)
   });
+
+  // State Filter & Search
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [sortOption, setSortOption] = useState("newest");
 
   // State file ảnh (khi người dùng chọn file mới)
   const [selectedFile, setSelectedFile] = useState(null);
@@ -50,9 +61,15 @@ export default function BooksManager() {
     try {
       setLoading(true);
       // Gọi API listBooks với mode filter
-      const res = await apiClient.get(
-        `/books?page=${page}&limit=10&sort=newest&includeOutOfStock=true&mode=${bookMode}`
-      );
+      setLoading(true);
+      // Gọi API listBooks với mode filter và các tham số tìm kiếm/lọc
+      let query = `/books?page=${page}&limit=10&mode=${bookMode}&includeOutOfStock=true`;
+      
+      if (debouncedSearch) query += `&search=${encodeURIComponent(debouncedSearch)}`;
+      if (categoryFilter) query += `&category=${encodeURIComponent(categoryFilter)}`;
+      if (sortOption) query += `&sort=${sortOption}`;
+
+      const res = await apiClient.get(query);
       setBooks(res.items || []);
       setTotalPages(res.pagination?.totalPages || 1);
     } catch (err) {
@@ -68,7 +85,22 @@ export default function BooksManager() {
 
   useEffect(() => {
     fetchBooks();
-  }, [page, bookMode]);
+  }, [page, bookMode, debouncedSearch, categoryFilter, sortOption]);
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+        setDebouncedSearch(searchTerm);
+        setPage(1); // Reset page on new search
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const handleFilterChange = (key, value) => {
+      setPage(1); // Reset page on filter change
+      if (key === 'category') setCategoryFilter(value);
+      if (key === 'sort') setSortOption(value);
+  };
 
   // Handle URL "edit" query param
   useEffect(() => {
@@ -274,7 +306,6 @@ export default function BooksManager() {
         )}
       </div>
 
-      {/* Tabs B2C / C2C */}
       <div className="order-tabs" style={{marginBottom: '20px'}}>
         {bookModeTabs.map(tab => (
           <button 
@@ -295,6 +326,92 @@ export default function BooksManager() {
             {tab.label}
           </button>
         ))}
+      </div>
+
+      {/* FILTER BAR - Search, Category, Sort */}
+      <div className="filter-bar" style={{ 
+          display: 'flex', 
+          gap: '15px', 
+          marginBottom: '20px', 
+          background: 'white', 
+          padding: '15px', 
+          borderRadius: '8px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          flexWrap: 'wrap',
+          alignItems: 'center'
+      }}>
+          <div style={{flex: 1, minWidth: '200px'}}>
+              <input 
+                  type="text" 
+                  placeholder="🔍 Tìm theo tên sách, tác giả..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #ddd',
+                      borderRadius: '6px'
+                  }}
+              />
+          </div>
+
+          <div style={{minWidth: '180px'}}>
+            <select 
+                value={categoryFilter}
+                onChange={(e) => handleFilterChange('category', e.target.value)}
+                style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px'
+                }}
+            >
+                <option value="">-- Tất cả thể loại --</option>
+                {BOOK_CATEGORIES.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                ))}
+            </select>
+          </div>
+
+          <div style={{minWidth: '180px'}}>
+            <select 
+                value={sortOption}
+                onChange={(e) => handleFilterChange('sort', e.target.value)}
+                 style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px'
+                }}
+            >
+                <option value="newest">Mới nhất</option>
+                <option value="oldest">Cũ nhất</option>
+                <option value="price_asc">Giá tăng dần</option>
+                <option value="price_desc">Giá giảm dần</option>
+                <option value="a_z">Tên A-Z</option>
+                <option value="z_a">Tên Z-A</option>
+            </select>
+          </div>
+          
+          {(searchTerm || categoryFilter || sortOption !== 'newest') && (
+              <button 
+                onClick={() => {
+                    setSearchTerm("");
+                    setCategoryFilter("");
+                    setSortOption("newest");
+                }}
+                style={{
+                    padding: '10px 15px',
+                    background: '#EF4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer'
+                }}
+              >
+                  Xóa lọc
+              </button>
+          )}
       </div>
 
       {/* DANH SÁCH SÁCH */}
