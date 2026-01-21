@@ -1,6 +1,8 @@
 import Shipment from "../models/shipment.model.js";
 import Order from "../models/order.model.js";
-
+import User from "../models/user.model.js";
+import Book from "../models/book.model.js";
+import Transaction from "../models/transaction.model.js";
 /**
  * Generate a unique tracking code
  */
@@ -89,6 +91,7 @@ export const updateShipmentStatus = async (trackingCode, newStatus, note = '') =
     return shipment;
 };
 
+
 /**
  * Internal Webhook: Update Order status based on Shipment status
  */
@@ -103,16 +106,12 @@ const triggerOrderWebhook = async (shipment) => {
         
         // Map Shipment Status to Order Status
         const statusMap = {
-            'Pending': 'Pending', // Or 'Shipped' if you prefer "Created label" = Shipped. Let's keep Pending or use Shipped. 
-            // Since we set Controller to "Shipped" initially, "Pending" in logistics shouldn't revert it.
-            // If we revert to Pending, it might confuse. 
-            // Actually, best to map Pending -> Shipped if we want consistency.
-            // Or just remove 'Pending' key so it doesn't trigger update.
+            'Pending': 'Pending',
             'PickedUp': 'Shipped',
             'InTransit': 'Shipped',
             'Delivered': 'Delivered',
-            'DeliveryFailed': 'Shipped', // Stay in Shipped
-            'Returning': 'Cancelled', // Or keep as Shipped? Cancelled seems appropriate for "Returned to seller"
+            'DeliveryFailed': 'Cancelled', // Update to Cancelled on failure
+            'Returning': 'Cancelled', 
             'Returned': 'Cancelled' 
         };
         
@@ -120,17 +119,46 @@ const triggerOrderWebhook = async (shipment) => {
         
         if (newOrderStatus && order.status !== newOrderStatus) {
             // CRITICAL: Prevent regression. If Order is already in a terminal state (Delivered, Completed, Cancelled),
-            // do NOT revert to a previous state (like Shipped or Confirmed) even if Logistics says so.
-            // This prevents "Picking" or "InTransit" updates from overwriting "Delivered".
+            // do NOT revert to a previous state.
             const terminalStates = ['Delivered', 'Completed', 'Cancelled'];
             if (terminalStates.includes(order.status)) {
                 console.log(`[LOGISTICS WEBHOOK] Order ${order._id} is in terminal state '${order.status}'. Ignoring update to '${newOrderStatus}'.`);
-                // However, we might still want to update the *shipping specific* status for tracking record
-                // But let's allow "Returning" / "Cancelled" to override Delivered? 
-                // Usually Delivered is final unless Return. 
-                // For safety in this simulation, let's BLOCK ALL regression from Delivered.
-                // Except if new status is "Returned" maybe? Let's stick to strict blocking for now to solve user's concern.
                 return; 
+            }
+
+            // HANDLE CANCELLATION LOGIC (Refund + Restock)
+            if (newOrderStatus === 'Cancelled') {
+                console.log(`[LOGISTICS WEBHOOK] Order ${order._id} cancelled due to delivery failure. Restoring stock/funds.`);
+                
+                // 1. Restore Stock
+                if (order.orderItems && order.orderItems.length > 0) {
+                    const stockUpdateOps = order.orderItems.map(item => ({
+                        updateOne: {
+                            filter: { _id: item.book },
+                            update: { $inc: { stock: item.quantity } }
+                        }
+                    }));
+                    await Book.bulkWrite(stockUpdateOps);
+                }
+
+                // 2. Refund Wallet (if paid by wallet)
+                if (order.paymentMethod === 'wallet' && order.isPaid) {
+                    const refundAmount = order.totalPrice;
+                    await User.findByIdAndUpdate(order.user, {
+                        $inc: { walletBalance: refundAmount }
+                    });
+                    
+                    await Transaction.create({
+                        user: order.user,
+                        type: 'refund',
+                        amount: refundAmount,
+                        status: 'completed',
+                        relatedEntity: { id: order._id, model: 'Order' },
+                        description: `Hoàn tiền tự động đơn hàng ${order._id} (Giao hàng thất bại)`,
+                    });
+                    
+                    order.escrowStatus = 'Refunded';
+                }
             }
 
             order.status = newOrderStatus;
@@ -147,6 +175,7 @@ const triggerOrderWebhook = async (shipment) => {
                 if (order.paymentMethod === 'COD') {
                     order.isPaid = true;
                     order.paidAt = new Date();
+                    // NOTE: Funds for COD are held by carrier, released later manually or via reconciliation
                 }
             }
             
